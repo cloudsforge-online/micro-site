@@ -1,0 +1,287 @@
+/**
+ * The three descriptions of this site's addresses, checked against each other.
+ *
+ *   1. `src/lib/routes.ts` — the declaration, from which the navigation and the footer are derived.
+ *   2. `src/app.tsx`       — which component renders at each path.
+ *   3. `nginx.conf`        — which addresses are served the app shell at all.
+ *
+ * The third is what makes this test worth having. nginx enumerates the real routes and 404s
+ * everything else on purpose, so that a wrong address answers 404 rather than 200 — and this is
+ * the surface where that matters most, because it is the one crawlers index and link checkers
+ * walk.
+ *
+ * The price of that honesty is that a route added to the router and not to nginx works perfectly
+ * under `pnpm dev` and 404s on the first hard refresh in production. That failure survives review
+ * because nothing about the diff looks wrong. This test is the mechanism instead.
+ *
+ * `app.tsx` is read as TEXT rather than imported: importing would pull in React, the router and
+ * every page, and this suite deliberately has no DOM.
+ */
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { describe, it } from 'node:test'
+import { LEGAL_PATHS, NAV, NON_INDEX_PATHS, ROUTES } from '../src/lib/routes.ts'
+import { PRODUCT_PAGES } from '../src/content/products.ts'
+
+const read = (file: string): string => readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')
+
+const appSource = read('src/app.tsx')
+const nginx = read('nginx.conf')
+
+/**
+ * `app.tsx` with its comments removed.
+ *
+ * The same lesson as `directives` below, learned twice in one repository. The header of `app.tsx`
+ * explains at length why there is no `ProtectedRoute` on this surface — and the assertion that
+ * there is no `ProtectedRoute` then matched the explanation and failed on a correct file.
+ *
+ * That is precisely the defect the web template shipped in its 404 CI step, and it is worth
+ * recording that it recurs the moment anyone writes a grep-shaped rule next to a written-down
+ * reason. A guard that fires on its own rationale trains people to delete the guard, so the rule
+ * is about CODE and the prose is stripped before it is applied.
+ */
+const appCode = appSource
+  .replace(/\/\*[\s\S]*?\*\//g, '')
+  .replace(/^\s*\/\/.*$/gm, '')
+
+/**
+ * nginx.conf with its comments removed.
+ *
+ * The file's own header quotes the directive it forbids, in order to explain why the routes are
+ * enumerated by hand, so a grep over the raw text matches the warning and fails on a correct file.
+ * The web template's `ci.yml` had exactly that bug and failed on its own pristine config; the rule
+ * is about DIRECTIVES, so the prose is stripped before checking it.
+ */
+const directives = nginx
+  .split('\n')
+  .filter((line) => !line.trimStart().startsWith('#'))
+  .join('\n')
+
+/** The alternation inside nginx's flat `location ~ ^/(…)/?$` block: the top-level pages. */
+function nginxFlatPaths(): string[] {
+  const match = /location\s+~\s+\^\/\(([^)]+)\)\/\?\$/.exec(directives)
+  assert.ok(match, 'nginx.conf has no enumerated top-level route block')
+  return (match[1] ?? '').split('|').map((p) => p.trim())
+}
+
+/**
+ * The alternation inside nginx's `location ~ ^/products/(…)/?$` block: the product slugs.
+ *
+ * This block exists because the first version of it did not. It was written as a prefix —
+ * `^/(products|…)(/|$)` — which served the app shell for EVERY address under `/products/`, so
+ * `/products/pay` answered `200 OK`. React rendered the not-found page inside it and the status
+ * line said success, which is exactly the failure this whole configuration exists to prevent, in
+ * the one place nobody thought to look. It was found by running the built image and probing it,
+ * not by reading the file.
+ */
+function nginxProductSlugs(): string[] {
+  const match = /location\s+~\s+\^\/products\/\(([^)]+)\)\/\?\$/.exec(directives)
+  assert.ok(match, 'nginx.conf does not enumerate the product slugs')
+  return (match[1] ?? '').split('|').map((p) => p.trim())
+}
+
+describe('the route declaration', () => {
+  it('is not empty, so this whole file cannot pass for the wrong reason', () => {
+    assert.ok(ROUTES.length >= 7, `expected the route table, found ${ROUTES.length} entries`)
+  })
+
+  it('has exactly one index route', () => {
+    assert.equal(ROUTES.filter((r) => r.path === '').length, 1)
+  })
+
+  it('declares no duplicate path', () => {
+    const paths = ROUTES.map((r) => r.path)
+    assert.equal(new Set(paths).size, paths.length)
+  })
+
+  it('declares no path with a slash: these are TOP-LEVEL segments', () => {
+    // nginx matches on the first segment and everything under it. A declaration of
+    // `products/trade` would produce a location block that does not mean what it says.
+    for (const route of ROUTES) {
+      assert.ok(!route.path.includes('/'), `${route.path} is not a top-level segment`)
+    }
+  })
+
+  it('gives every route a summary, since the footer and the 404 both render it', () => {
+    for (const route of ROUTES) {
+      assert.ok(route.summary.length > 15, `${route.path || '/'} has no summary`)
+    }
+  })
+
+  it('declares exactly one wildcard, which is the products prefix', () => {
+    const wildcards = ROUTES.filter((r) => r.wildcard).map((r) => r.path)
+    assert.deepEqual(wildcards, ['products'])
+  })
+})
+
+describe('the navigation', () => {
+  it('is derived from the declaration rather than restated', () => {
+    const labelled = ROUTES.filter((r) => r.label !== null)
+    assert.equal(NAV.length, labelled.length)
+    assert.deepEqual(
+      NAV.map((n) => n.to),
+      labelled.map((r) => (r.path === '' ? '/' : `/${r.path}`)),
+    )
+  })
+
+  it('points the first entry at the index, with the leading slash a NavLink needs', () => {
+    assert.equal(NAV[0]?.to, '/')
+  })
+
+  it('does not offer the legal pages, which belong in the footer', () => {
+    // A nav slot spent on Terms is a slot not spent on a product. They are reachable, linked and
+    // indexed — just not competing for the header.
+    const offered = NAV.map((n) => n.to)
+    for (const path of LEGAL_PATHS) {
+      assert.ok(!offered.includes(`/${path}`), `/${path} must not be a header entry`)
+    }
+  })
+
+  it('lists every legal path as a real route', () => {
+    // The other direction: a legal path in the footer that is not a route is a link to a 404 on
+    // every page of the site at once.
+    const declared = new Set(ROUTES.map((r) => r.path))
+    for (const path of LEGAL_PATHS) assert.ok(declared.has(path), `/${path} is not routed`)
+  })
+})
+
+describe('the router', () => {
+  it('has a <Route> for every declared path', () => {
+    for (const route of ROUTES) {
+      if (route.path === '') {
+        assert.match(appSource, /<Route\s+index/, 'no index route in app.tsx')
+        continue
+      }
+      assert.ok(appSource.includes(`path="${route.path}"`), `app.tsx has no path="${route.path}"`)
+    }
+  })
+
+  it('nests the product pages under the products prefix', () => {
+    // Asserted because a refactor to two top-level routes would work perfectly under `pnpm dev`
+    // and quietly need an nginx change nobody would make.
+    assert.match(appSource, /<Route path="products">/)
+    assert.ok(appSource.includes('path=":slug"'), 'the product detail route is missing')
+  })
+
+  it('routes no path the declaration does not know about', () => {
+    const declared = new Set(NON_INDEX_PATHS)
+    for (const match of appSource.matchAll(/path="([^"]+)"/g)) {
+      const path = match[1] ?? ''
+      if (path === '*' || path === ':slug') continue // the catch-all and the nested parameter
+      assert.ok(declared.has(path), `app.tsx routes ${path}, which lib/routes.ts does not declare`)
+    }
+  })
+
+  it('keeps the catch-all, which is what renders the honest 404 page', () => {
+    assert.ok(appSource.includes('path="*"'))
+    assert.ok(appSource.includes('NotFoundPage'))
+  })
+
+  it('gates nothing, because every page here is public', () => {
+    // The template ships a session gate. A marketing site that bounces a reader to sign in before
+    // telling them what the company does is the most self-defeating thing this surface could do,
+    // so the wrapper was removed on instantiation — asserted, because re-adding it during a
+    // copy-paste from another frontend would look entirely normal in a diff.
+    assert.ok(!appCode.includes('ProtectedRoute'), 'a route was put behind a session gate')
+    // The reason it is absent is still written down, since it is the only thing that stops the
+    // next person adding it back "for consistency" with the other frontends.
+    assert.match(appSource, /No ProtectedRoute/)
+  })
+})
+
+describe('nginx', () => {
+  it('enumerates every declared top-level path', () => {
+    const served = new Set([...nginxFlatPaths(), 'products'])
+    for (const path of NON_INDEX_PATHS) {
+      assert.ok(served.has(path), `nginx.conf does not serve /${path}; it will 404 on a hard refresh`)
+    }
+  })
+
+  it('enumerates nothing the site does not route', () => {
+    // The other direction: a stale entry serves the shell with a 200 for an address that renders
+    // the not-found page, which is the exact dishonesty the enumeration exists to prevent.
+    const declared = new Set(NON_INDEX_PATHS)
+    for (const path of nginxFlatPaths()) {
+      assert.ok(declared.has(path), `nginx.conf serves /${path}, which this site does not route`)
+    }
+  })
+
+  it('serves the products index on its own', () => {
+    // Separately from the slugs, because `/products` and `/products/<slug>` are two shapes and one
+    // pattern covering both is how the slug list stopped being enforced in the first place.
+    assert.match(directives, /location\s+~\s+\^\/products\/\?\$/)
+  })
+
+  it('serves exactly the product pages that exist, and no other slug', () => {
+    /*
+     * Both directions, and this is the assertion that would have caught the defect that produced
+     * this block. `/products/pay` answered 200 for as long as the rule was a prefix — and it is
+     * not a hypothetical address: Forge Pay was a destination in the previous estate and is now a
+     * page inside Forge Hub, so it is exactly what an old link carries.
+     */
+    const served = nginxProductSlugs()
+    const declared = PRODUCT_PAGES.map((p) => p.slug)
+    assert.deepEqual([...served].sort(), [...declared].sort())
+  })
+
+  it('serves no product slug the router would answer with the not-found page', () => {
+    // Named individually: these three are the addresses most likely to be linked from outside and
+    // are all pages that no longer exist. Each must reach nginx's 404 rather than the shell.
+    for (const retired of ['pay', 'crucible', 'forgemint']) {
+      assert.ok(
+        !nginxProductSlugs().includes(retired),
+        `nginx.conf serves /products/${retired} with a 200`,
+      )
+    }
+  })
+
+  it('serves the index explicitly', () => {
+    assert.match(nginx, /location\s+=\s+\/\s*\{/)
+  })
+
+  it('accepts a trailing slash on every route', () => {
+    // `/about/` is an address people link to. 404ing it would be pedantry rather than honesty, and
+    // src/lib/meta.ts normalises the two spellings onto one canonical so they cannot split their
+    // own indexing.
+    for (const block of [nginxFlatPaths, nginxProductSlugs]) {
+      assert.ok(block().length > 0)
+    }
+    assert.equal((directives.match(/\/\?\$/g) ?? []).length >= 3, true, 'a route block is slash-strict')
+  })
+
+  it('never falls back to index.html with a 200 for an unknown path', () => {
+    assert.equal(
+      /try_files\s+\$uri\s+(\$uri\/\s+)?\/index\.html/.test(directives),
+      false,
+      'the catch-all falls back to the shell with a 200',
+    )
+    assert.ok(directives.includes('error_page 404 /index.html'))
+    // …and the comment that explains the rule is still there, since it is the only reason anybody
+    // reading this file later will understand why the routes are enumerated by hand.
+    assert.match(nginx, /404, not 200/)
+  })
+
+  it('does not let a missing asset fall through to the shell', () => {
+    // A JavaScript request answered with HTML fails with a syntax error that names the wrong file.
+    assert.match(directives, /location\s+\^~\s+\/assets\/\s*\{[\s\S]*?try_files\s+\$uri\s+=404;/)
+  })
+
+  it('gives the hashed bundle a longer life than the brand images', () => {
+    // Two cache rules, and getting them the wrong way round is invisible until an OG card is stuck
+    // in a crawler's cache for a year. The `^~` on /assets/ is what makes the ordering hold.
+    assert.match(directives, /location \^~ \/assets\/[\s\S]*?immutable/)
+    assert.match(directives, /\\\.\(png\|svg\|ico\|webp\)\$[\s\S]*?max-age=86400/)
+  })
+
+  it('never caches index.html', () => {
+    // It is the file that names the current asset hashes, so a stale copy pins a browser to a
+    // deploy that no longer exists.
+    assert.match(directives, /location = \/index\.html\s*\{[\s\S]*?no-store/)
+  })
+
+  it('sets the security headers the shared bar session warrants', () => {
+    for (const header of ['X-Content-Type-Options', 'X-Frame-Options', 'Referrer-Policy']) {
+      assert.ok(directives.includes(header), `${header} is not set`)
+    }
+  })
+})

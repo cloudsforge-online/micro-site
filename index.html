@@ -1,0 +1,70 @@
+<!doctype html>
+<!--
+  data-cf-product picks the accent ramp and data-cf-substrate the ash ramp, both from
+  @cloudsforge/ui/tokens.css. They are on <html> and set STATICALLY here rather than by React,
+  because a page that paints before the attributes land flashes the default and then changes
+  colour.
+
+  `site` is one of the two product keys that resolve to --cf-ember rather than to a product accent.
+  Ember is company chrome, and the marketing site is the company — it is the one surface that must
+  never wear a product's colour, because it is the page all five products are described on.
+
+  `warm` is the house substrate. The cool one exists for products about measurement; a front door
+  is not one.
+-->
+<html lang="en-GB" data-cf-product="site" data-cf-substrate="warm">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      Both schemes are declared. The design system is dark and says so, and src/styles.css carries
+      the one sanctioned light scope — the semantic tokens overridden, the ash and bone ramps left
+      alone. Declaring only `dark` here would make a reader in a light environment fight the page
+      rather than be served by it.
+    -->
+    <meta name="color-scheme" content="dark light" />
+    <!--
+      The build that produced this bundle. Stamped by the Dockerfile, read by src/lib/obs.ts, and
+      the reason an error report can be pinned to the deploy that introduced it. It is an identity
+      rather than a configuration: it names the artefact, it does not tell it where it is running.
+    -->
+    <meta name="cf-release" content="dev" />
+
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/favicon-192x192.png" />
+
+    <title>CloudsForge — One crypto world.</title>
+    <meta
+      name="description"
+      content="One account, one wallet and one ledger under several crypto products. Mine it, hold it, make it, trade it, sell it, play in it."
+    />
+
+    <!--
+      The site-level card.
+
+      Per-route titles and descriptions are applied at runtime by src/lib/meta.ts, which browsers
+      and the crawlers that execute JavaScript will see. The link-preview fetchers used by chat and
+      social clients generally do not execute JavaScript, so THIS is what they render, for every
+      address. The limitation, and the reason it has not been fixed by pre-rendering, is written out
+      at the top of src/lib/meta.ts rather than discovered later in a link preview.
+
+      The URLs are relative because this file may not name a hostname — one bundle is served from
+      localhost, from a preview deployment and from the apex. Crawlers that require an absolute URL
+      resolve it against the page they fetched.
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CloudsForge" />
+    <meta property="og:title" content="CloudsForge — One crypto world." />
+    <meta
+      property="og:description"
+      content="One account, one wallet and one ledger under several crypto products. Mine it, hold it, make it, trade it, sell it, play in it."
+    />
+    <meta property="og:image" content="/og-1200x630.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

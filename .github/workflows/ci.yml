@@ -1,0 +1,261 @@
+# Continuous integration.
+#
+# ────────────────────────────────────────────────────────────────────────────────────────────────
+# THE `check`, `rules` AND `image` JOBS BELOW ARE TEMPORARY. The org's reusable `web-ci.yml` is the
+# target and the `hygiene` job already calls the org repository; the local jobs exist for one
+# reason and disappear with it:
+#
+#   @cloudsforge/ui is unpublished, and this repository consumes it as `link:../ui/packages/ui`.
+#   The reusable workflow does a single checkout and then `pnpm install --frozen-lockfile`, which
+#   cannot resolve a sibling directory that is not there. The day the design system is published
+#   and the specifier in package.json becomes `^1.0.0`, everything from `check:` to the end of
+#   `image:` is deleted and replaced by a call to
+#   cloudsforge-online/micro-org/.github/workflows/web-ci.yml.
+#
+# ONE INPUT OF THE REUSABLE WORKFLOW WILL STILL NOT SUIT THIS REPOSITORY: its `image` job probes a
+# deep route and requires a 200. This site's nginx.conf enumerates its real routes and answers 404
+# for everything else ON PURPOSE — and on this surface more than any other, because it is the one
+# search engines index and link checkers walk. So `build-image: false` will be passed and the image
+# is checked here, where the probe can assert the honest answer instead.
+# ────────────────────────────────────────────────────────────────────────────────────────────────
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: site }
+
+      # Temporary, for the same reason as the Dockerfile's second build context: the design system
+      # is unpublished and resolves through `link:../ui/packages/ui`.
+      #
+      # The repository name matters and is easy to get wrong: the web template shipped
+      # `cloudsforge/ui` here, which is a different organisation and a different name, so its own
+      # pipeline could never install. Fixed upstream in micro-web-template a868231.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-ui
+          path: ui
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm, cache-dependency-path: site/pnpm-lock.yaml }
+
+      - name: Install
+        working-directory: site
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: site
+        run: pnpm typecheck
+
+      - name: Test
+        working-directory: site
+        run: pnpm test
+
+      - name: Build
+        working-directory: site
+        run: pnpm build
+
+      # A frontend that builds to nothing is a blank page, not a build failure.
+      - name: The bundle exists, and so do the brand assets
+        working-directory: site
+        run: |
+          set -euo pipefail
+          test -f dist/index.html || { echo "::error::dist/index.html is missing after a successful build"; exit 1; }
+          # The favicons and the Open Graph cards are not imported by any module, so nothing in the
+          # bundle references them: a missing `COPY public` in the Dockerfile, or a deleted file,
+          # produces a site that builds and serves perfectly and has no icon and no link preview.
+          for asset in og-1200x630.png favicon-32x32.png favicon-192x192.png robots.txt; do
+            test -f "dist/$asset" || { echo "::error::dist/$asset is missing"; exit 1; }
+          done
+          test -d dist/og || { echo "::error::the per-product cards are missing"; exit 1; }
+          echo "ok: $(find dist -type f | wc -l | tr -d ' ') files in dist"
+
+      # A marketing site is read on a phone on mobile data. This is a ceiling rather than a target:
+      # it fails when something large is added without anybody deciding to add it, which is the way
+      # a bundle actually grows.
+      - name: The bundle has not quietly doubled
+        working-directory: site
+        run: |
+          set -euo pipefail
+          bytes=$(cat dist/assets/*.js | gzip -9 | wc -c | tr -d ' ')
+          echo "JavaScript, gzipped: $bytes bytes"
+          if [ "$bytes" -gt 140000 ]; then
+            echo "::error::the bundle is $bytes bytes gzipped, over the 140 kB ceiling — see the README's Weight section"
+            exit 1
+          fi
+
+  rules:
+    name: Estate rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No build-time configuration
+        # The same rule as test/no-build-time-config.test.ts, checked again here so it fails even
+        # if somebody deletes the test along with the line it forbids. A `VITE_` variable is read
+        # at build time and frozen into the artefact, and an artefact with an environment frozen
+        # into it has to be rebuilt to be promoted — which means the thing that reaches production
+        # is not the thing that passed CI.
+        run: |
+          set -uo pipefail
+          if grep -rn --include='*.ts' --include='*.tsx' --include='*.html' \
+               -e 'import\.meta\.env' -e 'VITE_' src index.html; then
+            echo "::error::this bundle must read no build-time environment; hosts come from cloudsforgeHosts() at runtime"
+            exit 1
+          fi
+          echo "ok: no build-time environment"
+
+      - name: No hard-coded CloudsForge hostname
+        # A literal hostname is a second, unversioned copy of the surface registry, and the copy is
+        # the one that will be wrong. This surface holds more outbound links to more surfaces than
+        # any product does, so it is the one where a typed hostname is most likely and most costly.
+        run: |
+          set -uo pipefail
+          if grep -rn --include='*.ts' --include='*.tsx' 'cloudsforge\.online' src; then
+            echo "::error::resolve hosts through cloudsforgeHosts() rather than naming them"
+            exit 1
+          fi
+          echo "ok: no literal hostnames in src"
+
+      - name: The SPA fallback keeps its 404
+        # Comments are stripped first. nginx.conf's own header QUOTES the directive it forbids, in
+        # order to explain why the routes are enumerated by hand, so a grep over the raw file
+        # matches the warning and fails a correct config. The web template's copy of this step had
+        # exactly that bug and failed on its own pristine nginx.conf.
+        run: |
+          set -uo pipefail
+          directives=$(grep -v '^[[:space:]]*#' nginx.conf)
+          if printf '%s\n' "$directives" | grep -nE 'try_files[[:space:]]+\$uri[[:space:]]+(\$uri/[[:space:]]+)?/index\.html'; then
+            echo "::error::unknown paths must 404; serve the shell through error_page 404 /index.html"
+            exit 1
+          fi
+          printf '%s\n' "$directives" | grep -q 'error_page 404 /index.html'
+          echo "ok: unknown paths answer 404"
+
+      - name: The auth callback is redeemed before the app renders
+        run: grep -q 'bootstrapSession' src/main.tsx
+
+      - name: The route table, the navigation and nginx agree
+        # Already asserted by test/routes.test.ts; repeated here so deleting the test does not
+        # silently delete the rule.
+        run: test -f test/routes.test.ts && grep -q 'nginx.conf' test/routes.test.ts
+
+      - name: Every number in the copy is registered
+        # The rule this site exists to keep. `test/content.test.ts` walks every published string and
+        # fails on a digit that is not in src/content/claims.ts with a source beside it. Repeated
+        # here so that deleting the test does not delete the rule with it.
+        run: |
+          set -uo pipefail
+          test -f src/content/claims.ts || { echo "::error::the numbers register is gone"; exit 1; }
+          grep -q 'allowedNumbers' test/content.test.ts || { echo "::error::the number scan is gone"; exit 1; }
+          echo "ok: the numbers register and its scan are both present"
+
+      - name: No third-party request
+        # The privacy notice claims this site embeds no external script, stylesheet, font or image.
+        # It is a claim about a static file, so it is checkable, and a claim that is checkable and
+        # unchecked is a claim waiting to become false. Comments are stripped: several files
+        # document a decision by naming what was rejected.
+        run: |
+          set -uo pipefail
+          stripped=$(cat $(find src -name '*.ts' -o -name '*.tsx' -o -name '*.css') index.html \
+            | perl -0pe 's{/\*.*?\*/}{}gs' | perl -0pe 's{<!--.*?-->}{}gs' | grep -v '^\s*//')
+          if printf '%s\n' "$stripped" | grep -oE 'https?://[^ "'"'"'`)<>]+' | grep -v localhost; then
+            echo "::error::the bundle would request an external host; the privacy notice says it does not"
+            exit 1
+          fi
+          echo "ok: nothing is fetched from outside CloudsForge"
+
+  image:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: site }
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-ui
+          path: ui
+
+      - uses: docker/setup-buildx-action@v3
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: site
+          build-contexts: uipkg=ui
+          build-args: RELEASE=${{ github.sha }}
+          push: false
+          load: true
+          tags: site:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: The image serves the site, and 404s an address it does not own
+        run: |
+          set -euo pipefail
+          docker run -d --name ci-site -p 127.0.0.1:8080:8080 site:ci
+          for attempt in $(seq 1 20); do
+            code=$(curl -s -m 5 -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/ || true)
+            [ "$code" = "200" ] && break
+            sleep 1
+          done
+          [ "${code:-}" = "200" ] || { echo "::error::the image returned ${code:-no answer} for /"; docker logs --tail 60 ci-site; exit 1; }
+
+          # Every route this site OWNS must survive a hard refresh, including a product page, which
+          # is the one shape that is nested rather than top-level.
+          for path in /products /products/ /products/worlds /products/worlds/ /products/hub /platform /build /about/ /terms /privacy; do
+            owned=$(curl -s -m 5 -o /dev/null -w '%{http_code}' "http://127.0.0.1:8080$path" || true)
+            [ "$owned" = "200" ] || { echo "::error::$path returned $owned — an owned route must be served the shell"; exit 1; }
+          done
+
+          # An address it does NOT own must answer 404 while still serving the shell, so the reader
+          # gets a real page and the status line tells the truth. This is the assertion the org's
+          # reusable image job cannot make, because it requires a 200 for any deep link.
+          # /products/pay and /products/crucible are the two most likely inbound stale links —
+          # both were destinations in the previous estate — and both must answer 404 rather than
+          # the shell-with-a-200 that a prefix rule under /products/ would give them.
+          for path in /nope/not/a/route /products/pay /products/crucible /products/trade/fees /pricing; do
+            unknown=$(curl -s -m 5 -o /dev/null -w '%{http_code}' "http://127.0.0.1:8080$path" || true)
+            [ "$unknown" = "404" ] || { echo "::error::$path returned $unknown; it must be 404"; exit 1; }
+          done
+          curl -s -m 5 http://127.0.0.1:8080/nope | grep -q '<div id="root">' \
+            || { echo "::error::the 404 did not serve the app shell"; exit 1; }
+
+          # The brand assets and robots.txt are real files, not routes.
+          for file in /favicon-32x32.png /og-1200x630.png /og/worlds.png /robots.txt; do
+            asset=$(curl -s -m 5 -o /dev/null -w '%{http_code}' "http://127.0.0.1:8080$file" || true)
+            [ "$asset" = "200" ] || { echo "::error::$file returned $asset"; exit 1; }
+          done
+
+          # A missing asset must NOT fall through to the shell: a JavaScript request answered with
+          # HTML fails with a syntax error that names the wrong file.
+          missing=$(curl -s -m 5 -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/assets/nope.js || true)
+          [ "$missing" = "404" ] || { echo "::error::a missing asset returned $missing"; exit 1; }
+          echo "ok: owned routes are served, unknown addresses 404 with the shell"
+      - name: Down
+        if: always()
+        run: docker rm -f ci-site || true
+
+  hygiene:
+    # The org's reusable secret check. Cheap, and it catches the failure that cannot be undone: a
+    # secret pushed to a repository is compromised the moment it lands, and rotating it is the only
+    # remedy.
+    uses: cloudsforge-online/micro-org/.github/workflows/secret-hygiene.yml@main
+    permissions:
+      contents: read

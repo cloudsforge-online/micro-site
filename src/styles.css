@@ -1,0 +1,1244 @@
+/**
+ * The marketing site's own layer, on top of @cloudsforge/ui.
+ *
+ * ── The visual direction, stated once ─────────────────────────────────────────────────────────
+ *
+ * A document of record, not a landing page. The company's own voice is "honest copy" and its
+ * distinguishing content is a build-status page and an eleven-line definition it has not met yet —
+ * so the site is set like something that expects to be read and cited, rather than like something
+ * that expects to be scrolled past. That means: a long measure, real type hierarchy, hairlines
+ * instead of boxes, and exactly one moment of colour per screen.
+ *
+ * Four devices carry it, and there are only four on purpose:
+ *
+ *   1. THE RIDGE. Every brand mark in the system is drawn over a ground line, including the
+ *      company's own. The site repeats it as its section divider (`.si-ridge`), which ties a page
+ *      of prose to a 24-pixel switcher glyph without a single image request.
+ *   2. ONE EMBER WASH, in the hero only, from `--cf-accent-glow`. A gradient on every section is a
+ *      gradient nobody sees.
+ *   3. ACCENT SCOPING. The page is company ember. A product card redeclares `--cf-accent` from the
+ *      registry via `data-cf-product` (see `accentProps` in components/parts.tsx), so five cards
+ *      carry five colours on one page while the chrome stays company-coloured. Nothing here, and
+ *      nothing in the components, hard-codes a product hex.
+ *   4. THE STAGE CHIP. Glyph, word and colour — three channels, never one.
+ *
+ * Every colour, space, radius and font below is a token. A literal hex here is a colour that will
+ * not follow the substrate, and a page that does not follow the substrate is the one page in the
+ * estate that looks wrong.
+ *
+ * ── Prefix ───────────────────────────────────────────────────────────────────────────────────
+ *
+ * Everything is `si-`. Nothing may collide with, or quietly override, a `cf-` class from the
+ * design system.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* An in-page anchor must not land under the sticky bar and the sticky nav. */
+  scroll-padding-top: calc(var(--cf-bar-h) * 2 + var(--cf-space-xl));
+}
+
+body {
+  margin: 0;
+  background: var(--cf-bg);
+  color: var(--cf-fg);
+  font-family: var(--cf-font-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  color-scheme: dark;
+  /* Optical: bone type on charred ash is slightly too heavy at default rendering on macOS. */
+  -webkit-font-smoothing: antialiased;
+}
+
+/**
+ * The light scope.
+ *
+ * The design system is dark and says so — "The system is dark only and does not pretend
+ * otherwise". Its tokens file also states the one sanctioned way for a host to want a light mode:
+ * "override the semantic tokens, never the ash or bone ramps". That is exactly what this block
+ * does, and it is the whole of the light theme.
+ *
+ * The shared bar stays dark, because it carries `.cf-dark` and re-asserts the semantic layer for
+ * itself. That is not a bug being tolerated: the bar is company chrome and reading as a dark band
+ * above a light page is a deliberate, legible result, where inverting it would put a second
+ * opinion about the brand's colour on every surface at once.
+ *
+ * The values are the ash and bone ramps read the other way up, with contrast measured rather than
+ * guessed — `test/contrast.test.ts` holds every pair used for text to WCAG AA on both grounds.
+ */
+@media (prefers-color-scheme: light) {
+  :root {
+    --cf-bg: #f4f0e8;
+    --cf-bg-raised: #fbf8f2;
+    --cf-bg-sunken: #e8e2d6;
+    --cf-fg: #1a1613;
+    --cf-fg-dim: #4a4239;
+    --cf-fg-mute: #6b6155;
+
+    --cf-line: color-mix(in srgb, #1a1613 14%, transparent);
+    --cf-line-strong: color-mix(in srgb, #1a1613 24%, transparent);
+    --cf-surface: color-mix(in srgb, #fbf8f2 82%, transparent);
+    --cf-surface-solid: #fbf8f2;
+    --cf-surface-hover: color-mix(in srgb, #1a1613 6%, transparent);
+  }
+
+  body {
+    color-scheme: light;
+  }
+}
+
+/**
+ * The accent, made safe to set TYPE in.
+ *
+ * ── The problem ──────────────────────────────────────────────────────────────────────────────
+ *
+ * Every accent in the registry was validated against the dark panel surface, where it clears its
+ * contrast floor comfortably. On a light ground the same hexes do not: the company ember measures
+ * 2.99:1 against the light page background, which fails the 4.5:1 a link needs and fails even the
+ * 3:1 a non-text control needs. Set a link in it and a light-mode reader gets orange on cream.
+ *
+ * ── Why this is not solved by overriding --cf-accent ─────────────────────────────────────────
+ *
+ * Because the accent is not one value on this site. The page is company ember, and every product
+ * card, rail step and status row REDECLARES --cf-accent inline from the registry, so five accents
+ * are live on one page. A single override would flatten all five to one colour.
+ *
+ * ── The dark ground needs an adjustment too ──────────────────────────────────────────────────
+ *
+ * This was not expected and it is the more useful finding. The five product accents were validated
+ * "all above 3:1 on the panel" — the floor for a MARK, an edge or a control, which is what the
+ * switcher uses them for. This site sets type in them: the eyebrow, the card verb, the rail
+ * ordinals, every link inside a scoped card. Type needs 4.5:1, and Forge Network's #d6412f
+ * measures 4.33:1 against the page. Close, and under.
+ *
+ * So the accent is lifted 12% toward the bone foreground before it is used as type. That is a
+ * derived ROLE rather than a change to the registry: the raw accent still governs the fills, the
+ * glow and the marks, and the switcher's colour-separation guarantee — which is about the raw set
+ * — is untouched.
+ *
+ * ── Why these are declared on `*` ────────────────────────────────────────────────────────────
+ *
+ * A custom property is substituted where it is DECLARED, not where it is used — tokens.css says so
+ * in capitals, having been bitten by it. Declaring `--si-accent` once at :root would resolve it
+ * against the ROOT's accent, so every card would draw the company ember and the whole
+ * accent-scoping mechanism would silently stop working. Declaring it on every element makes each
+ * one derive from the accent it has actually inherited.
+ *
+ * Every percentage below was chosen by measuring, not by eye, and `test/contrast.test.ts` reads
+ * them back out of this file and recomputes every ratio against both grounds. Change one and the
+ * test tells you exactly what it did.
+ */
+*,
+*::before,
+*::after {
+  --si-accent: color-mix(in srgb, var(--cf-accent) 88%, var(--cf-fg));
+  /* Hover goes LIGHTER on a dark ground. */
+  --si-accent-hover: color-mix(in srgb, var(--cf-accent) 70%, var(--cf-fg));
+  /* The two status colours already clear AA on both dark surfaces unmixed. */
+  --si-good: var(--cf-viz-good);
+  --si-warn: var(--cf-viz-warn);
+}
+
+@media (prefers-color-scheme: light) {
+  *,
+  *::before,
+  *::after {
+    --si-accent: color-mix(in srgb, var(--cf-accent) 68%, #000);
+    /* Hover goes DARKER on a light ground. The design system's own `--cf-accent-hover` only knows
+       how to go lighter, which is correct on exactly one of the two grounds. */
+    --si-accent-hover: color-mix(in srgb, var(--cf-accent) 62%, #000);
+    --si-good: color-mix(in srgb, var(--cf-viz-good) 60%, #000);
+    --si-warn: color-mix(in srgb, var(--cf-viz-warn) 55%, #000);
+  }
+}
+
+/* ─────────────────────────────── chrome ─────────────────────────────── */
+
+/*
+ * The skip link. Hidden until focused, and then unmistakably visible — a skip link that stays
+ * hidden on focus is worse than none, because the reader activates it and cannot tell whether it
+ * did anything.
+ */
+.si-skip {
+  position: absolute;
+  left: var(--cf-space-sm);
+  top: -4rem;
+  z-index: 100;
+  padding: var(--cf-space-sm) var(--cf-space-xl);
+  border-radius: var(--cf-radius);
+  background: var(--cf-accent);
+  color: var(--cf-accent-ink);
+  font-weight: 600;
+  text-decoration: none;
+  transition: top var(--cf-speed) var(--cf-ease);
+}
+
+.si-skip:focus {
+  top: calc(var(--cf-bar-h) + var(--cf-space-sm));
+}
+
+/* The site's own navigation, docked at exactly the shared bar's height token. */
+.si-nav {
+  position: sticky;
+  top: var(--cf-bar-h);
+  z-index: 40;
+  background: color-mix(in srgb, var(--cf-bg) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--cf-line);
+}
+
+.si-nav__inner {
+  display: flex;
+  gap: var(--cf-space-2xs);
+  max-width: var(--cf-max-w);
+  margin: 0 auto;
+  padding: 0 var(--cf-space-xl);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.si-nav__link {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: var(--cf-space-lg) var(--cf-space-md);
+  color: var(--cf-fg-dim);
+  text-decoration: none;
+  font-size: var(--cf-text-md);
+  letter-spacing: 0.01em;
+  /* The active marker is an underline in the accent AND a weight change AND a colour change:
+     colour is never the only channel. */
+  border-bottom: 2px solid transparent;
+}
+
+.si-nav__link:hover {
+  color: var(--cf-fg);
+  background: var(--cf-surface-hover);
+}
+
+.si-nav__link.is-active {
+  color: var(--cf-fg);
+  font-weight: 600;
+  border-bottom-color: var(--si-accent);
+}
+
+.si-nav__link:focus-visible {
+  outline: 2px solid var(--si-accent);
+  outline-offset: -2px;
+}
+
+.si-main {
+  max-width: var(--cf-max-w);
+  margin: 0 auto;
+  padding: 0 var(--cf-space-xl) var(--cf-space-3xl);
+}
+
+/* ───────────────────────────── typography ───────────────────────────── */
+
+/*
+ * The display steps.
+ *
+ * The token scale tops out at `--cf-text-4xl` (2.1rem), which is correct for an application and
+ * too small for a front door. These three are the site's own, built with `clamp()` off the same
+ * rem basis, so a reader who raises their browser's base size still gets larger type here.
+ *
+ * `--cf-font-display` names Bricolage Grotesque and Oswald and falls back to the sans stack. No
+ * font is loaded — the whole system is system-safe by design — so in practice this is the sans at
+ * a display size, and the hierarchy is carried by size, weight and tracking rather than by a face
+ * that costs a request and a layout shift.
+ */
+.si-display,
+.si-hero__title {
+  font-family: var(--cf-font-display);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.si-display {
+  font-size: clamp(2rem, 1.3rem + 3.2vw, 3.25rem);
+}
+
+.si-h2 {
+  font-family: var(--cf-font-display);
+  font-size: clamp(1.4rem, 1.15rem + 1.1vw, 1.9rem);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  margin: 0 0 var(--cf-space-lg);
+  text-wrap: balance;
+}
+
+/*
+ * The eyebrow: small, spaced, upper-case, in the accent. It is the one place a label is allowed to
+ * shout, and it is 10px, which is the size at which shouting is a whisper.
+ */
+.si-eyebrow {
+  margin: 0 0 var(--cf-space-md);
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-xs);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--si-accent);
+}
+
+.si-lede {
+  margin: 0 0 var(--cf-space-2xl);
+  max-width: 60ch;
+  color: var(--cf-fg-dim);
+  font-size: var(--cf-text-xl);
+  line-height: 1.65;
+}
+
+/* The reading measure. 68 characters, which is where a line stops being comfortable. */
+.si-prose {
+  max-width: 68ch;
+}
+
+.si-prose p {
+  margin: 0 0 var(--cf-space-xl);
+  color: var(--cf-fg-dim);
+}
+
+.si-prose p:last-child {
+  margin-bottom: 0;
+}
+
+.si-prose--lead p {
+  font-size: var(--cf-text-xl);
+  line-height: 1.65;
+  color: var(--cf-fg-dim);
+}
+
+.si-aside {
+  margin: var(--cf-space-2xl) 0 0;
+  max-width: 68ch;
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-lg);
+}
+
+a {
+  color: var(--si-accent);
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+
+a:hover {
+  color: var(--si-accent-hover);
+}
+
+:focus-visible {
+  /* The derived accent, not the raw one: a focus ring is a non-text control and needs 3:1 against
+     the page, which the raw ember does not reach on a light ground. */
+  outline: 2px solid var(--si-accent);
+  outline-offset: 2px;
+  border-radius: var(--cf-radius-sm);
+}
+
+/* ─────────────────────────────── ridge ──────────────────────────────── */
+
+/*
+ * The ash ridge, as a section divider. `currentColor` on a muted foreground, so it follows the
+ * substrate and the light scope without a second declaration.
+ */
+.si-ridge {
+  display: block;
+  width: 100%;
+  height: 24px;
+  margin: var(--cf-space-3xl) 0;
+  color: var(--cf-line-strong);
+}
+
+.si-ridge--footer {
+  margin: 0;
+  color: var(--cf-line);
+}
+
+/* ─────────────────────────────── hero ───────────────────────────────── */
+
+.si-hero {
+  position: relative;
+  padding: clamp(3rem, 8vw, 6rem) 0 clamp(2rem, 5vw, 3.5rem);
+  isolation: isolate;
+}
+
+/*
+ * The one gradient on the site. `--cf-accent-glow` is the token, so on the marketing site it is
+ * ember and on a product page it would be that product's — which is why it is a token and not a
+ * hex.
+ */
+.si-hero__wash {
+  position: absolute;
+  inset: -20% -30% auto;
+  height: 34rem;
+  z-index: -1;
+  background: radial-gradient(60% 55% at 30% 0%, var(--cf-accent-glow), transparent 70%);
+  pointer-events: none;
+}
+
+.si-hero__title {
+  font-size: clamp(2.6rem, 1.4rem + 5.4vw, 5rem);
+  max-width: 18ch;
+}
+
+/*
+ * The verb line, set as a second line of the same headline at a smaller size and in the dim
+ * foreground. One sentence, said twice, at two weights — it is the positioning line and its own
+ * expansion, and separating them into a headline and a subhead would make the second look like
+ * an explanation of the first rather than a continuation of it.
+ */
+.si-hero__verbs {
+  display: block;
+  margin-top: var(--cf-space-md);
+  font-size: clamp(1.15rem, 0.8rem + 1.6vw, 2rem);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--cf-fg-dim);
+}
+
+.si-hero__standfirst {
+  max-width: 60ch;
+  margin: var(--cf-space-2xl) 0 0;
+  font-size: var(--cf-text-xl);
+  line-height: 1.65;
+  color: var(--cf-fg-dim);
+}
+
+.si-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cf-space-lg);
+  margin-top: var(--cf-space-3xl);
+}
+
+/* ─────────────────────────────── buttons ───────────────────────────── */
+
+.si-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cf-space-sm);
+  padding: var(--cf-space-md) var(--cf-space-2xl);
+  border: 1px solid var(--cf-line-strong);
+  border-radius: var(--cf-radius);
+  background: transparent;
+  color: var(--cf-fg);
+  font-size: var(--cf-text-lg);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--cf-speed) var(--cf-ease), border-color var(--cf-speed) var(--cf-ease);
+}
+
+.si-btn:hover {
+  background: var(--cf-surface-hover);
+  border-color: var(--cf-fg-mute);
+  color: var(--cf-fg);
+}
+
+.si-btn--accent {
+  /* The one place the RAW accent is still used, and deliberately: this is a fill, not type, and
+     `--cf-accent-ink` is the token defined against the raw accent precisely so a label on it is
+     legible on every accent in the registry rather than white on amber. Darkening the fill here
+     would leave the ink paired with a colour it was not derived against. */
+  background: var(--cf-accent);
+  border-color: var(--cf-accent);
+  color: var(--cf-accent-ink);
+}
+
+/*
+ * The accent as an outline rather than as a fill.
+ *
+ * Used wherever the accent in play is a PRODUCT's rather than the company's. `--cf-accent-ink` is
+ * derived per product against a filled accent and is tightest on Forge Network at 4.3:1, under the
+ * 4.5 a label of this size needs; drawing the accent as type instead puts it under `--si-accent`,
+ * which is measured against both grounds in test/contrast.test.ts.
+ */
+.si-btn--outline {
+  border-color: var(--si-accent);
+  color: var(--si-accent);
+}
+
+.si-btn--outline:hover {
+  background: var(--cf-surface-hover);
+  border-color: var(--si-accent-hover);
+  color: var(--si-accent-hover);
+}
+
+.si-btn--accent:hover {
+  background: var(--cf-accent-hover);
+  border-color: var(--cf-accent-hover);
+  color: var(--cf-accent-ink);
+}
+
+/* ─────────────────────────────── sections ──────────────────────────── */
+
+.si-section {
+  margin: 0 0 var(--cf-space-3xl);
+}
+
+.si-pagehead {
+  padding: clamp(2rem, 5vw, 3.5rem) 0 0;
+}
+
+.si-pagehead__body {
+  display: grid;
+  gap: var(--cf-space-3xl);
+  margin-top: var(--cf-space-2xl);
+}
+
+@media (min-width: 60rem) {
+  .si-pagehead__body {
+    grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 1fr);
+    align-items: start;
+  }
+}
+
+.si-pagehead__aside {
+  padding: var(--cf-space-2xl);
+  border: 1px solid var(--cf-line);
+  border-radius: var(--cf-radius-lg);
+  background: var(--cf-surface-solid);
+}
+
+.si-productaside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--cf-space-lg);
+}
+
+.si-productaside__note {
+  margin: 0;
+  color: var(--cf-fg-dim);
+  font-size: var(--cf-text-lg);
+}
+
+/* ──────────────────────────── the loop rail ────────────────────────── */
+
+/*
+ * A rail rather than a grid, because the loop's whole point is that the steps are in an order, and
+ * a grid of four cards says nothing about order. The vertical line is a border on the list; each
+ * step's marker sits on it in that step's own accent.
+ */
+.si-rail {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 var(--cf-space-3xl);
+  border-left: 1px solid var(--cf-line);
+}
+
+.si-rail__step {
+  position: relative;
+  padding: 0 0 var(--cf-space-3xl);
+}
+
+.si-rail__step:last-child {
+  padding-bottom: 0;
+}
+
+.si-rail__n {
+  position: absolute;
+  left: calc(var(--cf-space-3xl) * -1 - 1px);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: 1px solid var(--si-accent);
+  background: var(--cf-bg);
+  color: var(--si-accent);
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-sm);
+  font-weight: 600;
+}
+
+.si-rail__verb {
+  margin: 0;
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-xs);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--si-accent);
+}
+
+.si-rail__title {
+  margin: var(--cf-space-2xs) 0 var(--cf-space-sm);
+  font-family: var(--cf-font-display);
+  font-size: var(--cf-text-2xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.si-rail__text {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--cf-fg-dim);
+}
+
+/* ───────────────────────────── product cards ───────────────────────── */
+
+.si-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: var(--cf-space-xl);
+}
+
+.si-card {
+  display: flex;
+}
+
+/*
+ * The whole card is the link. A card with a link inside it gives a keyboard reader a small target
+ * inside a large clickable region, and gives a screen reader a link whose name is three words out
+ * of a card of twenty.
+ */
+.si-card__link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-lg);
+  width: 100%;
+  padding: var(--cf-space-2xl);
+  border: 1px solid var(--cf-line);
+  border-radius: var(--cf-radius-lg);
+  background: var(--cf-surface-solid);
+  color: inherit;
+  text-decoration: none;
+  /* The accent enters as a top edge rather than as a fill: five saturated panels on one page is a
+     colour chart, and the reader is meant to be reading names. */
+  border-top: 2px solid var(--si-accent);
+  transition: border-color var(--cf-speed) var(--cf-ease), transform var(--cf-speed) var(--cf-ease);
+}
+
+.si-card__link:hover {
+  border-color: var(--cf-line-strong);
+  border-top-color: var(--si-accent-hover);
+  transform: translateY(-2px);
+}
+
+.si-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-space-lg);
+}
+
+.si-card__verb {
+  margin: 0;
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-xs);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--si-accent);
+}
+
+.si-card__name {
+  margin: 0;
+  font-family: var(--cf-font-display);
+  font-size: var(--cf-text-2xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--cf-fg);
+}
+
+.si-card__blurb {
+  margin: 0;
+  flex: 1;
+  color: var(--cf-fg-dim);
+  font-size: var(--cf-text-lg);
+}
+
+.si-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cf-space-lg);
+}
+
+.si-card__more {
+  color: var(--si-accent);
+}
+
+.si-mark {
+  flex-shrink: 0;
+}
+
+.si-mark--glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--si-accent);
+}
+
+/* ─────────────────────────────── feature ───────────────────────────── */
+
+/* Hub's block on the products index: wider than a card, because it is not one of the five. */
+.si-feature {
+  padding: var(--cf-space-2xl);
+  border: 1px solid var(--cf-line);
+  border-left: 2px solid var(--si-accent);
+  border-radius: var(--cf-radius-lg);
+  background: var(--cf-surface-solid);
+}
+
+.si-feature__head {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-space-xl);
+  flex-wrap: wrap;
+}
+
+.si-feature__name {
+  margin: 0;
+  font-family: var(--cf-font-display);
+  font-size: var(--cf-text-3xl);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.si-feature__name a {
+  text-decoration: none;
+  color: var(--cf-fg);
+}
+
+.si-feature__name a:hover {
+  color: var(--si-accent);
+}
+
+.si-feature__blurb {
+  margin: var(--cf-space-2xs) 0 0;
+  color: var(--cf-fg-dim);
+}
+
+.si-feature__stage {
+  margin-left: auto;
+}
+
+.si-feature__note {
+  margin: var(--cf-space-xl) 0 0;
+  color: var(--cf-fg-dim);
+  max-width: 68ch;
+}
+
+/* ─────────────────────────────── stages ────────────────────────────── */
+
+/*
+ * Glyph, word, colour. The three chart status roles are reserved colours and are never a series
+ * colour anywhere in the system, which is exactly why they are right here: a reader who has seen
+ * amber on a chart already knows it means "not finished".
+ */
+.si-stage {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cf-space-xs);
+  padding: 0.1rem var(--cf-space-md);
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.si-stage--built {
+  color: var(--si-good);
+}
+
+.si-stage--in-build {
+  color: var(--si-warn);
+}
+
+.si-stage--not-built {
+  color: var(--cf-fg-mute);
+}
+
+.si-stage__glyph {
+  font-size: 0.9em;
+  line-height: 1;
+}
+
+/* ────────────────────────── lists and points ───────────────────────── */
+
+.si-points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--cf-space-2xl);
+}
+
+.si-points > li {
+  padding-top: var(--cf-space-xl);
+  border-top: 1px solid var(--cf-line);
+}
+
+.si-points__title {
+  margin: 0 0 var(--cf-space-sm);
+  font-size: var(--cf-text-xl);
+  font-weight: 600;
+}
+
+.si-points__body {
+  margin: 0;
+  color: var(--cf-fg-dim);
+  font-size: var(--cf-text-lg);
+}
+
+/*
+ * The principles, numbered.
+ *
+ * `counter-reset`/`counter-increment` rather than typed numbers, so a principle inserted in the
+ * middle renumbers the rest — the failure mode of typed ordinals is two number sevens.
+ */
+.si-numbered {
+  list-style: none;
+  counter-reset: si-n;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--cf-space-2xl);
+}
+
+@media (min-width: 55rem) {
+  .si-numbered {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.si-numbered > li {
+  counter-increment: si-n;
+  position: relative;
+  padding-left: var(--cf-space-3xl);
+}
+
+.si-numbered > li::before {
+  content: counter(si-n, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.15em;
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-sm);
+  color: var(--si-accent);
+}
+
+.si-numbered__title {
+  margin: 0 0 var(--cf-space-sm);
+  font-size: var(--cf-text-xl);
+  font-weight: 600;
+}
+
+.si-numbered__body {
+  margin: 0;
+  color: var(--cf-fg-dim);
+  font-size: var(--cf-text-lg);
+}
+
+/*
+ * The eleven statements.
+ *
+ * A plain <ol> — the semantics a screen reader wants — with the marker restyled as a monospace
+ * ordinal on a hairline. It is set close to a specification because that is what it is.
+ */
+.si-statements {
+  list-style: none;
+  counter-reset: si-s;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--cf-line);
+  max-width: 72ch;
+}
+
+.si-statements > li {
+  counter-increment: si-s;
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: var(--cf-space-lg);
+  padding: var(--cf-space-xl) 0;
+  border-bottom: 1px solid var(--cf-line);
+  font-size: var(--cf-text-xl);
+  line-height: 1.5;
+}
+
+.si-statements > li::before {
+  content: counter(si-s, decimal-leading-zero);
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-sm);
+  color: var(--si-accent);
+  padding-top: 0.35em;
+}
+
+.si-list {
+  margin: var(--cf-space-xl) 0 0;
+  padding: 0 0 0 var(--cf-space-xl);
+  color: var(--cf-fg-dim);
+  max-width: 68ch;
+}
+
+.si-list > li {
+  margin-bottom: var(--cf-space-sm);
+}
+
+/*
+ * The free-forever list. Two columns and a marker that is a glyph rather than a tick image —
+ * `list-style` on a `::marker` keeps it in the text stream, so it is selectable and it scales with
+ * the reader's font size.
+ */
+.si-list--check {
+  list-style: none;
+  padding-left: 0;
+  max-width: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--cf-space-sm) var(--cf-space-2xl);
+}
+
+.si-list--check > li {
+  padding-left: var(--cf-space-2xl);
+  position: relative;
+}
+
+.si-list--check > li::before {
+  content: '◆';
+  position: absolute;
+  left: 0;
+  color: var(--si-accent);
+  font-size: 0.7em;
+  top: 0.35em;
+}
+
+.si-list--links {
+  list-style: none;
+  padding-left: 0;
+  display: grid;
+  gap: var(--cf-space-md);
+}
+
+.si-list__note {
+  display: block;
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-md);
+}
+
+/* Product chips: a compact way back into the rest of the range. */
+.si-chips {
+  list-style: none;
+  margin: var(--cf-space-xl) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cf-space-lg);
+}
+
+.si-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cf-space-sm);
+  padding: var(--cf-space-sm) var(--cf-space-xl);
+  border: 1px solid var(--cf-line);
+  border-radius: 999px;
+  color: var(--cf-fg-dim);
+  font-size: var(--cf-text-lg);
+  text-decoration: none;
+}
+
+.si-chip:hover {
+  border-color: var(--si-accent);
+  color: var(--cf-fg);
+}
+
+/* ──────────────────────── callouts and quotes ──────────────────────── */
+
+/*
+ * The build page's "nothing is deployed" block. Solid amber border, because it is the one thing on
+ * that page a reader must not scroll past — and amber rather than red because it is a true
+ * statement about a plan, not a fault.
+ */
+.si-callout {
+  margin: var(--cf-space-3xl) 0 0;
+  padding: var(--cf-space-2xl);
+  border: 1px solid var(--si-warn);
+  border-radius: var(--cf-radius-lg);
+  background: color-mix(in srgb, var(--si-warn) 7%, transparent);
+  max-width: 72ch;
+}
+
+.si-callout__title {
+  margin: 0 0 var(--cf-space-lg);
+  font-family: var(--cf-font-display);
+  font-size: var(--cf-text-2xl);
+  font-weight: 700;
+  color: var(--cf-fg);
+}
+
+.si-callout p {
+  margin: 0 0 var(--cf-space-lg);
+  color: var(--cf-fg-dim);
+}
+
+.si-callout p:last-child {
+  margin-bottom: 0;
+}
+
+/* The one pulled-out sentence on the platform page. */
+.si-rule {
+  margin: 0 0 var(--cf-space-2xl);
+  padding: 0 0 0 var(--cf-space-2xl);
+  border-left: 2px solid var(--si-accent);
+  max-width: 64ch;
+}
+
+.si-rule p {
+  margin: 0;
+  font-family: var(--cf-font-display);
+  font-size: clamp(1.15rem, 1rem + 0.7vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--cf-fg);
+}
+
+/* ────────────────────────── the status list ────────────────────────── */
+
+.si-status {
+  margin: 0;
+  border-top: 1px solid var(--cf-line);
+}
+
+.si-status__row {
+  display: grid;
+  gap: var(--cf-space-sm) var(--cf-space-2xl);
+  padding: var(--cf-space-xl) 0;
+  border-bottom: 1px solid var(--cf-line);
+}
+
+@media (min-width: 55rem) {
+  .si-status__row {
+    grid-template-columns: minmax(14rem, 20rem) 1fr;
+    align-items: baseline;
+  }
+}
+
+.si-status__name {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-space-md);
+  flex-wrap: wrap;
+  font-weight: 600;
+}
+
+.si-status__name a {
+  text-decoration: none;
+  color: var(--cf-fg);
+}
+
+.si-status__name a:hover {
+  color: var(--si-accent);
+}
+
+.si-status__note {
+  margin: 0;
+  color: var(--cf-fg-dim);
+  max-width: 60ch;
+}
+
+/* ─────────────────────────────── legal ─────────────────────────────── */
+
+.si-notice {
+  margin: var(--cf-space-3xl) 0 0;
+  padding: var(--cf-space-2xl);
+  border: 1px solid var(--si-warn);
+  border-radius: var(--cf-radius-lg);
+  background: color-mix(in srgb, var(--si-warn) 7%, transparent);
+  max-width: 72ch;
+}
+
+.si-notice__title {
+  margin: 0 0 var(--cf-space-md);
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-sm);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--si-warn);
+}
+
+.si-notice p {
+  margin: 0 0 var(--cf-space-sm);
+  color: var(--cf-fg);
+}
+
+.si-notice__count {
+  color: var(--cf-fg-dim);
+  font-size: var(--cf-text-lg);
+}
+
+.si-legal {
+  display: grid;
+  gap: var(--cf-space-3xl);
+  max-width: 72ch;
+}
+
+.si-legal__title {
+  margin: 0 0 var(--cf-space-lg);
+  display: flex;
+  align-items: baseline;
+  gap: var(--cf-space-lg);
+  flex-wrap: wrap;
+  font-size: var(--cf-text-2xl);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.si-legal__text {
+  margin: 0 0 var(--cf-space-lg);
+  color: var(--cf-fg-dim);
+}
+
+/*
+ * An undrafted section, drawn as a hole.
+ *
+ * Dashed, so it reads as "unfinished" at a glance rather than as "finished, and brief". That
+ * difference matters more here than anywhere else on the site: the alternative reading of a short
+ * legal section is that the company limited its liability in one sentence.
+ */
+.si-legal__section--hole {
+  padding: var(--cf-space-2xl);
+  border: 1px dashed var(--cf-line-strong);
+  border-radius: var(--cf-radius-lg);
+}
+
+.si-legal__flag {
+  padding: 0.1rem var(--cf-space-md);
+  border: 1px solid var(--si-warn);
+  border-radius: 999px;
+  color: var(--si-warn);
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-xs);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.si-legal__outstanding {
+  margin: 0;
+  color: var(--cf-fg-mute);
+}
+
+.si-legal__label {
+  color: var(--cf-fg-dim);
+  font-weight: 600;
+}
+
+/* ────────────────────────────── closing ────────────────────────────── */
+
+.si-closing {
+  padding: clamp(2.5rem, 6vw, 4.5rem) 0;
+  text-align: center;
+}
+
+.si-closing__body {
+  max-width: 56ch;
+  margin: var(--cf-space-xl) auto var(--cf-space-3xl);
+  color: var(--cf-fg-dim);
+  font-size: var(--cf-text-xl);
+  line-height: 1.65;
+}
+
+/* ─────────────────────────────── 404 ───────────────────────────────── */
+
+.si-notfound {
+  padding: clamp(3rem, 8vw, 5rem) 0 var(--cf-space-3xl);
+}
+
+/* ────────────────────────────── footer ─────────────────────────────── */
+
+.si-footer {
+  border-top: 1px solid var(--cf-line);
+  background: var(--cf-bg-sunken);
+}
+
+.si-footer__inner {
+  max-width: var(--cf-max-w);
+  margin: 0 auto;
+  padding: var(--cf-space-3xl) var(--cf-space-xl);
+}
+
+.si-footer__cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--cf-space-3xl);
+}
+
+.si-footer__title {
+  margin: 0 0 var(--cf-space-lg);
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-xs);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cf-fg-mute);
+  font-weight: 400;
+}
+
+.si-footer__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--cf-space-sm);
+}
+
+.si-footer__list a {
+  color: var(--cf-fg-dim);
+  text-decoration: none;
+  font-size: var(--cf-text-lg);
+}
+
+.si-footer__list a:hover {
+  color: var(--si-accent);
+  text-decoration: underline;
+}
+
+.si-footer__note {
+  margin: var(--cf-space-3xl) 0 0;
+  padding-top: var(--cf-space-2xl);
+  border-top: 1px solid var(--cf-line);
+  max-width: 72ch;
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-md);
+}
+
+.si-footer__note strong {
+  color: var(--cf-fg-dim);
+}
+
+/* ──────────────────────────── motion ───────────────────────────────── */
+
+/*
+ * A reader who has asked for less motion gets none. The only two moving things on this site are
+ * the card lift and the skip link's slide, and both are decoration.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .si-card__link:hover {
+    transform: none;
+  }
+}
