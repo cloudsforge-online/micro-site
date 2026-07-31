@@ -126,10 +126,40 @@ jobs:
         # A literal hostname is a second, unversioned copy of the surface registry, and the copy is
         # the one that will be wrong. This surface holds more outbound links to more surfaces than
         # any product does, so it is the one where a typed hostname is most likely and most costly.
+        #
+        # Comments are stripped first, for the same reason the 404 step below strips them, and this
+        # repository is the proof: src/lib/hosts.ts explains the rule by quoting a hostname it must
+        # never contain, so the raw grep failed the build on the file that documents the rule it
+        # enforces. That pattern has now appeared five times across this estate — an nginx header, a
+        # service comment naming a database, a test naming a variable it proves is ignored — and it
+        # is always the same trade: the check keeps its teeth and loses its ability to read English,
+        # or somebody deletes the explanation. Stripping comments is how you get both.
         run: |
           set -uo pipefail
-          if grep -rn --include='*.ts' --include='*.tsx' 'cloudsforge\.online' src; then
+          scan=$(mktemp -d)
+          while IFS= read -r f; do
+            mkdir -p "$scan/$(dirname "$f")"
+            awk '
+              { line = $0; out = ""
+                while (length(line) > 0) {
+                  if (inblock) {
+                    i = index(line, "*/")
+                    if (i == 0) { line = ""; break }
+                    inblock = 0; line = substr(line, i + 2); continue
+                  }
+                  b = index(line, "/*"); l = index(line, "//")
+                  if (l > 0 && (b == 0 || l < b)) { out = out substr(line, 1, l - 1); line = ""; break }
+                  if (b > 0) { out = out substr(line, 1, b - 1); line = substr(line, b + 2); inblock = 1; continue }
+                  out = out line; line = ""
+                }
+                print out
+              }' "$f" > "$scan/$f"
+          done < <(find src -type f \( -name '*.ts' -o -name '*.tsx' \) -print)
+
+          hits=$(grep -rn 'cloudsforge\.online' "$scan" || true)
+          if [ -n "$hits" ]; then
             echo "::error::resolve hosts through cloudsforgeHosts() rather than naming them"
+            echo "$hits"
             exit 1
           fi
           echo "ok: no literal hostnames in src"
