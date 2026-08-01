@@ -271,6 +271,47 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
   },
 
   {
+    key: 'foresight',
+    slug: 'foresight',
+    eyebrow: 'Foresight',
+    headline: 'Stake on what happens next, settled on chain',
+    standfirst: [
+      'Markets on future events, staked in EMBER and settled by the contract that holds the pool. The platform proposes questions and a person opens them, because a resolution criterion is a contract with strangers and someone has to be accountable for its wording.',
+    ],
+    blurb:
+      'Parimutuel markets on future events. Stakes go to the contract, not to us; payouts come from the pool, not from our balance sheet. Odds are the pool ratio, and they move until it closes.',
+    stage: 'in-build',
+    stageNote:
+      'The service and the contract are written and tested, including the arithmetic that proves fee plus every payout plus the residue equals the pool exactly. Nothing is deployed to a live chain.',
+    sections: [
+      {
+        title: 'The contract holds the money, not the platform',
+        body: [
+          'A stake goes from a wallet to the market contract and never passes through our service. What we keep is a mirror of the chain, used to browse and to notify — so if that mirror is wrong, or gone, the stakes are still in the contract and every winner can still claim from it directly.',
+          'That is the difference between a prediction market and a bookmaker. There is no house balance to pay you from, and no way for us to be the reason a settled market does not pay.',
+        ],
+      },
+      {
+        title: 'Odds are the pool, and the pool is the odds',
+        body: [
+          'This is parimutuel: your return depends on the size of the pool when the market closes, not on a price quoted when you staked. The interface shows the pools that produce the odds and says plainly that they will move, because an odds figure presented as a guaranteed return is the one number a market like this can most easily lie with.',
+          'A stake you are about to place is added to the pool it would be paid from before the projection is drawn — otherwise the number shown is roughly a third too generous.',
+        ],
+      },
+      {
+        title: 'A model proposes; a person opens',
+        body: [
+          'Candidate questions are drafted by searching the web and asking a model, and every draft carries the query, the sources and the model that produced it. None of that can open a market. An operator reads the sources and approves, edits or discards it.',
+          'The resolution source is named when the market opens, not chosen when it resolves. If that source is gone at resolution the market is void and refunds whole — no fee — rather than being settled on someone\'s judgement of what probably happened.',
+        ],
+      },
+    ],
+    linkTo: 'foresight',
+    linkLabel: 'Forge Foresight',
+    ogImage: '/og/foresight.png',
+  },
+
+  {
     key: 'market',
     slug: 'market',
     eyebrow: 'Sell',

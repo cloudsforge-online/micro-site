@@ -104,7 +104,7 @@ export const CLAIMS = {
     source: 'contracts/packages/chain/src/index.ts:120-126 — ON_CHAIN_ASSETS',
   },
   products: {
-    rendered: '5',
+    rendered: '6',
     meaning:
       'Products in the surface registry. Never written as a digit in copy — it is counted from PRODUCTS at runtime and spelled as a word, so a sixth product is a registry entry rather than a copy-editing pass. The entry exists so the count has a source, and so the test that compares it to the registry has something to compare.',
     source: '@cloudsforge/ui — PRODUCTS, derived from SURFACES in ui/packages/ui/src/surfaces.ts',

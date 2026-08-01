@@ -85,6 +85,7 @@ export function accentProps(key: SurfaceKey): { 'data-cf-product': SurfaceKey } 
 export const SCOPED_SURFACES: readonly SurfaceKey[] = [
   'site',
   'hub',
+  'foresight',
   'network',
   'trade',
   'create',
