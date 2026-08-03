@@ -1,5 +1,11 @@
 # micro-site
 
+[![ci](https://github.com/cloudsforge-online/micro-site/actions/workflows/ci.yml/badge.svg)](https://github.com/cloudsforge-online/micro-site/actions/workflows/ci.yml)
+![node](https://img.shields.io/badge/node-%3E%3D22-5FA04E?logo=node.js&logoColor=white)
+![typescript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![module](https://img.shields.io/badge/module-ESM-F7DF1E?logo=javascript&logoColor=black)
+![tests](https://img.shields.io/badge/tests-headless%20Chromium-2EAD33?logo=googlechrome&logoColor=white)
+
 The CloudsForge marketing site. What the platform is, what each product does, and — on a page of
 its own, linked from the front door — what is actually built.
 
@@ -334,3 +340,10 @@ When the package is published, all three become a registry version and nothing e
 
 That is all. The grid, the footer, the 404's list, the build page's table, the routes and the
 metadata are all derived — and if you miss step 2, 3 or 4, a test tells you which one.
+
+---
+
+## Provenance
+
+The code in this repository was written by **Claude Opus 5** and **Claude Fable 5**, assets
+generated with **FLUX 2 Pro**, under human direction and review.
