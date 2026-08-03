@@ -18,7 +18,7 @@
  */
 import assert from 'node:assert/strict'
 import { PRODUCTS, SWITCHER_SURFACES } from '@cloudsforge/ui'
-import { assertMounted, open, type Stubs } from './browser.ts'
+import { assertMounted, renderOnlyWithStubbedNetwork, type Stubs } from './browser.ts'
 import { assertAxeClean, assertKnownStillBroken, textOrder, type KnownViolation } from './axe.ts'
 import type { Scenario } from './scenario.ts'
 import { PRODUCT_PAGES } from '../../src/content/products.ts'
@@ -123,7 +123,7 @@ export const CATALOGUE: readonly Scenario[] = [
       // The 404 still serves the app shell, so the reader gets a real page and the status line
       // tells the truth. A "page not found" screen delivered as a success is a document crawlers
       // are entitled to index.
-      const session = await open(surface.origin, { path: '/products/pay', stubs: ANONYMOUS })
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, { path: '/products/pay', stubs: ANONYMOUS })
       try {
         assert.equal(session.status, 404)
         await assertMounted(session, { showing: ['There is no page at this address'] })
@@ -141,7 +141,7 @@ export const CATALOGUE: readonly Scenario[] = [
     asserts: 'presentation',
     gate: true,
     async run(surface) {
-      const session = await open(surface.origin, { stubs: ANONYMOUS })
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, { stubs: ANONYMOUS })
       try {
         const text = await assertMounted(session, {
           showing: [HOME.spine, HOME.loop.title, HOME.spans.title],
@@ -173,7 +173,7 @@ export const CATALOGUE: readonly Scenario[] = [
     asserts: 'presentation',
     gate: true,
     async run(surface) {
-      const session = await open(surface.origin, { path: '/build', stubs: ANONYMOUS })
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, { path: '/build', stubs: ANONYMOUS })
       try {
         await assertMounted(session, { showing: [BUILD.honesty.title, 'Surface by surface'] })
 
@@ -230,7 +230,7 @@ export const CATALOGUE: readonly Scenario[] = [
     asserts: 'presentation',
     gate: true,
     async run(surface) {
-      const index = await open(surface.origin, { path: '/products', stubs: ANONYMOUS })
+      const index = await renderOnlyWithStubbedNetwork(surface.origin, { path: '/products', stubs: ANONYMOUS })
       try {
         await assertMounted(index)
         // The count is the assertion: a hand-maintained card is the failure. It is compared to
@@ -252,7 +252,7 @@ export const CATALOGUE: readonly Scenario[] = [
       // …and every card's destination renders. A grid of cards linking to a 404 is worse than no
       // grid, and this is the surface where a broken outbound link is most expensive.
       for (const page of PRODUCT_PAGES) {
-        const session = await open(surface.origin, { path: `/products/${page.slug}`, stubs: ANONYMOUS })
+        const session = await renderOnlyWithStubbedNetwork(surface.origin, { path: `/products/${page.slug}`, stubs: ANONYMOUS })
         try {
           await assertMounted(session, { showing: [page.stageNote] })
         } finally {
@@ -269,7 +269,7 @@ export const CATALOGUE: readonly Scenario[] = [
     tier: 1,
     asserts: 'presentation',
     async run(surface) {
-      const session = await open(surface.origin, { path: '/platform', stubs: ANONYMOUS })
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, { path: '/platform', stubs: ANONYMOUS })
       try {
         await assertMounted(session)
         const items = await session.page.locator('.si-statements li').allInnerTexts()
@@ -313,7 +313,7 @@ export const CATALOGUE: readonly Scenario[] = [
       'content this repository owns, in src/content/pages.ts. No request is made and no service ' +
       'refuses anything.',
     async run(surface) {
-      const session = await open(surface.origin, { path: '/about', stubs: ANONYMOUS })
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, { path: '/about', stubs: ANONYMOUS })
       try {
         await assertMounted(session, { showing: [ABOUT.principles.title, ABOUT.rejects.title] })
         const text = await session.page.evaluate(() => document.body.innerText)
@@ -344,7 +344,7 @@ export const CATALOGUE: readonly Scenario[] = [
     gate: true,
     async run(surface) {
       for (const page of LEGAL_PAGES) {
-        const session = await open(surface.origin, { path: `/${page.slug}`, stubs: ANONYMOUS })
+        const session = await renderOnlyWithStubbedNetwork(surface.origin, { path: `/${page.slug}`, stubs: ANONYMOUS })
         try {
           await assertMounted(session, { showing: [page.notice] })
           // The notice is a landmark with an accessible name, not just a paragraph: `role="note"`
@@ -408,7 +408,7 @@ export const CATALOGUE: readonly Scenario[] = [
     // cluttered with three entries they cannot open.
     async run(surface) {
       const openSwitcher = async (roles: readonly string[]): Promise<string[]> => {
-        const session = await open(surface.origin, {
+        const session = await renderOnlyWithStubbedNetwork(surface.origin, {
           storage: roles.length > 0 ? SIGNED_IN : {},
           stubs: AS(roles),
         })
@@ -450,7 +450,7 @@ export const CATALOGUE: readonly Scenario[] = [
     tier: 1,
     asserts: 'presentation',
     async run(surface) {
-      const session = await open(surface.origin, { storage: SIGNED_IN, stubs: AS(['user', 'admin']) })
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, { storage: SIGNED_IN, stubs: AS(['user', 'admin']) })
       try {
         await assertMounted(session)
         await session.page.locator('button[aria-haspopup="menu"]').first().click()
@@ -489,7 +489,7 @@ export const CATALOGUE: readonly Scenario[] = [
     tier: 1,
     asserts: 'client-request',
     async run(surface) {
-      const session = await open(surface.origin, {
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, {
         path: '/#cf_code=handoff-code-123',
         stubs: [
           ['POST /auth/handoff/redeem', { json: { accessToken: 'a', refreshToken: 'r' } }],
@@ -520,7 +520,7 @@ export const CATALOGUE: readonly Scenario[] = [
     // request actually happens — a URL assembled at runtime is invisible to a grep.
     async run(surface) {
       for (const path of ['/', '/products', '/platform', '/build', '/about', '/terms', '/privacy']) {
-        const session = await open(surface.origin, { path, stubs: ANONYMOUS })
+        const session = await renderOnlyWithStubbedNetwork(surface.origin, { path, stubs: ANONYMOUS })
         try {
           await assertMounted(session)
           const outside = session
@@ -546,7 +546,7 @@ export const CATALOGUE: readonly Scenario[] = [
     async run(surface) {
       const seen = new Set<string>()
       for (const path of [...OWNED, '/nope']) {
-        const session = await open(surface.origin, { path, stubs: ANONYMOUS })
+        const session = await renderOnlyWithStubbedNetwork(surface.origin, { path, stubs: ANONYMOUS })
         try {
           await assertMounted(session)
           for (const id of await assertAxeClean(session.page, path, UI_CONTRAST)) seen.add(id)
@@ -564,7 +564,7 @@ export const CATALOGUE: readonly Scenario[] = [
     asserts: 'presentation',
     async run(surface) {
       for (const path of OWNED) {
-        const session = await open(surface.origin, { path, stubs: ANONYMOUS })
+        const session = await renderOnlyWithStubbedNetwork(surface.origin, { path, stubs: ANONYMOUS })
         try {
           await assertMounted(session)
           const structure = await session.page.evaluate(() => ({
