@@ -167,6 +167,32 @@ export const CATALOGUE: readonly Scenario[] = [
       const session = await open(surface.origin, { path: '/build', stubs: ANONYMOUS })
       try {
         await assertMounted(session, { showing: [BUILD.honesty.title, 'Surface by surface'] })
+
+        /*
+         * A LITERAL, NOT THE IMPORTED CONSTANT — and the distinction is the point.
+         *
+         * Everything else in this scenario compares the rendered page against `BUILD`, the module
+         * the page renders FROM. That catches a page that stops rendering the block, truncates it
+         * or reorders it, and it cannot catch the copy being softened: rewriting `pages.ts`
+         * rewrites both sides of the comparison and stays green. This surface's whole argument is
+         * that it says "Nothing is deployed" ON THE FRONT DOOR, so that one sentence is written
+         * out here. Changing it now takes a deliberate edit in two files, which is exactly the
+         * amount of friction a claim like this deserves.
+         */
+        // Scoped to the callout, not to the page. The first version of this searched the whole
+        // body and passed after the callout's title was softened, because "Nothing is deployed"
+        // also appears in two product stage notes further down — a literal anchor in the wrong
+        // scope is just a self-referential assertion with extra steps. Proven by softening the
+        // title and watching this go red.
+        const callout = await session.page.locator('.si-callout').first().innerText()
+        assert.ok(
+          callout.includes('Nothing is deployed'),
+          `the honesty block no longer says, in those words, that nothing is deployed. It says: ${callout.slice(0, 200)}`,
+        )
+        assert.ok(
+          /Not one of them is running/.test(callout),
+          'the honesty block no longer says that not one service is running',
+        )
         // ABOVE the table, not below it. A crypto front door that implies everything on it is
         // running is the failure this page exists to avoid, and a caveat under the status list is
         // one a reader reaches after they have already formed the impression.
@@ -248,6 +274,19 @@ export const CATALOGUE: readonly Scenario[] = [
             `this statement is not on the page verbatim: ${statement.slice(0, 70)}…`,
           )
         }
+        // Two of the eleven, written out rather than imported. The loop above compares the page to
+        // the module it renders from, so it proves the list is COMPLETE and cannot prove it still
+        // says what it said: rewriting `pages.ts` moves both sides together. The first statement
+        // is the definition's opening claim and the last is the one most likely to be quietly
+        // dropped, because it is the one about third parties and it is not true yet.
+        assert.ok(
+          items.some((i) => i.trim() === 'One account signs into everything, once.'),
+          'the first "one platform" statement has been reworded',
+        )
+        assert.ok(
+          items.some((i) => i.trim() === 'A third party can build on all of it.'),
+          'the statement about third parties is gone — it is the one that is not true yet',
+        )
       } finally {
         await session.close()
       }

@@ -154,6 +154,112 @@ export async function textOrder(page: Page, first: string, second: string): Prom
 }
 
 /**
+ * The skip link, asserted the way a keyboard reader meets it.
+ *
+ * Three things, and only the third can go wrong invisibly:
+ *
+ *   1. Pressing `Tab` once from the top of the document focuses it. Reading `querySelector('a')`
+ *      would prove DOCUMENT order, which is a different thing — a `tabindex`, an `inert` ancestor
+ *      or a focus trap changes one without changing the other.
+ *   2. It points at a landmark that is actually on the page.
+ *   3. It is off-screen until focused and **inside the viewport** once it is. A skip link that
+ *      stays hidden when focused is worse than none: the reader activates it and cannot tell
+ *      whether anything happened.
+ *
+ * The third is checked as "is the box inside the viewport", not as "did `top` increase", because
+ * surfaces move it on different axes — `site` slides it down, `network-site` slides it in from
+ * the left. Asserting an axis would assert one implementation and fail a correct alternative,
+ * which is how a guard ends up being deleted rather than satisfied.
+ */
+export async function assertSkipLink(page: Page, where: string, target = '#main'): Promise<void> {
+  const inViewport = () =>
+    page.evaluate(() => {
+      const el = document.activeElement as HTMLElement | null
+      if (!el || el === document.body) return null
+      const box = el.getBoundingClientRect()
+      return {
+        href: el.getAttribute('href'),
+        onScreen:
+          box.width > 0 &&
+          box.height > 0 &&
+          box.right > 0 &&
+          box.bottom > 0 &&
+          box.left < window.innerWidth &&
+          box.top < window.innerHeight,
+      }
+    })
+
+  const hidden = await page.evaluate(() => {
+    const first = document.body.querySelector('a[href]')
+    if (!first) return null
+    const box = first.getBoundingClientRect()
+    return box.right > 0 && box.bottom > 0 && box.left < window.innerWidth && box.top < window.innerHeight
+  })
+  if (hidden === null) throw new Error(`${where}: the page has no links at all`)
+
+  await page.keyboard.press('Tab')
+  const focused = await inViewport()
+  if (!focused) throw new Error(`${where}: pressing Tab from the top of the document focused nothing`)
+  if (focused.href !== target) {
+    throw new Error(`${where}: the first thing Tab reaches is ${focused.href}, not the skip link ${target}`)
+  }
+
+  const exists = await page.evaluate((sel: string) => Boolean(document.querySelector(sel)), target)
+  if (!exists) throw new Error(`${where}: the skip link points at ${target}, which is not on the page`)
+
+  // The move may be a CSS transition, so it is waited for rather than read once.
+  const arrived = await page
+    .waitForFunction(
+      () => {
+        const el = document.activeElement as HTMLElement | null
+        if (!el) return false
+        const box = el.getBoundingClientRect()
+        return (
+          box.width > 0 &&
+          box.height > 0 &&
+          box.right > 0 &&
+          box.bottom > 0 &&
+          box.left < window.innerWidth &&
+          box.top < window.innerHeight
+        )
+      },
+      undefined,
+      { timeout: 3_000 },
+    )
+    .then(() => true)
+    .catch(() => false)
+  if (!arrived) throw new Error(`${where}: the skip link never came into view while focused`)
+  if (hidden) throw new Error(`${where}: the skip link is on screen before it is focused`)
+}
+
+/**
+ * One `main` landmark, and a heading order with no level skipped.
+ *
+ * A skipped level is not a style question: a screen-reader user navigating by heading is told the
+ * document has a structure it does not have, and an h1 that is not first means the page never
+ * announces what it is.
+ */
+export async function assertLandmarks(page: Page, where: string): Promise<void> {
+  // Wait for the first heading before measuring. These pages fetch before they render their own
+  // head, so a check taken at mount time reads the shell alone and reports "no headings at all" on
+  // a page that has one. If none ever arrives the wait expires and the assertion below fires with
+  // the same message — the wait changes when the answer is read, never what counts as an answer.
+  await page.waitForSelector('h1', { timeout: 10_000 }).catch(() => undefined)
+  const structure = await page.evaluate(() => ({
+    mains: document.querySelectorAll('main').length,
+    levels: [...document.querySelectorAll('h1,h2,h3,h4,h5,h6')].map((h) => Number(h.tagName.slice(1))),
+  }))
+  if (structure.mains !== 1) throw new Error(`${where}: ${structure.mains} main landmarks`)
+  if (structure.levels.length === 0) throw new Error(`${where}: no headings at all`)
+  if (structure.levels[0] !== 1) throw new Error(`${where}: opens with h${structure.levels[0]}, not h1`)
+  let previous = 0
+  for (const level of structure.levels) {
+    if (level > previous + 1) throw new Error(`${where}: jumps from h${previous} to h${level}`)
+    previous = level
+  }
+}
+
+/**
  * The tab order, as a list of accessible names.
  *
  * Used by the keyboard-only scenarios. Reads `document.activeElement` after each `Tab`, which is
