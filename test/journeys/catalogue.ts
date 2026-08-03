@@ -28,15 +28,24 @@ import { ABOUT, BUILD, HOME, PLATFORM } from '../../src/content/pages.ts'
 /**
  * Nothing. Deliberately, and it is worth saying why the list is here and empty.
  *
- * The estate has one design-system contrast defect: `--cf-fg-mute` is `#63757a`, which measures
- * 3.54:1 on micro-ui's panel and tile surfaces — under the 4.5:1 WCAG AA threshold for normal
- * text. `web-template` and any surface using `@cloudsforge/ui/charts` carries it and records it as
- * a known violation owned by micro-ui.
+ * This block used to describe a live defect in the present tense: "the estate has one
+ * design-system contrast defect: `--cf-fg-mute` is `#63757a`, which measures 3.54:1 … `web-
+ * template` and any surface using `@cloudsforge/ui/charts` carries it and records it as a known
+ * violation owned by micro-ui." That has not been true since micro-ui `2f990be` raised the cool
+ * ramp's `--cf-khaki` to `#7d9399` (5.29:1) and `--cf-bone-dim` to `#abbcbd` alongside it. No
+ * surface in the estate records that entry any more, and prose calling a fixed defect live, above
+ * an empty array, is how somebody later decides the array is the part that is wrong.
  *
- * THIS SURFACE DOES NOT. It renders no chart tile and its own `si-` styles clear the threshold, so
- * the sweep below runs with no exclusion at all. That was established by starting with the
- * exclusion in place and watching `assertKnownStillBroken` reject it — which is the same mechanism
- * that will reject it on the other surfaces the day micro-ui raises the token.
+ * What is still true, and is the reason the empty list is worth more than no list: this surface
+ * renders no chart tile and its own `si-` styles clear the threshold, so the sweep below runs with
+ * no exclusion at all — and that was established by starting WITH the exclusion in place and
+ * watching `assertKnownStillBroken` reject it. It is the same mechanism that reddened two other
+ * repositories the day micro-ui raised the token, which is what an exclusion list is for.
+ *
+ * An entry now costs a `selector` naming the element as well as the `rule`. Keying by rule alone
+ * was a blanket: one entry excused every violation of that rule id on the surface, and a sibling
+ * frontend carried a 4.44:1 link behind an entry written for something else for months. See
+ * axe.ts.
  */
 const UI_CONTRAST: readonly KnownViolation[] = []
 
