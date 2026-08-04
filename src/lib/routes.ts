@@ -63,13 +63,24 @@ export const ROUTES: readonly SiteRoute[] = [
      *
      * Deliberate, and it is the one place the rename stops. The owner's instruction was to speak
      * of an ecosystem rather than of products, and the copy does throughout. The URL does not,
-     * because this path is not only ours: `@cloudsforge/ui` renders the shared footer on every
-     * surface in the estate and links `/products` from it, and that package is another agent's to
-     * change. Renaming the route here would 404 a link on sixteen surfaces to save a word in an
-     * address bar.
+     * because a redirect is NOT available as a softener here: this site's whole position is that
+     * an unknown address answers 404 rather than 200 (see the header of this file), so renaming
+     * the route turns every link anybody already holds — `/products`, and the seven
+     * `/products/<key>` pages nginx enumerates — into a 404, to save a word in an address bar.
      *
-     * The order to do it in is registry first, site second — and a redirect is NOT the answer,
-     * because this site's whole position is that an unknown address answers 404 rather than 200.
+     * ── ONE REASON THAT USED TO BE GIVEN HERE IS NOT TRUE, AND IS REMOVED RATHER THAN KEPT ────
+     *
+     * It said the rename was blocked because "`@cloudsforge/ui` renders the shared footer on every
+     * surface in the estate and links `/products` from it", so a rename would 404 a link on
+     * sixteen surfaces. **The shared footer links no `/products` path at all.** Its three
+     * navigation columns are surface HOSTNAMES resolved through `cloudsforgeHosts()`, and its only
+     * two site-relative links are `/terms` and `/privacy` (`ui/packages/ui/src/index.tsx:884-887`,
+     * and the fourth column at :1008-1021). Nothing outside this repository links `/products`;
+     * `micro-billing`'s `/products` is an unrelated API route.
+     *
+     * The conclusion survives the correction — the inbound links are reason enough — but the
+     * dependency did not exist, and a false reason is worse than a thin one: it names a party
+     * whose agreement would have to be sought before this could ever be done.
      */
     path: 'products',
     label: 'Ecosystem',

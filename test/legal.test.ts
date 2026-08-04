@@ -32,7 +32,7 @@ import { extname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, it } from 'node:test'
 import { LEGAL_PAGES, PRIVACY, TERMS, hasOutstanding, legalPage } from '../src/content/legal.ts'
-import { LEGAL_PATHS } from '../src/lib/routes.ts'
+import { LEGAL_PATHS, ROUTES } from '../src/lib/routes.ts'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 
@@ -40,6 +40,29 @@ describe('the legal pages', () => {
   it('exist, and are the ones the router serves', () => {
     assert.equal(LEGAL_PAGES.length, LEGAL_PATHS.length)
     for (const path of LEGAL_PATHS) assert.ok(legalPage(path), `no content for /${path}`)
+  })
+
+  it('are called the same thing by the page and by the link every surface renders', () => {
+    /*
+     * A legal route carries no nav `label`, so the link text for it is the clause of its `summary`
+     * before the em dash — `src/components/shell.tsx` derives this site's own footer links that
+     * way, and `@cloudsforge/ui`'s FOOTER_LEGAL_LINKS restates the same two strings for the shared
+     * footer that fifteen other surfaces render. The page's own `title` is a THIRD copy, and
+     * nothing tied it to the other two: `/terms` could have been retitled here and gone on being
+     * linked as "Terms of service" from every surface in the estate, with no test going red.
+     *
+     * `ui/packages/ui/src/footer.test.ts` now pins the shared footer to the summary clause. This is
+     * the other half of that seam — the clause to the heading a reader actually lands on.
+     */
+    for (const page of LEGAL_PAGES) {
+      const route = ROUTES.find((r) => r.path === page.slug)
+      assert.ok(route, `/${page.slug} is not routed`)
+      assert.equal(
+        route.summary.split(' — ')[0],
+        page.title,
+        `/${page.slug} is titled "${page.title}" and linked as something else`,
+      )
+    }
   })
 
   it('are lookupable by slug and nothing else', () => {

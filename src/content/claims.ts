@@ -60,12 +60,25 @@
  * They were then re-pinned to the lines true at `micro-contracts` HEAD, which is what CI reads and
  * what a reader following a citation on GitHub is shown — and this check went red AGAIN thirty
  * minutes later, because the migration had by then landed and HEAD had moved for real. The four
- * numbers below are those of `micro-contracts@218300b`, verified by resolving the registry against
- * the committed file rather than against the working tree.
+ * numbers were then re-pinned to `micro-contracts@218300b` — verified by resolving the registry
+ * against the committed file rather than against the working tree — and stayed there until the
+ * re-pin recorded in the next paragraph, which is where the numbers below now come from.
  *
  * That second red run is the check doing its job, not failing at it: it is a coordination signal
  * between two repositories being changed at once, and the correct response is to look at what
  * moved rather than to silence it.
+ *
+ * ── RE-PINNED A THIRD TIME, TO `micro-contracts@326de9d`, BY THE RULE BELOW ────────────────────
+ *
+ * The same four citations went stale again — by 64 to 75 lines — and this check was red on `main`
+ * for it. One commit moved them: `326de9d` ("a testnet explorer link no longer opens the mainnet
+ * explorer"), which inserted an explorer field, its documentation and a guard above `CHAINS`.
+ *
+ * The rule stated below was applied BEFORE editing, because the trap it describes is the one that
+ * makes these two cases indistinguishable: `micro-contracts` was confirmed clean
+ * (`git status --short` empty, `git diff HEAD` on the cited file empty) and its HEAD confirmed
+ * equal to `origin/main` at `326de9d`, so the numbers here are those of the committed file that CI
+ * checks out — not of a working tree only this machine can see.
  *
  * **The rule that follows: never re-pin a citation without confirming the cited repository is
  * clean, and pin against `git show origin/main:<path>` rather than against what is on disk.** A red
@@ -147,25 +160,25 @@ export const CLAIMS = {
   emberConfirmations: {
     rendered: '60',
     meaning: 'Blocks an EMBER deposit waits before it is spendable.',
-    source: 'contracts/packages/chain/src/index.ts:123 — CHAINS.EMBER.confirmations',
+    source: 'contracts/packages/chain/src/index.ts:197 — CHAINS.EMBER.confirmations',
   },
   emberConfirmationMinutes: {
     rendered: '15',
     meaning:
       'The same depth said as a wait, and the block time it is computed from — 60 blocks at 15 seconds is 15 minutes, which is the one coincidence in this register and is why the derivation recomputes it rather than reading it back. "60 blocks" tells a reader nothing.',
     source:
-      'contracts/packages/chain/src/index.ts:113 — "~15 minutes at a 15-second block time", the depth Hearth publishes to exchanges in its docs/exchange-integration.md §4',
+      'contracts/packages/chain/src/index.ts:187 — "~15 minutes at a 15-second block time", the depth Hearth publishes to exchanges in its docs/exchange-integration.md §4',
   },
   emberReorgAlarmDepth: {
     rendered: '5',
     meaning:
       'A reorg this deep halts crediting for the chain and pages an operator. Deliberately below the credit depth: a shallower reorg cannot have produced a wrong credit.',
-    source: 'contracts/packages/chain/src/index.ts:124 — CHAINS.EMBER.reorgAlarmDepth',
+    source: 'contracts/packages/chain/src/index.ts:198 — CHAINS.EMBER.reorgAlarmDepth',
   },
   chains: {
     rendered: '5',
     meaning: 'On-chain assets the platform custodies: EMBER, BTC, ETH, SOL and XRP.',
-    source: 'contracts/packages/chain/src/index.ts:196-202 — ON_CHAIN_ASSETS',
+    source: 'contracts/packages/chain/src/index.ts:271-277 — ON_CHAIN_ASSETS',
   },
   products: {
     rendered: '6',
