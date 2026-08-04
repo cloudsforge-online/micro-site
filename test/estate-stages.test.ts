@@ -29,8 +29,8 @@
  *               file, AND the surface key is one the smoke tier drives.
  *   `tested`    neither of the above. The code passes its own tests somewhere else; nothing here
  *               runs it where a person could reach it.
- *   `open`      the surface has a hostname in `PUBLIC_AT` and that name is published by the
- *               estate's own mainnet Cloudflare Tunnel configuration.
+ *   `open`      the surface is listed in `PUBLIC_SURFACES` and the hostname derived for it is
+ *               published by the estate's own mainnet Cloudflare Tunnel configuration.
  *
  * Both halves of `running` are required and neither is sufficient. A service in a compose file
  * proves something was meant to run; only the smoke tier proves a person could have opened it, and
@@ -56,7 +56,7 @@
  * The tunnel configuration is the right source because it is CAUSAL: that file is what makes the
  * address exist, so it cannot agree with a surface that is not really published. It is still not
  * sufficient on its own — a name can be configured and have no DNS record, which is true right now
- * of `worlds-api.cloudsforge.online` — so `test/public-endpoints.test.ts` fetches each one.
+ * of the estate's own `worlds-api` name — so `test/public-endpoints.test.ts` fetches each one.
  */
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
@@ -64,8 +64,9 @@ import { fileURLToPath } from 'node:url'
 import { describe, it } from 'node:test'
 import { PRODUCT_PAGES } from '../src/content/products.ts'
 import { BUILD } from '../src/content/pages.ts'
+import { surface, type SurfaceKey } from '@cloudsforge/ui'
 import {
-  PUBLIC_AT,
+  PUBLIC_SURFACES,
   RUNS_ON,
   SELF_CUSTODY_REPOS,
   STAGE_GLYPH,
@@ -158,6 +159,28 @@ export function tunnelHostnames(text: string): Set<string> {
     if (match?.[1]) out.add(match[1])
   }
   return out
+}
+
+/**
+ * The apex the estate publishes on, read out of its own tunnel configuration.
+ *
+ * Derived as the shortest name present, rather than written down. Every other hostname in that
+ * file is a subdomain of it, so the apex is the one with the fewest labels — and deriving it is
+ * what keeps the literal string out of this repository, which is the rule `PUBLIC_SURFACES`
+ * exists to respect. A hard-coded apex here would reintroduce exactly the second copy that CI
+ * rejected the first draft of this change for.
+ */
+export function apexOf(hostnames: ReadonlySet<string>): string {
+  const sorted = [...hostnames].sort((a, b) => a.split('.').length - b.split('.').length)
+  const apex = sorted[0]
+  assert.ok(apex !== undefined, 'the tunnel configuration publishes no hostname at all')
+  return apex
+}
+
+/** Where a surface answers publicly: its registry subdomain, under the estate's apex. */
+export function hostFor(key: string, apex: string): string {
+  const sub = surface(key as SurfaceKey).subdomain
+  return sub === '' ? apex : `${sub}.${apex}`
 }
 
 /**
@@ -298,12 +321,9 @@ describe('the stage of every surface, recomputed', () => {
   const services = composeServices(readFileSync(COMPOSE, 'utf8'))
   const walked = smokeSurfaces(readFileSync(SMOKE, 'utf8'))
   const tunnel = tunnelHostnames(readFileSync(TUNNEL, 'utf8'))
+  const apex = apexOf(tunnel)
   /** Surface keys whose published hostname the estate really serves. */
-  const published = new Set(
-    Object.entries(PUBLIC_AT)
-      .filter(([, host]) => tunnel.has(host))
-      .map(([key]) => key),
-  )
+  const published = new Set(PUBLIC_SURFACES.filter((key) => tunnel.has(hostFor(key, apex))))
 
   it('found a real estate, so nothing below is comparing two empty sets', () => {
     assert.ok(services.size >= 40, `the compose file declared ${services.size} services`)
@@ -314,9 +334,9 @@ describe('the stage of every surface, recomputed', () => {
   it('publishes no hostname the estate does not actually serve', () => {
     // The overstatement direction. A name typed into PUBLIC_AT that the tunnel never routes would
     // put "Open to the public" on a page pointing at nothing.
-    const unrouted = Object.entries(PUBLIC_AT)
-      .filter(([, host]) => !tunnel.has(host))
-      .map(([key, host]) => `${key} claims ${host}, which the mainnet tunnel does not publish`)
+    const unrouted = PUBLIC_SURFACES.filter((key) => !tunnel.has(hostFor(key, apex))).map(
+      (key) => `${key} claims ${hostFor(key, apex)}, which the mainnet tunnel does not publish`,
+    )
     assert.deepEqual(unrouted, [])
   })
 
@@ -325,9 +345,9 @@ describe('the stage of every surface, recomputed', () => {
     // fails the TLS handshake at the edge. Configured is not reachable, and this is the one place
     // that distinction can be enforced rather than remembered.
     const testnet = tunnelHostnames(readFileSync(TUNNEL_TESTNET, 'utf8'))
-    const leaked = Object.entries(PUBLIC_AT)
-      .filter(([, host]) => testnet.has(host) || /\.testnet\./.test(host))
-      .map(([key, host]) => `${key} publishes ${host}, which is a testnet name`)
+    const leaked = PUBLIC_SURFACES.filter(
+      (key) => testnet.has(hostFor(key, apex)) || /\.testnet\./.test(hostFor(key, apex)),
+    ).map((key) => `${key} publishes ${hostFor(key, apex)}, which is a testnet name`)
     assert.deepEqual(leaked, [])
   })
 

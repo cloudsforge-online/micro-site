@@ -180,46 +180,51 @@ export const SELF_CUSTODY_REPOS: readonly string[] = [
 ]
 
 /**
- * Where a surface answers on the public internet. The evidence for `open`, and nothing else.
+ * The surfaces that answer on the public internet. The evidence for `open`, and nothing else.
  *
- * ── Why a hostname and not a boolean ──────────────────────────────────────────────────────────
+ * ── KEYS, NOT HOSTNAMES, AND THE FIRST DRAFT GOT THIS WRONG ───────────────────────────────────
  *
- * A `public: true` flag would be a hand-typed claim of exactly the kind `RUNS_ON` exists to
- * replace, and it is the kind that rots upward: nobody audits a page for being too generous about
- * itself. A hostname is checkable twice over, and `test/estate-stages.test.ts` and
- * `test/public-endpoints.test.ts` check it both ways:
+ * This was a `Record<key, hostname>` and CI rejected it, correctly. The estate's rule — stated in
+ * the header of `src/lib/hosts.ts` and enforced by a grep over the whole of `src` — is that a
+ * literal hostname anywhere in this repository is a SECOND, UNVERSIONED COPY of the surface
+ * registry, and the copy is always the one that ends up wrong. A map of seven hostnames was
+ * exactly that, on the one surface that holds more outbound links than any other.
  *
- *   * STATICALLY — the name must appear as a `hostname:` in the estate's own Cloudflare Tunnel
- *     configuration, `deploy/cloudflared/config.mainnet.public.yml`. That file is what actually
- *     causes the address to exist, so it is the source, not a description of one.
- *   * OVER THE NETWORK — the address is fetched, and must answer. A documented endpoint that does
- *     not answer fails the build rather than waiting for somebody to notice.
+ * So this is a list of registry keys. The hostname is derived where it is needed, in the tests,
+ * from `surface(key).subdomain` and an apex read out of the estate's own tunnel configuration —
+ * so there is one source for what a surface is called and this file is not it.
  *
- * The two are independent and both are needed. The tunnel config proves the address was MEANT to
- * exist; only the fetch proves it does. The estate has already shipped a configured hostname with
- * no DNS record behind it (`worlds-api.cloudsforge.online`) and one that answers 502
- * (`api.cloudsforge.online`) — neither is on this list, and neither would survive being added.
+ * ── A key earns its place here by being checked twice, and neither check is sufficient ────────
+ *
+ *   * STATICALLY — `test/estate-stages.test.ts` requires the derived name to appear as a
+ *     `hostname:` in `deploy/cloudflared/config.mainnet.public.yml`. That file is what CAUSES the
+ *     address to exist, so it is a source rather than a description of one.
+ *   * OVER THE NETWORK — `test/public-endpoints.test.ts` fetches it, and it must answer 200 on a
+ *     certificate the public already trusts. A documented endpoint that does not answer fails the
+ *     build rather than waiting for somebody to notice.
+ *
+ * The tunnel config proves the address was MEANT to exist; only the fetch proves it does. The
+ * estate ships one configured hostname with no DNS record behind it (`worlds-api`) and one that
+ * answers 502 (`api`) — neither is on this list, and neither would survive being added to it.
  *
  * ── The mainnet tunnel only ───────────────────────────────────────────────────────────────────
  *
- * `config.testnet.public.yml` declares a parallel set of `*.testnet.cloudsforge.online` names and
- * NONE of them may be published here. Cloudflare's Universal SSL certificate covers the
- * single-label wildcard `*.cloudsforge.online`, which matches `testnet.cloudsforge.online` and does
- * not match `hub.testnet.cloudsforge.online`; a two-label wildcard needs Advanced Certificate
- * Manager, which is paid and is not bought. So every testnet subdomain fails the TLS handshake at
- * Cloudflare's edge, before it ever reaches the estate. They are configured, and they are not
- * reachable, and the difference is the entire reason this map is checked over the network as well
- * as against the configuration.
+ * The testnet tunnel declares a parallel set of two-label names and none of them may be published.
+ * Cloudflare's Universal SSL certificate covers a SINGLE-LABEL wildcard: it matches the testnet
+ * apex and it does not match a surface underneath it. A two-label wildcard needs Advanced
+ * Certificate Manager, which is paid and is not bought, so every testnet subdomain fails the TLS
+ * handshake at Cloudflare's edge before it ever reaches the estate. Configured is not reachable,
+ * and that gap is the entire reason the list is checked over the network as well as on disk.
  */
-export const PUBLIC_AT: Readonly<Record<string, string>> = {
-  hub: 'hub.cloudsforge.online',
-  network: 'network.cloudsforge.online',
-  create: 'create.cloudsforge.online',
-  trade: 'trade.cloudsforge.online',
-  foresight: 'foresight.cloudsforge.online',
-  market: 'market.cloudsforge.online',
-  worlds: 'worlds.cloudsforge.online',
-}
+export const PUBLIC_SURFACES: readonly string[] = [
+  'hub',
+  'network',
+  'create',
+  'trade',
+  'foresight',
+  'market',
+  'worlds',
+]
 
 export const RUNS_ON: Readonly<Record<string, readonly string[]>> = {
   hub: ['hub-web', 'hub-api'],

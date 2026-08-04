@@ -11,26 +11,25 @@
  *
  * ── Why the static check is not enough ────────────────────────────────────────────────────────
  *
- * `./estate-stages.test.ts` already requires every hostname in `PUBLIC_AT` to appear in the
+ * `./estate-stages.test.ts` already requires the hostname derived for every entry in `PUBLIC_SURFACES` to appear in
  * estate's own Cloudflare Tunnel configuration. That proves the address was MEANT to exist. It
  * cannot prove it does, and on the day this file was written the estate contained two live
  * counter-examples, both configured in exactly the same way as the working ones:
  *
- *   `worlds-api.cloudsforge.online`   configured in the tunnel, NO DNS RECORD AT ALL — curl
- *                                     resolves nothing and the connection is never attempted.
- *   `api.cloudsforge.online`          configured, resolving, and answering 502 from the edge
- *                                     because nothing healthy sits behind that name.
+ *   the estate's `worlds-api` name   configured in the tunnel, NO DNS RECORD AT ALL — nothing
+ *                                    resolves and the connection is never attempted.
+ *   the estate's `api` name          configured, resolving, and answering 502 from the edge,
+ *                                    because nothing healthy sits behind that name.
  *
  * A reader cannot tell those apart from a working surface by reading a configuration file, and
  * neither can a test that only reads one. So this fetches.
  *
  * ── And why the testnet names make this mandatory rather than nice to have ────────────────────
  *
- * Cloudflare's Universal SSL certificate covers `*.cloudsforge.online`. That is a SINGLE-LABEL
- * wildcard: it matches `testnet.cloudsforge.online` and it does not match
- * `hub.testnet.cloudsforge.online`. A two-label wildcard needs Advanced Certificate Manager, which
- * is paid and is not bought, so every testnet subdomain resolves to Cloudflare and then fails the
- * TLS handshake before a single byte of HTTP is exchanged.
+ * Cloudflare's Universal SSL certificate covers a SINGLE-LABEL wildcard under the apex: it matches
+ * the testnet apex itself and it does not match a surface underneath it. A two-label wildcard needs
+ * Advanced Certificate Manager, which is paid and is not bought, so every testnet subdomain
+ * resolves to Cloudflare and then fails the TLS handshake before a byte of HTTP is exchanged.
  *
  * That failure is invisible to DNS, invisible to the tunnel configuration, and invisible to any
  * check that does not complete a TLS session. Publishing one of those addresses would put a link
@@ -51,8 +50,11 @@
  * `src/content/stages.ts` — and it is the whole claim checked here.
  */
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { describe, it } from 'node:test'
-import { PUBLIC_AT } from '../src/content/stages.ts'
+import { PUBLIC_SURFACES } from '../src/content/stages.ts'
+import { apexOf, hostFor, tunnelHostnames } from './estate-stages.test.ts'
 
 /** Generous: this crosses the real internet, and a slow answer is still an answer. */
 const TIMEOUT_MS = 20_000
@@ -153,16 +155,20 @@ describe('the prober itself', () => {
 
 /* ─────────────────────────────── against the real internet ─────────────────────────────── */
 
+const TUNNEL = fileURLToPath(new URL('../../deploy/cloudflared/config.mainnet.public.yml', import.meta.url))
+const APEX = apexOf(tunnelHostnames(readFileSync(TUNNEL, 'utf8')))
+
 describe('every address this site publishes as open', () => {
   it('has at least one, so this is not an empty loop reporting success', () => {
     // The failure mode of every table-driven check: the table empties and the suite stays green.
     assert.ok(
-      Object.keys(PUBLIC_AT).length >= 5,
-      `PUBLIC_AT declares ${Object.keys(PUBLIC_AT).length} addresses`,
+      PUBLIC_SURFACES.length >= 5,
+      `PUBLIC_SURFACES declares ${PUBLIC_SURFACES.length} surfaces`,
     )
   })
 
-  for (const [key, host] of Object.entries(PUBLIC_AT)) {
+  for (const key of PUBLIC_SURFACES) {
+    const host = hostFor(key, APEX)
     it(`answers on the public internet: ${host}`, async () => {
       const result = await probe(`https://${host}/`)
       assert.equal(
