@@ -36,7 +36,7 @@ import { describe, it } from 'node:test'
 import { PRODUCTS, SURFACES } from '@cloudsforge/ui'
 import { CLAIMS, allowedNumbers } from '../src/content/claims.ts'
 import { PRODUCT_PAGES, STAGE_LABEL, hubPage, productCards } from '../src/content/products.ts'
-import { ABOUT, BUILD, HOME, NOT_FOUND, PLATFORM } from '../src/content/pages.ts'
+import { ABOUT, BUILD, HOME, NOT_FOUND, PLATFORM, PRODUCTS_INDEX } from '../src/content/pages.ts'
 import { LEGAL_PAGES } from '../src/content/legal.ts'
 import { ROUTES } from '../src/lib/routes.ts'
 
@@ -94,6 +94,12 @@ function publishedCopy(): CopyString[] {
   collect(ABOUT, 'ABOUT', out)
   collect(BUILD, 'BUILD', out)
   collect(NOT_FOUND, 'NOT_FOUND', out)
+  // The products index's own copy. It lived in JSX until the two counts in it went stale at once
+  // — "Six surfaces" over seven pages, "The five products" over six — and a string in a component
+  // is a string this walk cannot see. Anything added to `src/content` must be added here too, or
+  // it is unscanned; that is the one manual step in this file and it is why the block above ends
+  // with a floor on how many strings the walk must find.
+  collect(PRODUCTS_INDEX, 'PRODUCTS_INDEX', out)
   collect(PRODUCT_PAGES, 'PRODUCT_PAGES', out)
   collect(LEGAL_PAGES, 'LEGAL_PAGES', out)
   // The route summaries are rendered in the footer and on the 404, so they are copy too.
@@ -322,14 +328,26 @@ describe('stages', () => {
     assert.equal(new Set(notes).size, notes.length, 'two surfaces share a stage note')
   })
 
-  it('claims nothing is deployed, on the page that says so', () => {
+  it('claims nothing serves the public, on the page that says so', () => {
     // The honesty block is the load-bearing sentence on this site. It is asserted by content rather
     // than by presence, because a section that keeps its heading and loses its meaning is the exact
     // way this claim would be softened.
-    assert.match(BUILD.honesty.title, /nothing is deployed/i)
+    //
+    // ── This assertion was CHANGED, and the reason belongs next to it ──────────────────────────
+    //
+    // It used to require the heading "nothing is deployed" and the sentence "not one of them is
+    // running". Both were true when they were written and both are now false: the estate runs end
+    // to end behind a gateway with its own certificate authority. Leaving the assertion as it was
+    // would have forced the site to keep publishing a false sentence in order to stay green —
+    // which is a test holding copy hostage to a fact that has expired.
+    //
+    // The claim moved rather than weakened. "Nothing runs" became "nothing serves the public",
+    // which is the stronger of the two to have to keep true, and is asserted here in the same
+    // shape. `test/estate-claims.test.ts` additionally fails if the OLD sentences come back.
+    assert.match(BUILD.honesty.title, /nothing is serving the public/i)
     assert.ok(
-      BUILD.honesty.body.some((p) => /not one of them is running/i.test(p)),
-      'the build page no longer says that nothing is running',
+      BUILD.honesty.body.some((p) => /no public address for any of it/i.test(p)),
+      'the build page no longer says that nothing has a public address',
     )
   })
 })

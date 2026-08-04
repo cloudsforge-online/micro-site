@@ -9,6 +9,7 @@
  * elsewhere. They are for the person editing this file; none of them is rendered.
  */
 import { claim } from './claims.ts'
+import { nextProductOrdinal, productCount, sentenceCase, surfaceCount } from './products.ts'
 import type { SurfaceKey } from '@cloudsforge/ui'
 
 /* ─────────────────────────────── home ─────────────────────────────── */
@@ -63,7 +64,7 @@ export const HOME = {
         verb: 'Spend',
         accentKey: 'site' as SurfaceKey,
         title: 'Use it across every product',
-        body: `Shards are the platform's internal unit and the peg is fixed: ${claim('shardsPerUsd')} Shards to the dollar, in both directions, rather than a rate that moves while you are reading it.`,
+        body: `The money is EMBER itself. What you see is the Spark — ${claim('sparksPerEmber')} Sparks to one EMBER — which is a shorter way of writing the same balance and never a second currency with its own rate. One asset, one ledger, and no balance anywhere that the chain does not back.`,
       },
       {
         verb: 'Leave',
@@ -72,6 +73,19 @@ export const HOME = {
         body: 'Withdraw on chain, to your own address, or export the key and stop asking. A user being able to leave with their assets is a product requirement here, not a concession.',
       },
     ],
+  },
+  /**
+   * The product grid's heading and its two asides.
+   *
+   * These three sentences were JSX literals in `src/pages/home.tsx` until the count in them went
+   * stale — see the header of `./products.ts` for what happened and why a word counts as a number.
+   * They are here, and derived, so that the copy walk in `test/content.test.ts` can read them and
+   * so that neither can be wrong again.
+   */
+  products: {
+    title: 'What you can do here',
+    lede: `${sentenceCase(productCount())} products on one account. Each is a place to do something, not a feature of the last one.`,
+    hubAside: `It is not a ${nextProductOrdinal()} product. It is the thing the other ${productCount()} are standing on.`,
   },
   /** The one-account promise, in the terms a reader can check. */
   spans: {
@@ -94,7 +108,35 @@ export const HOME = {
   },
   closing: {
     title: 'Built in the open, with the state of it written down',
-    body: 'This platform is being rebuilt from the ground up and none of it is deployed yet. Rather than take that sentence off the site until it stops being true, there is a page that says exactly where each part stands.',
+    body: 'This platform is being rebuilt from the ground up and none of it is open to the public yet. Rather than take that sentence off the site until it stops being true, there is a page that says exactly where each part stands.',
+  },
+} as const
+
+/* ────────────────────────── products index ────────────────────────── */
+
+/**
+ * The products index page's own copy.
+ *
+ * Same reason as `HOME.products`: these were JSX literals reading "Six surfaces, one account" and
+ * "The five products" while the registry held six products and seven pages. Both were wrong, in
+ * opposite directions, on the same screen.
+ */
+export const PRODUCTS_INDEX = {
+  eyebrow: 'Products',
+  headline: `${sentenceCase(surfaceCount())} surfaces, one account`,
+  standfirst: [
+    `${sentenceCase(productCount())} products a person chooses between, and the control centre they all sit on. Each carries the state it is actually in, which is not the same on any two of them.`,
+  ],
+  controlCentreTitle: 'The control centre',
+  productsTitle: `The ${productCount()} products`,
+  productsLede:
+    'In the order the switcher lists them, which is chosen so that no two neighbouring accents can be confused with each other.',
+  notHere: {
+    title: 'What is not here yet',
+    body: [
+      'A developer platform — projects, keys, webhooks, a software development kit and a sandbox — is intended and is not built. It has no page on this site, because a page about it would be a page about an intention, and an intention with a marketing page attached is how the estate ended up selling things that no code path delivered.',
+      'It will get one when there is something behind it. Until then this paragraph is the whole announcement.',
+    ],
   },
 } as const
 
@@ -215,7 +257,7 @@ export const ABOUT = {
       },
       {
         title: 'One system, many accents',
-        body: `A new product gets a colour, not a new visual language. The five product accents were re-derived to be separable under colour-vision-deficiency simulation — the set they replaced measured ΔE ${claim('accentSeparationBefore')}, at which point two of them were the same colour to a great many readers, and the current set measures ΔE ${claim('accentSeparation')}.`,
+        body: `A new product gets a colour, not a new visual language. The product accents were re-derived to be separable under colour-vision-deficiency simulation, and both halves of that measurement are published because only one of them flatters: neighbouring accents in the switcher now separate at ΔE ${claim('accentSeparation')} where the set they replaced managed ΔE ${claim('accentSeparationBefore')}, but the worst pair anywhere in the set — two colours the switcher never puts side by side — separates at only ΔE ${claim('accentSeparationAllPairs')} for a deuteranopic reader. That is a recorded trade, not a result, which is why colour is never the only channel.`,
       },
       {
         title: 'Reversibility beats cleverness',
@@ -254,24 +296,44 @@ export const BUILD = {
   eyebrow: 'Build status',
   headline: 'What is built, and what is not',
   blurb:
-    'An honest account of where this platform stands: which parts are built and tested, which are still being written, and the fact that none of it is deployed yet.',
+    'An honest account of where this platform stands: which parts are built and tested, which are still being written, and the fact that none of it is serving the public yet.',
   standfirst: [
-    'This platform is being rebuilt as a set of independent services and applications. That work is well past its halfway point and none of it is running anywhere.',
+    'This platform is being rebuilt as a set of independent services and applications. They are built, and they now run together — on one machine, behind a gateway that nobody outside the project can reach.',
     'Both halves of that sentence are on this page because leaving the second one off is how a launch date becomes a thing people plan around.',
   ],
-  /** Source: docs/ecosystem/18-build-status.md §1 and §3.3. */
+  /**
+   * Source: docs/ecosystem/18-build-status.md §1.
+   *
+   * ── This block was rewritten because the estate outgrew it, which is the failure it warns about ─
+   *
+   * It used to be headed "Nothing is deployed" and to say, in order: that not one service was
+   * running in an environment a person could reach, that "there is no gateway routing", that no
+   * release had been exercised and no data had been migrated. Every one of those clauses is now
+   * false. The estate runs as a local compose deployment behind a gateway with a real certificate
+   * authority, against real databases and a real EMBER testnet, and a browser-driven smoke tier
+   * drives that gateway intercepting nothing.
+   *
+   * The honest claim did not get smaller, it MOVED: from "nothing runs" to "nothing serves the
+   * public". Softening it in place — leaving the heading and letting the sentences go stale — is
+   * precisely how the estate this replaces ended up claiming EMBER credited at the chain tip long
+   * after it stopped doing so. So the heading changed with the fact.
+   *
+   * NOTHING here is stated as a number. The container count, the smoke-suite score and the chain
+   * height are all true right now and all three move hourly; a marketing page is the worst possible
+   * place to pin one. See the "No estate census" note in ./claims.ts.
+   */
   honesty: {
-    title: 'Nothing is deployed',
+    title: 'Nothing is serving the public',
     body: [
-      'Every service and application described on this site exists as code that passes its own tests. Not one of them is running in an environment a person could reach. There is no gateway routing, no release has been exercised, and no data has been migrated.',
-      'It follows that there is nothing here to sign up for, and nothing on this site asks you to. There are no user numbers on this page for the same reason there is no uptime figure: both would be either zero or invented, and there is no third option.',
+      'Every service and application described on this site is built, and all of them now run together: real databases, a real EMBER test network, and one gateway in front with its own certificate authority. A browser-driven smoke suite walks that gateway the way a person would, faking nothing.',
+      'All of it sits on one machine that is not on the internet. There is no public address for any of it, nobody outside the project has ever used it, and there is nothing here to sign up for — nothing on this site asks you to. There are no user numbers on this page for the same reason there is no uptime figure: both would be either zero or invented, and there is no third option.',
     ],
   },
   expensive: {
     title: 'The expensive half is behind us',
     body: [
       'Everything that touches money, keys, chain state or identity is built and adversarially tested: the ledger, custody, settlement, the indexer, the wallet, pricing, billing, identity and policy. The double-entry constraint is proven by bypassing the service with raw SQL, so an unbalanced journal cannot be committed even by something holding a database connection. The lost-payment race is proven by running two workers against one chain.',
-      'What remains is dominated by the applications people would actually look at, and by the operational services that decide when any of it is allowed to be called ready.',
+      'What remains is not mostly code. It is the distance between a system that runs correctly on one machine and a system that strangers are entitled to depend on: an environment on the public internet, the operational practice around it, and the compliance work no custodial service opens its doors without.',
     ],
   },
   /**
@@ -284,8 +346,8 @@ export const BUILD = {
   gate: {
     title: 'What "ready" will mean',
     body: [
-      'Readiness is defined by behaviour in an environment rather than by a repository being finished, and the tool that measures it does not exist yet. Until it does, no part of this can be shown to have shipped on evidence rather than on assertion.',
-      'That tool is therefore being built ahead of the remaining applications, which is the opposite of the order that would make this site look finished soonest.',
+      'Readiness is defined by behaviour in an environment rather than by a repository being finished. The tool that measures it exists and runs: it drives a real browser through the real gateway, intercepts no request and substitutes no answer, so a surface that renders perfectly against a fake network still fails it. That tool was built ahead of the remaining work, which is the opposite of the order that would have made this page look finished soonest.',
+      'What it cannot measure is anything about a public deployment, because there is not one. It is evidence that the software works together, and it is deliberately not evidence of anything more than that.',
     ],
   },
 } as const

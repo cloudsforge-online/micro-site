@@ -55,6 +55,37 @@ jobs:
           # dies before install. Same wiring as the service repos' runtime checkout.
           token: ${{ secrets.ESTATE_READ_TOKEN }}
 
+      # ────────────────────────────────────────────────────────────────────────────────────────
+      # THESE TWO ARE NOT BUILD INPUTS. Nothing imports them and the bundle does not change if
+      # they are absent. They are checked out so that `test/estate-claims.test.ts` can OPEN the
+      # files that `src/content/claims.ts` cites, and recompute every published number from them.
+      #
+      # That test used to be impossible, and the registry's own header said so: "the repositories
+      # it names are not checked out when this suite runs in CI, so no test can open them." Under
+      # that exemption four of eleven citations drifted onto the wrong line, one named a file that
+      # has never existed in the repository it cited, and one figure was copied out of a block
+      # headed "MEASURED NUMBERS, CORRECTED" — taking the number being corrected rather than the
+      # correction. Every one was reachable by opening the file named. Nothing opened it.
+      #
+      # The test does NOT skip when these are missing; it fails and says what to check out. A
+      # check that turns itself off when its inputs are absent produces the same green tick as one
+      # that ran, which is the defect this estate keeps finding in its own gates.
+      #
+      # Unlike micro-ui these two are public, so the token is not required to fetch them — it is
+      # passed anyway, because a repository flipping to private should not turn a claims check into
+      # a silent 404 at the checkout step.
+      # ────────────────────────────────────────────────────────────────────────────────────────
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-contracts
+          path: contracts
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-docs
+          path: docs
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+
       # Pinned, because the checkout lives at site/ and the action looks for the
       # packageManager field in the workspace root, where there is no package.json.
       - uses: pnpm/action-setup@v4
@@ -213,6 +244,35 @@ jobs:
           test -f src/content/claims.ts || { echo "::error::the numbers register is gone"; exit 1; }
           grep -q 'allowedNumbers' test/content.test.ts || { echo "::error::the number scan is gone"; exit 1; }
           echo "ok: the numbers register and its scan are both present"
+
+      - name: Every registered number is recomputed from the estate
+        # The second half of the rule, and the half that was missing. A number can be registered
+        # with a source beside it and still be wrong — the source is prose until something opens
+        # it. `test/estate-claims.test.ts` opens every cited file and recomputes the value.
+        #
+        # Repeated here so that deleting the test does not delete the rule, and asserted in the
+        # SHAPE that matters: that it refuses to skip. An earlier draft of this check looked only
+        # for the file, which would have stayed green against a version of it that skipped when
+        # the sibling repositories were absent — a checker that cannot fail, which is the exact
+        # defect the test itself exists to close.
+        run: |
+          set -uo pipefail
+          test -f test/estate-claims.test.ts || { echo "::error::the estate claims check is gone"; exit 1; }
+          grep -q 'checkRegistry' test/estate-claims.test.ts \
+            || { echo "::error::the estate claims check no longer verifies the registry"; exit 1; }
+          # It must not have learned to skip. node:test's skip API in any spelling, and the shape
+          # a conditional skip usually takes.
+          if grep -nE '\bit\.skip\b|\bdescribe\.skip\b|\{ *skip *:|context\.skip\(' test/estate-claims.test.ts; then
+            echo "::error::the estate claims check may not skip; without the estate it must FAIL"
+            exit 1
+          fi
+          # And CI must actually provide the estate, or the check above fails every run and gets
+          # deleted for being noisy. Both sibling checkouts are named in the check job.
+          for repo in micro-contracts micro-docs; do
+            grep -q "repository: cloudsforge-online/$repo" .github/workflows/ci.yml \
+              || { echo "::error::$repo is no longer checked out; the claims check cannot read it"; exit 1; }
+          done
+          echo "ok: the claims check is present, cannot skip, and has its inputs"
 
       - name: No third-party request
         # The privacy notice claims this site embeds no external script, stylesheet, font or image.

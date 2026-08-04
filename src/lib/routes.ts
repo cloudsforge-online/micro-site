@@ -23,6 +23,18 @@
  *
  * This module deliberately imports nothing — not React, not the router, not the design system — so
  * the test that reads it does not have to boot a browser to find out what the routes are.
+ *
+ * ── One consequence, which cost this file a false sentence ────────────────────────────────────
+ *
+ * Importing nothing means importing the surface registry is not available here either, so a
+ * `summary` below CANNOT be derived from a count. It follows that no summary may CONTAIN one. This
+ * one did — "the control centre and the five products that sit on it" — and it was still saying
+ * five after a sixth product was registered, in the footer of every page and in the metadata
+ * description of `/products`. It was invisible to `test/content.test.ts` because that scan matches
+ * digits and "five" is a word.
+ *
+ * So the rule for this file is: summaries describe, they do not count. Anything that needs a number
+ * belongs in `src/content`, where it can be computed from the registry.
  */
 
 export interface SiteRoute {
@@ -49,19 +61,19 @@ export const ROUTES: readonly SiteRoute[] = [
     path: 'products',
     label: 'Products',
     wildcard: true,
-    summary: 'The control centre and the five products that sit on it.',
+    summary: 'The control centre and the products that sit on it.',
   },
   {
     path: 'platform',
     label: 'Platform',
     wildcard: false,
-    summary: 'One account, one wallet, one portfolio — and the eleven statements that define it.',
+    summary: 'One account, one wallet, one portfolio — and the statements that define it.',
   },
   {
     path: 'build',
     label: 'Build status',
     wildcard: false,
-    summary: 'What is built, what is not, and what is not deployed.',
+    summary: 'What is built, what is not, and what is not open to the public.',
   },
   { path: 'about', label: 'About', wildcard: false, summary: 'What CloudsForge is for, and what it refuses to be.' },
   // The legal pages are reachable from the footer rather than the header. They are not what a

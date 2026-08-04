@@ -17,7 +17,7 @@
  *   2. ONE EMBER WASH, in the hero only, from `--cf-accent-glow`. A gradient on every section is a
  *      gradient nobody sees.
  *   3. ACCENT SCOPING. The page is company ember. A product card redeclares `--cf-accent` from the
- *      registry via `data-cf-product` (see `accentProps` in components/parts.tsx), so five cards
+ *      registry via `data-cf-product` (see `accentProps` in components/parts.tsx), so the product cards
  *      carry five colours on one page while the chrome stays company-coloured. Nothing here, and
  *      nothing in the components, hard-codes a product hex.
  *   4. THE STAGE CHIP. Glyph, word and colour — three channels, never one.
@@ -103,12 +103,12 @@ body {
  * ── Why this is not solved by overriding --cf-accent ─────────────────────────────────────────
  *
  * Because the accent is not one value on this site. The page is company ember, and every product
- * card, rail step and status row REDECLARES --cf-accent inline from the registry, so five accents
- * are live on one page. A single override would flatten all five to one colour.
+ * card, rail step and status row REDECLARES --cf-accent inline from the registry, so every product accent
+ * are live on one page. A single override would flatten them all to one colour.
  *
  * ── The dark ground needs an adjustment too ──────────────────────────────────────────────────
  *
- * This was not expected and it is the more useful finding. The five product accents were validated
+ * This was not expected and it is the more useful finding. The product accents were validated
  * "all above 3:1 on the panel" — the floor for a MARK, an edge or a control, which is what the
  * switcher uses them for. This site sets type in them: the eyebrow, the card verb, the rail
  * ordinals, every link inside a scoped card. Type needs 4.5:1, and Forge Network's #d6412f
@@ -681,7 +681,7 @@ a:hover {
 
 /* ─────────────────────────────── feature ───────────────────────────── */
 
-/* Hub's block on the products index: wider than a card, because it is not one of the five. */
+/* Hub’s block on the products index: wider than a card, because it is not one of the products. */
 .si-feature {
   padding: var(--cf-space-2xl);
   border: 1px solid var(--cf-line);

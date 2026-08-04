@@ -168,7 +168,7 @@ export const CATALOGUE: readonly Scenario[] = [
   /* ---- doc 22 BJ-SITE-02 ---------------------------------------------- */
   {
     id: 'BJ-SITE-02',
-    title: 'the build page says nothing is deployed at the top, then goes surface by surface',
+    title: 'the build page says nothing serves the public at the top, then goes surface by surface',
     tier: 1,
     asserts: 'presentation',
     gate: true,
@@ -184,23 +184,43 @@ export const CATALOGUE: readonly Scenario[] = [
          * the page renders FROM. That catches a page that stops rendering the block, truncates it
          * or reorders it, and it cannot catch the copy being softened: rewriting `pages.ts`
          * rewrites both sides of the comparison and stays green. This surface's whole argument is
-         * that it says "Nothing is deployed" ON THE FRONT DOOR, so that one sentence is written
-         * out here. Changing it now takes a deliberate edit in two files, which is exactly the
-         * amount of friction a claim like this deserves.
+         * that it says so ON THE FRONT DOOR, so that one sentence is written out here. Changing it
+         * takes a deliberate edit in two files, which is exactly the amount of friction a claim
+         * like this deserves.
+         *
+         * ── The literal CHANGED, and the friction did its job ─────────────────────────────────
+         *
+         * It read "Nothing is deployed" until the estate came up: forty-odd containers behind a
+         * gateway with its own certificate authority, a real EMBER testnet, and a smoke tier that
+         * drives the gateway intercepting nothing. At that point the sentence was false, and this
+         * assertion was the thing that refused to let the page be edited quietly — the copy change
+         * went red here and had to be argued for rather than merged.
+         *
+         * The claim was not softened, it MOVED: from "nothing is deployed" to "nothing is serving
+         * the public", which is the harder of the two to keep true and the one a reader actually
+         * needs. `test/estate-claims.test.ts` fails if the old wording returns.
          */
         // Scoped to the callout, not to the page. The first version of this searched the whole
-        // body and passed after the callout's title was softened, because "Nothing is deployed"
-        // also appears in two product stage notes further down — a literal anchor in the wrong
-        // scope is just a self-referential assertion with extra steps. Proven by softening the
-        // title and watching this go red.
+        // body and passed after the callout's title was softened, because the phrase also appears
+        // in two product stage notes further down — a literal anchor in the wrong scope is just a
+        // self-referential assertion with extra steps. Proven by softening the title and watching
+        // this go red.
         const callout = await session.page.locator('.si-callout').first().innerText()
         assert.ok(
-          callout.includes('Nothing is deployed'),
-          `the honesty block no longer says, in those words, that nothing is deployed. It says: ${callout.slice(0, 200)}`,
+          callout.includes('Nothing is serving the public'),
+          `the honesty block no longer says, in those words, that nothing serves the public. It says: ${callout.slice(0, 200)}`,
+        )
+        // The second half of the claim, in the rendered body rather than the heading — a heading
+        // that survives while the paragraph under it turns into reassurance is the shape this
+        // whole page is arranged against. Was `/Not one of them is running/`, changed with the
+        // heading and for the same reason: things are running now.
+        assert.ok(
+          /no public address for any of it/i.test(callout),
+          'the honesty block no longer says that none of it has a public address',
         )
         assert.ok(
-          /Not one of them is running/.test(callout),
-          'the honesty block no longer says that not one service is running',
+          /nothing here to sign up for/i.test(callout),
+          'the honesty block no longer says there is nothing to sign up for',
         )
         // ABOVE the table, not below it. A crypto front door that implies everything on it is
         // running is the failure this page exists to avoid, and a caveat under the status list is

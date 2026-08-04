@@ -9,6 +9,7 @@ import { Link, useParams } from 'react-router-dom'
 import { surface } from '@cloudsforge/ui'
 import { hosts } from '../lib/hosts.ts'
 import { PRODUCT_PAGES, hubPage, productCards, productPage } from '../content/products.ts'
+import { PRODUCTS_INDEX } from '../content/pages.ts'
 import { PageHead, Prose, Ridge, Section, StageChip, SurfaceMark, accentProps } from '../components/parts.tsx'
 import { NotFoundPage } from './not-found.tsx'
 
@@ -21,21 +22,25 @@ export function ProductsIndexPage() {
 
   return (
     <>
+      {/*
+        Every string on this page comes from `PRODUCTS_INDEX`. They were literals here until both
+        counts in them went stale at once — "Six surfaces" against seven pages, "Five products"
+        against six — which is why they now live where the copy walk can read them and are computed
+        from the registry rather than typed. See the header of `src/content/products.ts`.
+      */}
       <PageHead
-        eyebrow="Products"
-        headline="Six surfaces, one account"
-        standfirst={[
-          'Five products a person chooses between, and the control centre they all sit on. Each carries the state it is actually in, which is not the same on any two of them.',
-        ]}
+        eyebrow={PRODUCTS_INDEX.eyebrow}
+        headline={PRODUCTS_INDEX.headline}
+        standfirst={PRODUCTS_INDEX.standfirst}
       />
 
       <Ridge />
 
       {/*
         Hub goes first and outside the grid. It is a `surface` rather than a `product` in the
-        registry, and putting it in the same list as the five would say it is one of them.
+        registry, and putting it in the same list as the products would say it is one of them.
       */}
-      <Section title="The control centre" id="control-centre">
+      <Section title={PRODUCTS_INDEX.controlCentreTitle} id="control-centre">
         <article className="si-feature" {...accentProps('hub')}>
           <div className="si-feature__head">
             <SurfaceMark surfaceKey="hub" size={34} />
@@ -52,9 +57,9 @@ export function ProductsIndexPage() {
       </Section>
 
       <Section
-        title="The five products"
-        lede="In the order the switcher lists them, which is chosen so that no two neighbouring accents can be confused with each other."
-        id="the-five"
+        title={PRODUCTS_INDEX.productsTitle}
+        lede={PRODUCTS_INDEX.productsLede}
+        id="the-products"
       >
         <ul className="si-cards">
           {cards.map(({ surface: s, page }) => (
@@ -80,19 +85,8 @@ export function ProductsIndexPage() {
         </ul>
       </Section>
 
-      <Section title="What is not here yet" id="not-here">
-        <div className="si-prose">
-          <p>
-            A developer platform — projects, keys, webhooks, a software development kit and a
-            sandbox — is intended and is not built. It has no page on this site, because a page
-            about it would be a page about an intention, and an intention with a marketing page
-            attached is how the estate ended up selling things that no code path delivered.
-          </p>
-          <p>
-            It will get one when there is something behind it. Until then this paragraph is the
-            whole announcement.
-          </p>
-        </div>
+      <Section title={PRODUCTS_INDEX.notHere.title} id="not-here">
+        <Prose body={PRODUCTS_INDEX.notHere.body} />
       </Section>
     </>
   )

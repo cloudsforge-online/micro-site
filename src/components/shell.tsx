@@ -128,7 +128,7 @@ function SiteFooter() {
                   <Link to={`/products/${s.key}`}>{s.name}</Link>
                 </li>
               ))}
-              {/* Hub last and separately: it is the container rather than one of the five. */}
+              {/* Hub last and separately: it is the container rather than one of the products. */}
               <li>
                 <Link to="/products/hub">{surface('hub').name}</Link>
               </li>

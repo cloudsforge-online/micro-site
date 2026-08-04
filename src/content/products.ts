@@ -17,6 +17,12 @@
  *   is deployed. Every repository listed below exists as code that passes its own tests. Not one
  *   of them is running anywhere."
  *
+ * **That quotation has been overtaken and is kept as the reason rather than as the fact.** The
+ * estate now runs end to end behind a gateway, so "not one of them is running anywhere" is false;
+ * what is still true, and is what every note below is written against, is that none of it has an
+ * address on the public internet. The unflattering measure moved; it did not go away. `./pages.ts`
+ * BUILD.honesty carries the current wording and the reason it changed.
+ *
  * A site that described these six as though a reader could go and use them today would be lying,
  * and it would be lying in the one voice this company has decided is an asset —
  * `docs/ecosystem/01-product-vision.md` §5.5, "Honest copy… This voice is an asset. Protect it."
@@ -100,9 +106,9 @@ export interface ProductPage {
 }
 
 /**
- * The six pages, in the order the story is told.
+ * The pages, in the order the story is told. One per product, plus Hub.
  *
- * This is NOT the registry's order. The registry's first five are ordered to maximise the colour
+ * This is NOT the registry’s order. The registry’s products are ordered to maximise the colour
  * separation of neighbouring switcher entries and its header says so in capitals; reordering it
  * for narrative reasons would throw that guarantee away. So the site keeps its own order for
  * reading, and derives everything else from the registry. `test/content.test.ts` asserts that the
@@ -122,7 +128,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Forge Hub is where a CloudsForge account lives: portfolio, wallets, deposits, withdrawals, activity and security on one screen. Not a product you choose — the container the others sit inside.',
     stage: 'built',
     stageNote:
-      'Built and tested, against a service that is also built and tested. Neither is deployed, so there is nothing to sign into yet.',
+      'Built and tested, and running against the service behind it. It has no address on the public internet, so there is nothing to sign into yet.',
     sections: [
       {
         title: 'One screen instead of six',
@@ -282,7 +288,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Parimutuel markets on future events. Stakes go to the contract, not to us; payouts come from the pool, not from our balance sheet. Odds are the pool ratio, and they move until it closes.',
     stage: 'in-build',
     stageNote:
-      'The service and the contract are written and tested, including the arithmetic that proves fee plus every payout plus the residue equals the pool exactly. Nothing is deployed to a live chain.',
+      'The service and the contract are written and tested, including the arithmetic that proves fee plus every payout plus the residue equals the pool exactly. Nothing is deployed to a public chain — the only network any of it has touched is a private EMBER test network.',
     sections: [
       {
         title: 'The contract holds the money, not the platform',
@@ -323,7 +329,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Listings, offers, escrow and settlement for what people make. The fee, the royalty and the seller\'s proceeds are constrained to add up by the database, not by the code that writes them.',
     stage: 'in-build',
     stageNote:
-      'The service — listings, bids, escrow, the order split and the risk indicators — is written and tested. Nothing is listed, because nothing is deployed.',
+      'The service — listings, bids, escrow, the order split and the risk indicators — is written, tested and running. Nothing is listed on it, because nobody outside the project can reach it to list anything.',
     sections: [
       {
         title: 'The split is checked by the database',
@@ -398,7 +404,83 @@ export function productPage(slug: string): ProductPage | undefined {
 }
 
 /**
- * The five products, in the registry's own order, joined to their pages.
+ * Counts, spelled.
+ *
+ * ── Why this exists, which is a defect this site actually shipped ─────────────────────────────
+ *
+ * `claims.ts` says of the product count: "Never written as a digit in copy — it is counted from
+ * PRODUCTS at runtime and SPELLED AS A WORD, so a sixth product is a registry entry rather than a
+ * copy-editing pass." The registry half of that was true. The spelling half was not: the words
+ * "Five products on one account", "The five products", "Six surfaces, one account" and "the other
+ * five are standing on" were TYPED, in JSX, in three files.
+ *
+ * Forge Foresight was then added to the registry. `test/content.test.ts` stayed green throughout,
+ * for two compounding reasons — the digit scan only reads `src/content` and these strings lived in
+ * `src/pages`, and it only matches DIGITS, so "five" is invisible to it in any file. The site went
+ * on telling readers there were five products while its own grid rendered six.
+ *
+ * A word is a number. So the counts are computed here, the sentences that carry them live in
+ * `./pages.ts` where the copy walk can see them, and the next product to be added changes nothing
+ * that a person has to remember.
+ */
+const CARDINALS = [
+  'zero', 'one', 'two', 'three', 'four', 'five', 'six',
+  'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
+] as const
+
+const ORDINALS = [
+  'zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth',
+  'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth',
+] as const
+
+/**
+ * A count as an English word.
+ *
+ * Throws rather than falling back to digits past the table. A silent fallback would put an
+ * unregistered digit into copy, which the content scan would then fail on with a confusing
+ * message — and the honest fix at that point is to extend the table, not to discover it at
+ * runtime.
+ */
+export function spell(n: number): string {
+  const word = CARDINALS[n]
+  if (word === undefined) throw new RangeError(`no cardinal for ${n}; extend CARDINALS`)
+  return word
+}
+
+/** The same, as an ordinal — "a seventh product". */
+export function spellOrdinal(n: number): string {
+  const word = ORDINALS[n]
+  if (word === undefined) throw new RangeError(`no ordinal for ${n}; extend ORDINALS`)
+  return word
+}
+
+/** Capitalised, for the start of a sentence. */
+export function sentenceCase(word: string): string {
+  return word.charAt(0).toUpperCase() + word.slice(1)
+}
+
+/** Products in the registry, spelled. Six today. */
+export function productCount(): string {
+  return spell(PRODUCTS.length)
+}
+
+/**
+ * Pages under /products, spelled. Seven today: the products plus Hub.
+ *
+ * Counted from PRODUCT_PAGES rather than from `PRODUCTS.length + 1`, so that a second non-product
+ * surface page would be counted rather than assumed away.
+ */
+export function surfaceCount(): string {
+  return spell(PRODUCT_PAGES.length)
+}
+
+/** What Hub would be numbered if it were a product, which it is not. "Seventh" today. */
+export function nextProductOrdinal(): string {
+  return spellOrdinal(PRODUCTS.length + 1)
+}
+
+/**
+ * The products, in the registry's own order, joined to their pages.
  *
  * Used by the products index and the home grid. Hub is deliberately absent: it is a `surface`
  * rather than a `product` in the registry, and `01-product-vision.md` §3 is explicit that the

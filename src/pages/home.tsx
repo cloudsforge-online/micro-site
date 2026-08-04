@@ -95,19 +95,20 @@ function Loop() {
 /**
  * The product grid.
  *
- * Five cards from the registry, each in its own accent, each carrying its own stage. Hub is
+ * One card per registry product, each in its own accent, each carrying its own stage. Hub is
  * absent by design — `01-product-vision.md` §3: the container "must never appear in a product grid
  * as a peer, because an account is not something a person chooses, it is something they are
  * given". It gets its own line underneath instead.
+ *
+ * The heading and both asides come from `HOME.products`, not from literals here. They used to be
+ * literals, and they went stale when a sixth product was added to the registry: the grid rendered
+ * six cards under a line that said five, and nothing could see it because the copy scan only reads
+ * `src/content` and only matches digits.
  */
 function Products() {
   const cards = productCards()
   return (
-    <Section
-      title="What you can do here"
-      lede="Five products on one account. Each is a place to do something, not a feature of the last one."
-      id="products"
-    >
+    <Section title={HOME.products.title} lede={HOME.products.lede} id="products">
       <ul className="si-cards">
         {cards.map(({ surface: s, page }) => (
           <li className="si-card" key={s.key} {...accentProps(s.key)}>
@@ -132,9 +133,8 @@ function Products() {
       </ul>
 
       <p className="si-aside">
-        Underneath all five is <Link to="/products/hub">Forge Hub</Link> — the account, the wallet,
-        the portfolio and the history. It is not a sixth product. It is the thing the other five are
-        standing on.
+        Underneath all of them is <Link to="/products/hub">Forge Hub</Link> — the account, the
+        wallet, the portfolio and the history. {HOME.products.hubAside}
       </p>
     </Section>
   )
