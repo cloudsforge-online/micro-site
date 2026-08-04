@@ -57,15 +57,22 @@
  * The "corrected" citations pointed at lines that exist only in an uncommitted diff. CI caught it
  * on the very next run, reporting the mirror image of the same four failures.
  *
- * The numbers here are therefore the ones true at `micro-contracts` HEAD, which is what CI reads
- * and what a reader following a citation on GitHub is shown. When the migration lands they will
- * move, this check will go red, and that is the check working — it is a coordination signal, not a
- * defect to be silenced by re-pinning against whatever happens to be on the local disk.
+ * They were then re-pinned to the lines true at `micro-contracts` HEAD, which is what CI reads and
+ * what a reader following a citation on GitHub is shown — and this check went red AGAIN thirty
+ * minutes later, because the migration had by then landed and HEAD had moved for real. The four
+ * numbers below are those of `micro-contracts@218300b`, verified by resolving the registry against
+ * the committed file rather than against the working tree.
+ *
+ * That second red run is the check doing its job, not failing at it: it is a coordination signal
+ * between two repositories being changed at once, and the correct response is to look at what
+ * moved rather than to silence it.
  *
  * **The rule that follows: never re-pin a citation without confirming the cited repository is
- * clean.** `git -C <repo> status --short` before touching a line number. A red claims check has two
- * causes that look identical and want opposite responses — the citation is stale, or the sibling
- * tree is mid-edit — and only one of them is fixed by editing this file.
+ * clean, and pin against `git show origin/main:<path>` rather than against what is on disk.** A red
+ * claims check has two causes that look identical and want opposite responses — the citation is
+ * stale, or the sibling tree is mid-edit — and only one of them is fixed by editing this file.
+ * `test/estate-claims.test.ts` now names the dirty checkouts in its own failure message, so the
+ * next person is told which case they are in rather than having to remember there are two.
  *
  * ── What is deliberately NOT here ─────────────────────────────────────────────────────────────
  *
@@ -90,10 +97,13 @@
  * and says plainly that prices are not published yet.
  *
  * **No Shards, anywhere, ever again.** Shards are being removed estate-wide
- * (`docs/ecosystem/23-tessera.md` §8.1). A Shard was a US cent wearing a chain's clothes — its own
- * `ChainSpec` in `contracts/packages/chain/src/index.ts:112-113` says `family: 'evm', // never
- * used on chain` — and the rule underneath the removal is the owner's: **no balance may exist that
- * the chain does not back.** A Shard balance sat outside that guarantee by construction. The money
+ * (`docs/ecosystem/23-tessera.md` §8.1), and the removal is UNDERWAY RATHER THAN DONE — the chain
+ * package's own header now says why: `SHARD` is "deprecated in place" because the live ledger still
+ * holds Shard accounts, so the asset code cannot simply be deleted out from under them. This site
+ * is downstream of that and says nothing about the migration being finished; it simply never names
+ * the unit. A Shard was a US cent wearing a chain's clothes, and the rule underneath the removal is
+ * the owner's: **no balance may exist that the chain does not back.** A Shard balance sat outside
+ * that guarantee by construction. The money
  * is EMBER; the unit a reader sees is the Spark, which is a display denomination of EMBER and
  * never a second asset code, because the ledger balances per asset code and a second code would
  * let the two halves of one currency drift apart. `test/estate-claims.test.ts` fails if the word
@@ -137,25 +147,25 @@ export const CLAIMS = {
   emberConfirmations: {
     rendered: '60',
     meaning: 'Blocks an EMBER deposit waits before it is spendable.',
-    source: 'contracts/packages/chain/src/index.ts:55 — CHAINS.EMBER.confirmations',
+    source: 'contracts/packages/chain/src/index.ts:123 — CHAINS.EMBER.confirmations',
   },
   emberConfirmationMinutes: {
     rendered: '15',
     meaning:
       'The same depth said as a wait, and the block time it is computed from — 60 blocks at 15 seconds is 15 minutes, which is the one coincidence in this register and is why the derivation recomputes it rather than reading it back. "60 blocks" tells a reader nothing.',
     source:
-      'contracts/packages/chain/src/index.ts:45 — "~15 minutes at a 15-second block time", the depth Hearth publishes to exchanges in its docs/exchange-integration.md §4',
+      'contracts/packages/chain/src/index.ts:113 — "~15 minutes at a 15-second block time", the depth Hearth publishes to exchanges in its docs/exchange-integration.md §4',
   },
   emberReorgAlarmDepth: {
     rendered: '5',
     meaning:
       'A reorg this deep halts crediting for the chain and pages an operator. Deliberately below the credit depth: a shallower reorg cannot have produced a wrong credit.',
-    source: 'contracts/packages/chain/src/index.ts:56 — CHAINS.EMBER.reorgAlarmDepth',
+    source: 'contracts/packages/chain/src/index.ts:124 — CHAINS.EMBER.reorgAlarmDepth',
   },
   chains: {
     rendered: '5',
     meaning: 'On-chain assets the platform custodies: EMBER, BTC, ETH, SOL and XRP.',
-    source: 'contracts/packages/chain/src/index.ts:123-129 — ON_CHAIN_ASSETS',
+    source: 'contracts/packages/chain/src/index.ts:196-202 — ON_CHAIN_ASSETS',
   },
   products: {
     rendered: '6',
