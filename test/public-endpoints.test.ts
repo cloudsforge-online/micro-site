@@ -6,7 +6,7 @@
  *
  * The same rule as `./estate-claims.test.ts` and `./estate-stages.test.ts`, for the same reason: a
  * check that turns itself off when its inputs are missing produces the same green tick as one that
- * ran. There is no `SKIP_NETWORK` escape hatch here and adding one would delete the test.
+ * ran. There is no environment-variable escape hatch here, and adding one would delete the test.
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  *
  * ── Why the static check is not enough ────────────────────────────────────────────────────────

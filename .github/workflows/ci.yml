@@ -363,9 +363,29 @@ jobs:
             || { echo "::error::the stage check no longer reads the estate's deployment file"; exit 1; }
           grep -q 'smokeSurfaces' test/estate-stages.test.ts \
             || { echo "::error::the stage check no longer reads the smoke tier's surface list"; exit 1; }
-          # The assertion that nothing is open to the public is the load-bearing one on the page.
-          grep -q "publishes nothing as open to the public" test/estate-stages.test.ts \
-            || { echo "::error::the stage check no longer asserts that nothing is public"; exit 1; }
+          # This required the words "publishes nothing as open to the public" until 2026-08-05,
+          # when the estate went public and that assertion became one the test could no longer
+          # honestly make. The rule is inverted rather than dropped: what must survive is that
+          # `open` is DERIVED from the estate in both directions, not that it is empty.
+          grep -q 'tunnelHostnames' test/estate-stages.test.ts \
+            || { echo "::error::the stage check no longer reads the estate's tunnel configuration"; exit 1; }
+          grep -q "open when, and only when" test/estate-stages.test.ts \
+            || { echo "::error::the stage check no longer derives which surfaces are open"; exit 1; }
+          # A public address must be proven to answer, not merely to be configured. Two of the
+          # estate's own configured hostnames do not work, so this tier is not optional.
+          test -f test/public-endpoints.test.ts \
+            || { echo "::error::the published-endpoint check is gone"; exit 1; }
+          grep -q 'PUBLIC_SURFACES' test/public-endpoints.test.ts \
+            || { echo "::error::the endpoint check no longer fetches the addresses the site publishes"; exit 1; }
+          # It must not be possible to switch off, which is how the estate's other unfailable
+          # checks were built. Matched against `it.skip`/`describe.skip` and an environment read,
+          # in an `if` rather than an `&&` — a bare failing grep as the last command of a step is
+          # itself a non-zero exit, which would have made this rule fail closed for the wrong
+          # reason and been "fixed" by deleting it.
+          if grep -nE 'process\.env|\bit\.skip\b|\bdescribe\.skip\b' test/public-endpoints.test.ts; then
+            echo "::error::the endpoint check has acquired an escape hatch"
+            exit 1
+          fi
           if grep -nE '\bit\.skip\b|\bdescribe\.skip\b|\{ *skip *:|context\.skip\(' test/estate-stages.test.ts; then
             echo "::error::the stage check may not skip; without the estate it must FAIL"
             exit 1
