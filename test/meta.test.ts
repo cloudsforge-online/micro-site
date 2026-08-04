@@ -21,6 +21,7 @@
  * headline with a company name glued onto it.
  */
 import assert from 'node:assert/strict'
+import { existsSync, readFileSync } from 'node:fs'
 import { describe, it } from 'node:test'
 import {
   DEFAULT_IMAGE,
@@ -238,6 +239,94 @@ describe('the tags', () => {
     for (const tag of metaTags(meta, '')) {
       assert.ok(!tag.content.includes('cloudsforge.online'), tag.key)
     }
+  })
+})
+
+/* ─────────── the served document, which is not the rendered page ─────────── */
+
+/**
+ * `index.html` carries the home page's metadata, byte for byte.
+ *
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ * THIS IS THE ONE PLACE ON THIS SITE WHERE COPY LIVES OUTSIDE `src/content`, AND IT GOT AWAY.
+ *
+ * Everything else on this site is data, so `test/content.test.ts` can walk it. A static document
+ * cannot import, so the shell's title and description are TYPED — and a typed string in a file the
+ * copy walk does not read is exactly the defect that walk exists to prevent, sitting in the most
+ * publicly visible file in the repository.
+ *
+ * It shipped. The site was rewritten to lead with EMBER; every content file changed; 254 tests
+ * passed; and `<title>` went on saying "One crypto world." — the one line the owner had explicitly
+ * asked to have removed. The browser tab, the search result and every chat and social card carried
+ * it, because a link-preview fetcher renders the SERVED DOCUMENT and never the page. Two artefacts,
+ * one of them unguarded.
+ *
+ * So the shell is now checked against `metaFor('/')`, which is what a browser applies at runtime.
+ * They must be identical: a reader who follows a link and a crawler that never runs the bundle are
+ * entitled to the same sentence, and any difference between them is a difference nobody can see
+ * from inside the application.
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ */
+describe('the static shell', () => {
+  const shell = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
+  const home = metaFor('/')
+
+  /** The content of a `<meta>` by `name` or `property`, whichever the shell used. */
+  const metaContent = (key: string): string | undefined =>
+    new RegExp(`<meta[^>]*(?:name|property)="${key}"[^>]*content="([^"]*)"`, 's').exec(shell)?.[1] ??
+    // The shell wraps long tags across lines with the attributes reordered, so try the other order
+    // before concluding a tag is absent. A regex that quietly matched nothing would make every
+    // assertion below a comparison against `undefined`, which is the shape of a test that cannot
+    // fail — and the reason this file exists is a check that could not.
+    new RegExp(`<meta\\s+(?:name|property)="${key}"\\s+content="([^"]*)"`, 's').exec(shell)?.[1]
+
+  it('found the tags it is about to assert on', () => {
+    // The floor. Without it, a rename in index.html turns every check below into a no-op.
+    for (const key of ['description', 'og:title', 'og:description', 'og:image']) {
+      assert.ok(metaContent(key) !== undefined, `index.html has no ${key} this test can read`)
+    }
+    assert.match(shell, /<title>[^<]+<\/title>/)
+  })
+
+  it('carries the same title a browser would apply to the home page', () => {
+    const title = /<title>([^<]*)<\/title>/.exec(shell)?.[1]
+    assert.equal(
+      title,
+      home.title,
+      'the served document and the rendered page disagree about the home page title. ' +
+        'A link preview and a search result show the served one, and nothing in the application ' +
+        'can see it.',
+    )
+    assert.equal(metaContent('og:title'), home.title)
+  })
+
+  it('carries the same description', () => {
+    assert.equal(metaContent('description'), home.description)
+    assert.equal(metaContent('og:description'), home.description)
+  })
+
+  it('carries no sentence the site has retired', () => {
+    // The specific phrase, asserted directly as well as by equality above. The equality check is
+    // the real guard; this one names the failure so a future reader of a red run is told what
+    // happened rather than shown two long strings that differ somewhere in the middle.
+    assert.ok(
+      !/One crypto world/i.test(shell),
+      'index.html still carries the retired positioning line',
+    )
+    assert.ok(!/the loop is the product/i.test(shell))
+  })
+
+  it('names the currency, like every other front door on this site', () => {
+    assert.match(shell, /\bEMBER\b/)
+  })
+
+  it('points at a card that exists on disk', () => {
+    const image = metaContent('og:image')
+    assert.ok(image, 'the shell ships no card')
+    assert.ok(
+      existsSync(new URL(`../public${image}`, import.meta.url)),
+      `the shell's card is missing: public${image}`,
+    )
   })
 })
 

@@ -21,6 +21,7 @@
  * only the parts that ARE specific: which file each of this site's numbers comes out of, and how.
  */
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, it } from 'node:test'
@@ -288,6 +289,40 @@ describe('the estate is present', () => {
   })
 })
 
+/**
+ * Which sibling checkouts have uncommitted changes.
+ *
+ * ── This exists because of a failure that cost a red CI run to notice ─────────────────────────
+ *
+ * A citation names a path and a line, and a line number is only meaningful against a COMMIT. When
+ * this check went red on four citations into `micro-contracts`, the natural reading was that the
+ * repository had moved — so the line numbers were re-pinned to match what was on disk, and the
+ * suite went green against a file that existed only in another agent's staged, uncommitted
+ * migration. CI, which checks out `main`, reported the mirror image of the same four failures.
+ *
+ * A red claims check therefore has two causes that produce identical output and want opposite
+ * responses: the citation is stale, or the sibling tree is mid-edit. Only the first is fixed by
+ * editing `src/content/claims.ts`. So the failure message says which repositories are dirty,
+ * because a diagnosis that has to be remembered is a diagnosis that gets skipped at 3am.
+ *
+ * Returns an empty list, silently, when git is unavailable or the directory is not a checkout —
+ * this is a hint on a failure path and must never itself become a reason a run fails.
+ */
+function dirtySiblings(): string[] {
+  return REQUIRED_SIBLINGS.filter(({ dir }) => {
+    try {
+      return (
+        execFileSync('git', ['-C', `${ESTATE}${dir}`, 'status', '--porcelain'], {
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'ignore'],
+        }).trim().length > 0
+      )
+    } catch {
+      return false
+    }
+  }).map((s) => s.dir)
+}
+
 describe('the numbers register agrees with the estate', () => {
   it('recomputes every claim from the file it cites', () => {
     const failures = checkRegistry({
@@ -296,9 +331,16 @@ describe('the numbers register agrees with the estate', () => {
       exemptions: EXEMPTIONS,
       roots: [REPO, ESTATE],
     })
+    const dirty = failures.length > 0 ? dirtySiblings() : []
     assert.deepEqual(
       failures.map((f) => `${f.claim} — ${f.detail}`),
       [],
+      dirty.length === 0
+        ? undefined
+        : `\n\nBEFORE EDITING A LINE NUMBER: these sibling checkouts have UNCOMMITTED changes — ` +
+            `${dirty.join(', ')}. A citation points at a commit, not at a working tree, so the ` +
+            `lines you can see locally may not be the lines CI or a reader on GitHub will see. ` +
+            `Re-pinning against a dirty tree is how this check was last made green and wrong.`,
     )
   })
 

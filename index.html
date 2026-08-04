@@ -34,10 +34,26 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
     <link rel="apple-touch-icon" sizes="192x192" href="/favicon-192x192.png" />
 
-    <title>CloudsForge — One crypto world.</title>
+    <!--
+      THE SHELL AND THE RENDERED PAGE ARE TWO DIFFERENT ARTEFACTS, AND THIS FILE IS THE ONE A
+      CRAWLER GETS.
+
+      These four values are the home page's title and description, byte for byte — `metaFor('/')`
+      in src/lib/meta.ts. They are duplicated here because a static document cannot import, and
+      `test/meta.test.ts` asserts the two copies are identical rather than trusting anybody to
+      remember.
+
+      That test exists because they went out of sync in the way that is hardest to see: the
+      application copy was rewritten to lead with EMBER, every rendered page changed, the suite
+      stayed green — and the tab, the search result and every social card went on reading "One
+      crypto world" for as long as it took somebody to open the served HTML rather than the page.
+      The content walk reads `src/content`, so a string typed into this file was invisible to it.
+      The first thing anyone saw was the one sentence the owner had asked to have removed.
+    -->
+    <title>CloudsForge — EMBER, and everything built on it.</title>
     <meta
       name="description"
-      content="One account, one wallet and one ledger under several crypto products. Mine it, hold it, make it, trade it, sell it, play in it."
+      content="EMBER is proof-of-work money you can mine on an ordinary processor, and an ecosystem of places to spend it — one account, one wallet, one ledger. Mine it, hold it, make it, trade it, sell it, play in it."
     />
 
     <!--
@@ -55,10 +71,10 @@
     -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="CloudsForge" />
-    <meta property="og:title" content="CloudsForge — One crypto world." />
+    <meta property="og:title" content="CloudsForge — EMBER, and everything built on it." />
     <meta
       property="og:description"
-      content="One account, one wallet and one ledger under several crypto products. Mine it, hold it, make it, trade it, sell it, play in it."
+      content="EMBER is proof-of-work money you can mine on an ordinary processor, and an ecosystem of places to spend it — one account, one wallet, one ledger. Mine it, hold it, make it, trade it, sell it, play in it."
     />
     <meta property="og:image" content="/og-1200x630.png" />
     <meta name="twitter:card" content="summary_large_image" />

@@ -43,13 +43,29 @@
  * **by name**, with the reason recorded beside them — never by category, because a blanket
  * exemption is how this drifted the first time.
  *
- * **It has already paid for itself twice.** The second time was during the rewrite that added the
- * licensing section below: `micro-contracts` had been re-edited that morning and FOUR citations
- * into `packages/chain/src/index.ts` had drifted by sixty-odd lines each. Every value was still
- * correct — the checker said so — and every line number was wrong, which is the failure that is
- * invisible to a reader and fatal to anybody who follows one. The suite had been green a little
- * over an hour earlier. That is the actual half-life of a hand-written citation in a live estate,
- * and it is the argument for the `witness` field rather than for being more careful.
+ * ── A CITATION POINTS AT A COMMIT, NOT AT A WORKING TREE. THIS WAS LEARNED THE HARD WAY ───────
+ *
+ * During the rewrite that added the licensing section below, this check went red on four citations
+ * into `contracts/packages/chain/src/index.ts`. Every VALUE still derived correctly; every LINE
+ * NUMBER was reported as drifted by sixty-odd lines. The obvious reading was that `micro-contracts`
+ * had moved, so the four line numbers were "corrected" to match, and the suite went green.
+ *
+ * **It was green against a file nobody else could see.** `micro-contracts` was at the same commit
+ * it had been at all along. What had changed was that another agent's Shard-to-Sparks migration was
+ * sitting in that repository's working tree as a STAGED, UNCOMMITTED edit — so the sibling checkout
+ * on this machine and the checkout CI makes from `main` were different files with the same name.
+ * The "corrected" citations pointed at lines that exist only in an uncommitted diff. CI caught it
+ * on the very next run, reporting the mirror image of the same four failures.
+ *
+ * The numbers here are therefore the ones true at `micro-contracts` HEAD, which is what CI reads
+ * and what a reader following a citation on GitHub is shown. When the migration lands they will
+ * move, this check will go red, and that is the check working — it is a coordination signal, not a
+ * defect to be silenced by re-pinning against whatever happens to be on the local disk.
+ *
+ * **The rule that follows: never re-pin a citation without confirming the cited repository is
+ * clean.** `git -C <repo> status --short` before touching a line number. A red claims check has two
+ * causes that look identical and want opposite responses — the citation is stale, or the sibling
+ * tree is mid-edit — and only one of them is fixed by editing this file.
  *
  * ── What is deliberately NOT here ─────────────────────────────────────────────────────────────
  *
@@ -121,25 +137,25 @@ export const CLAIMS = {
   emberConfirmations: {
     rendered: '60',
     meaning: 'Blocks an EMBER deposit waits before it is spendable.',
-    source: 'contracts/packages/chain/src/index.ts:123 — CHAINS.EMBER.confirmations',
+    source: 'contracts/packages/chain/src/index.ts:55 — CHAINS.EMBER.confirmations',
   },
   emberConfirmationMinutes: {
     rendered: '15',
     meaning:
       'The same depth said as a wait, and the block time it is computed from — 60 blocks at 15 seconds is 15 minutes, which is the one coincidence in this register and is why the derivation recomputes it rather than reading it back. "60 blocks" tells a reader nothing.',
     source:
-      'contracts/packages/chain/src/index.ts:113 — "~15 minutes at a 15-second block time", the depth Hearth publishes to exchanges in its docs/exchange-integration.md §4',
+      'contracts/packages/chain/src/index.ts:45 — "~15 minutes at a 15-second block time", the depth Hearth publishes to exchanges in its docs/exchange-integration.md §4',
   },
   emberReorgAlarmDepth: {
     rendered: '5',
     meaning:
       'A reorg this deep halts crediting for the chain and pages an operator. Deliberately below the credit depth: a shallower reorg cannot have produced a wrong credit.',
-    source: 'contracts/packages/chain/src/index.ts:124 — CHAINS.EMBER.reorgAlarmDepth',
+    source: 'contracts/packages/chain/src/index.ts:56 — CHAINS.EMBER.reorgAlarmDepth',
   },
   chains: {
     rendered: '5',
     meaning: 'On-chain assets the platform custodies: EMBER, BTC, ETH, SOL and XRP.',
-    source: 'contracts/packages/chain/src/index.ts:196-202 — ON_CHAIN_ASSETS',
+    source: 'contracts/packages/chain/src/index.ts:123-129 — ON_CHAIN_ASSETS',
   },
   products: {
     rendered: '6',
