@@ -47,6 +47,12 @@ const REQUIRED_SIBLINGS: ReadonlyArray<{ dir: string; repo: string; witness: str
   { dir: 'contracts', repo: 'micro-contracts', witness: 'packages/chain/src/index.ts' },
   { dir: 'docs', repo: 'micro-docs', witness: 'ecosystem/01-product-vision.md' },
   { dir: 'ui', repo: 'micro-ui', witness: 'packages/ui/src/tokens.css' },
+  { dir: 'brand', repo: 'micro-brand', witness: 'TRADEMARKS.md' },
+  // The two the STAGE derivation reads. `test/estate-stages.test.ts` names them again in its own
+  // message, but they are listed here as well so that a checkout gone missing is reported once,
+  // early, with the whole list — rather than as two unrelated failures in two files.
+  { dir: 'deploy', repo: 'micro-deploy', witness: 'compose/docker-compose.estate.yml' },
+  { dir: 'beacon', repo: 'micro-beacon', witness: 'src/browser/smoke.ts' },
 ]
 
 /* ───────────────────────────── how each number is recomputed ───────────────────────────── */
@@ -172,6 +178,33 @@ const DERIVATIONS: Readonly<Record<string, Derivation>> = {
         throw new Error('surfaces.ts no longer declares SURFACES before PRODUCTS')
       }
       return String((text.slice(start, end).match(/kind: 'product'/g) ?? []).length)
+    },
+  },
+
+  /**
+   * The artwork licence's version, from the file that separates it from the code's.
+   *
+   * The derivation also asserts the trademark reservation is still in that file. Without it the
+   * version number survives a rewrite that drops the reservation — and the reservation is the
+   * clause the terms page leans on hardest, because it is what makes the permissive halves safe.
+   */
+  assetLicenceVersion: {
+    reads: 'brand/TRADEMARKS.md',
+    witness: /CC BY [\d.]+ licence in/,
+    derive: (text) => {
+      const match = /CC BY (\d+\.\d+) licence/.exec(text)
+      if (!match?.[1]) throw new Error('the trademark notice no longer names the artwork licence version')
+      assert.match(
+        text,
+        /are trademarks of CloudsForge/,
+        'the trademark notice no longer reserves the marks; the terms page says it does',
+      )
+      assert.match(
+        text,
+        /MIT licence in `LICENSE`/,
+        'the trademark notice no longer names MIT as the code licence',
+      )
+      return match[1]
     },
   },
 

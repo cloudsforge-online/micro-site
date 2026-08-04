@@ -18,7 +18,7 @@
  */
 import type { ReactNode } from 'react'
 import { Mark, hasMark, surface, type SurfaceKey } from '@cloudsforge/ui'
-import { STAGE_GLYPH, STAGE_LABEL, type Stage } from '../content/products.ts'
+import { STAGE_GLYPH, STAGE_LABEL, type Stage } from '../content/stages.ts'
 
 /**
  * The ash ridge.

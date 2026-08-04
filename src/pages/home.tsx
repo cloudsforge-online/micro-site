@@ -20,7 +20,7 @@ export function HomePage() {
     <>
       <Hero />
       <Ridge />
-      <Loop />
+      <Ember />
       <Products />
       <Spans />
       <Ridge />
@@ -61,18 +61,23 @@ function Hero() {
 }
 
 /**
- * The loop.
+ * The four things that happen to an EMBER.
  *
- * A numbered rail rather than a row of cards, because the point of the loop is that the steps are
- * IN AN ORDER and a grid says nothing about order. Each step wears the accent of the surface that
- * owns it, scoped with `accentProps`, so the rail is read as four different places rather than as
- * four paragraphs.
+ * A numbered rail rather than a row of cards, because the point is that the steps are IN AN ORDER
+ * and a grid says nothing about order. Each step wears the accent of the surface that owns it,
+ * scoped with `accentProps`, so the rail is read as four different places rather than as four
+ * paragraphs.
+ *
+ * This was `Loop`, under the heading "The loop is the product". The steps are unchanged and the
+ * framing is not — `src/content/pages.ts` HOME.ember carries the reason, which is that the old
+ * heading argued about the architecture to a reader who had not yet been told what the thing is.
+ * The anchor moved with it: `#loop` was a name for the diagram rather than for the subject.
  */
-function Loop() {
+function Ember() {
   return (
-    <Section title={HOME.loop.title} lede={HOME.loop.lede} id="loop">
+    <Section title={HOME.ember.title} lede={HOME.ember.lede} id="ember">
       <ol className="si-rail">
-        {HOME.loop.steps.map((step, index) => (
+        {HOME.ember.steps.map((step, index) => (
           <li className="si-rail__step" key={step.verb} {...accentProps(step.accentKey)}>
             {/* Numbered from position, zero-padded, and aria-hidden because the <ol> already
                 announces the order to a screen reader — reading "01" aloud before every step is

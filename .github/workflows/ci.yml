@@ -85,6 +85,41 @@ jobs:
           repository: cloudsforge-online/micro-docs
           path: docs
           token: ${{ secrets.ESTATE_READ_TOKEN }}
+      # The artwork licence's version, for the licensing section of the terms page. Cited to
+      # micro-brand's TRADEMARKS.md, which is the file that separates the CC BY grant on the images
+      # from the MIT grant on the code and reserves the marks from both.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-brand
+          path: brand
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+
+      # ────────────────────────────────────────────────────────────────────────────────────────
+      # AND THESE TWO ARE WHAT MAKE THE STAGE ON EVERY PRODUCT CARD DERIVED RATHER THAN TYPED.
+      #
+      # `test/estate-stages.test.ts` opens micro-deploy's compose file for the services a surface
+      # depends on, and micro-beacon's SMOKE_SURFACES for whether a real browser is driven at that
+      # surface through the real gateway. A surface failing either cannot be published as running.
+      #
+      # They are here because the stage rotted exactly as the numbers did, and in the direction
+      # nobody audits: six of seven surfaces published "Being built" while every one of them was
+      # deployed, healthy, and walked by `beacon smoke`. A claim that UNDERSTATES is never
+      # investigated, because nobody goes looking for proof that a thing exists after being told
+      # it does not.
+      #
+      # Like the two above, the test does NOT skip when they are absent. It fails and says what to
+      # check out.
+      # ────────────────────────────────────────────────────────────────────────────────────────
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-deploy
+          path: deploy
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-beacon
+          path: beacon
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
 
       # Pinned, because the checkout lives at site/ and the action looks for the
       # packageManager field in the workspace root, where there is no package.json.
@@ -267,12 +302,40 @@ jobs:
             exit 1
           fi
           # And CI must actually provide the estate, or the check above fails every run and gets
-          # deleted for being noisy. Both sibling checkouts are named in the check job.
-          for repo in micro-contracts micro-docs; do
+          # deleted for being noisy. Every sibling checkout is named in the check job.
+          for repo in micro-contracts micro-docs micro-brand; do
             grep -q "repository: cloudsforge-online/$repo" .github/workflows/ci.yml \
               || { echo "::error::$repo is no longer checked out; the claims check cannot read it"; exit 1; }
           done
           echo "ok: the claims check is present, cannot skip, and has its inputs"
+
+      - name: Every published stage is recomputed from the estate
+        # The same rule as the claims check, for the field that says whether a thing is built. It
+        # is repeated here so deleting the test does not delete the rule, and it is asserted in the
+        # shape that matters — that the check refuses to skip, and that CI supplies what it reads.
+        #
+        # The failure this closes is worth naming in the pipeline as well as in the test: six of
+        # seven surfaces published "Being built" while every one of them was deployed and walked by
+        # a real browser. Nothing could have noticed, because nothing opened the estate.
+        run: |
+          set -uo pipefail
+          test -f test/estate-stages.test.ts || { echo "::error::the stage check is gone"; exit 1; }
+          grep -q 'composeServices' test/estate-stages.test.ts \
+            || { echo "::error::the stage check no longer reads the estate's deployment file"; exit 1; }
+          grep -q 'smokeSurfaces' test/estate-stages.test.ts \
+            || { echo "::error::the stage check no longer reads the smoke tier's surface list"; exit 1; }
+          # The assertion that nothing is open to the public is the load-bearing one on the page.
+          grep -q "publishes nothing as open to the public" test/estate-stages.test.ts \
+            || { echo "::error::the stage check no longer asserts that nothing is public"; exit 1; }
+          if grep -nE '\bit\.skip\b|\bdescribe\.skip\b|\{ *skip *:|context\.skip\(' test/estate-stages.test.ts; then
+            echo "::error::the stage check may not skip; without the estate it must FAIL"
+            exit 1
+          fi
+          for repo in micro-deploy micro-beacon; do
+            grep -q "repository: cloudsforge-online/$repo" .github/workflows/ci.yml \
+              || { echo "::error::$repo is no longer checked out; the stage check cannot read it"; exit 1; }
+          done
+          echo "ok: the stage check is present, cannot skip, and has its inputs"
 
       - name: No third-party request
         # The privacy notice claims this site embeds no external script, stylesheet, font or image.

@@ -49,7 +49,7 @@ export interface SiteRoute {
 }
 
 export const ROUTES: readonly SiteRoute[] = [
-  { path: '', label: 'Home', wildcard: false, summary: 'One crypto world, and the loop that joins it up.' },
+  { path: '', label: 'Home', wildcard: false, summary: 'EMBER, and the ecosystem built on top of it.' },
   // Wildcard: `/products` is the index and `/products/<key>` is one surface's page.
   //
   // nginx serves those with two location blocks, and the second ENUMERATES the slugs rather than
@@ -58,10 +58,23 @@ export const ROUTES: readonly SiteRoute[] = [
   // destination in the previous estate and is now a page inside Forge Hub. test/routes.test.ts
   // reads that list against PRODUCT_PAGES in both directions.
   {
+    /**
+     * ── The label says Ecosystem and the path still says products ─────────────────────────────
+     *
+     * Deliberate, and it is the one place the rename stops. The owner's instruction was to speak
+     * of an ecosystem rather than of products, and the copy does throughout. The URL does not,
+     * because this path is not only ours: `@cloudsforge/ui` renders the shared footer on every
+     * surface in the estate and links `/products` from it, and that package is another agent's to
+     * change. Renaming the route here would 404 a link on sixteen surfaces to save a word in an
+     * address bar.
+     *
+     * The order to do it in is registry first, site second — and a redirect is NOT the answer,
+     * because this site's whole position is that an unknown address answers 404 rather than 200.
+     */
     path: 'products',
-    label: 'Products',
+    label: 'Ecosystem',
     wildcard: true,
-    summary: 'The control centre and the products that sit on it.',
+    summary: 'The control centre and the destinations that sit on it.',
   },
   {
     path: 'platform',
@@ -73,16 +86,22 @@ export const ROUTES: readonly SiteRoute[] = [
     path: 'build',
     label: 'Build status',
     wildcard: false,
-    summary: 'What is built, what is not, and what is not open to the public.',
+    summary: 'What runs in-house, what is built and not shipped, and how each of those is checked.',
   },
-  { path: 'about', label: 'About', wildcard: false, summary: 'What CloudsForge is for, and what it refuses to be.' },
+  {
+    path: 'about',
+    label: 'About',
+    wildcard: false,
+    summary: 'What this ecosystem is for, and what it refuses to become.',
+  },
   // The legal pages are reachable from the footer rather than the header. They are not what a
   // reader came for, and a nav slot spent on Terms is a slot not spent on a product.
   {
     path: 'terms',
     label: null,
     wildcard: false,
-    summary: 'Terms of service — drafted where the answer is engineering, marked where it is not.',
+    summary:
+      'Terms of service — the licensing and the mechanisms written out, the rest marked as needing counsel.',
   },
   {
     path: 'privacy',

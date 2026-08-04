@@ -38,10 +38,18 @@
  * So the citations are now checked out and read. `test/estate-claims.test.ts` resolves every
  * `source` below against the sibling repositories, and for all but two of the entries it
  * RECOMPUTES the value from that file rather than reading it back. `.github/workflows/ci.yml`
- * checks out `micro-contracts` and `micro-docs` alongside `micro-ui` so the check runs in CI with
- * teeth rather than skipping. The two entries that cannot be recomputed are exempt **by name**,
- * with the reason recorded beside them — never by category, because a blanket exemption is how
- * this drifted the first time.
+ * checks out `micro-contracts`, `micro-docs` and `micro-brand` alongside `micro-ui` so the check
+ * runs in CI with teeth rather than skipping. The two entries that cannot be recomputed are exempt
+ * **by name**, with the reason recorded beside them — never by category, because a blanket
+ * exemption is how this drifted the first time.
+ *
+ * **It has already paid for itself twice.** The second time was during the rewrite that added the
+ * licensing section below: `micro-contracts` had been re-edited that morning and FOUR citations
+ * into `packages/chain/src/index.ts` had drifted by sixty-odd lines each. Every value was still
+ * correct — the checker said so — and every line number was wrong, which is the failure that is
+ * invisible to a reader and fatal to anybody who follows one. The suite had been green a little
+ * over an hour earlier. That is the actual half-life of a hand-written citation in a live estate,
+ * and it is the argument for the `witness` field rather than for being more careful.
  *
  * ── What is deliberately NOT here ─────────────────────────────────────────────────────────────
  *
@@ -113,25 +121,25 @@ export const CLAIMS = {
   emberConfirmations: {
     rendered: '60',
     meaning: 'Blocks an EMBER deposit waits before it is spendable.',
-    source: 'contracts/packages/chain/src/index.ts:55 — CHAINS.EMBER.confirmations',
+    source: 'contracts/packages/chain/src/index.ts:123 — CHAINS.EMBER.confirmations',
   },
   emberConfirmationMinutes: {
     rendered: '15',
     meaning:
       'The same depth said as a wait, and the block time it is computed from — 60 blocks at 15 seconds is 15 minutes, which is the one coincidence in this register and is why the derivation recomputes it rather than reading it back. "60 blocks" tells a reader nothing.',
     source:
-      'contracts/packages/chain/src/index.ts:45 — "~15 minutes at a 15-second block time", the depth Hearth publishes to exchanges in its docs/exchange-integration.md §4',
+      'contracts/packages/chain/src/index.ts:113 — "~15 minutes at a 15-second block time", the depth Hearth publishes to exchanges in its docs/exchange-integration.md §4',
   },
   emberReorgAlarmDepth: {
     rendered: '5',
     meaning:
       'A reorg this deep halts crediting for the chain and pages an operator. Deliberately below the credit depth: a shallower reorg cannot have produced a wrong credit.',
-    source: 'contracts/packages/chain/src/index.ts:56 — CHAINS.EMBER.reorgAlarmDepth',
+    source: 'contracts/packages/chain/src/index.ts:124 — CHAINS.EMBER.reorgAlarmDepth',
   },
   chains: {
     rendered: '5',
     meaning: 'On-chain assets the platform custodies: EMBER, BTC, ETH, SOL and XRP.',
-    source: 'contracts/packages/chain/src/index.ts:123-129 — ON_CHAIN_ASSETS',
+    source: 'contracts/packages/chain/src/index.ts:196-202 — ON_CHAIN_ASSETS',
   },
   products: {
     rendered: '6',
@@ -163,6 +171,22 @@ export const CLAIMS = {
     meaning:
       'The status a single-page application usually answers an unknown address with, and the one this site refuses to.',
     source: 'nginx.conf — the enumerated `location` blocks, asserted by test/routes.test.ts',
+  },
+  /**
+   * The artwork licence's version.
+   *
+   * Registered rather than typed because "CC BY" without a version is not a licence — the versions
+   * differ on attribution and on what a downstream licensee may do — and a reader who has to guess
+   * which one applies has been told nothing. It is cited to the file that draws the boundary
+   * between the two grants rather than to either licence text, because the boundary is the part
+   * that is easy to get wrong and the part the terms page is actually about.
+   */
+  assetLicenceVersion: {
+    rendered: '4.0',
+    meaning:
+      'The version of the Creative Commons Attribution licence the estate\'s generated artwork is published under, as distinct from the MIT licence on the code. MIT speaks of "the Software" throughout, and an image is not software.',
+    source:
+      'brand/TRADEMARKS.md:8 — "not covered by the MIT licence in `LICENSE` or by the CC BY 4.0 licence in `LICENSE-ASSETS`", the sentence that separates the two grants and reserves the marks from both',
   },
   accentSeparation: {
     rendered: '36.1',

@@ -144,12 +144,12 @@ export const CATALOGUE: readonly Scenario[] = [
       const session = await renderOnlyWithStubbedNetwork(surface.origin, { stubs: ANONYMOUS })
       try {
         const text = await assertMounted(session, {
-          showing: [HOME.spine, HOME.loop.title, HOME.spans.title],
+          showing: [HOME.spine, HOME.ember.title, HOME.spans.title],
         })
         // The ORDER is the assertion, and it is read out of the rendered text rather than the
         // source, because document order is what a screen reader and a keyboard user get.
-        assert.equal(await textOrder(session.page, HOME.spine, HOME.loop.title), 'before')
-        assert.equal(await textOrder(session.page, HOME.loop.title, HOME.spans.title), 'before')
+        assert.equal(await textOrder(session.page, HOME.spine, HOME.ember.title), 'before')
+        assert.equal(await textOrder(session.page, HOME.ember.title, HOME.spans.title), 'before')
 
         // "What is built" is on the home page rather than buried. A reader who finds out on page
         // four that none of this is running has been misled by pages one to three.

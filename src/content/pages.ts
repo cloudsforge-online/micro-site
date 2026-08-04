@@ -15,8 +15,24 @@ import type { SurfaceKey } from '@cloudsforge/ui'
 /* ─────────────────────────────── home ─────────────────────────────── */
 
 export const HOME = {
-  /** The positioning line. Everything else on the site is a footnote to it. */
-  spine: 'One crypto world.',
+  /**
+   * The positioning line. Everything else on the site is a footnote to it.
+   *
+   * ── This replaced "One crypto world." ───────────────────────────────────────────────────────
+   *
+   * Three things were wrong with that line and only the third is fatal. It said "crypto", which is
+   * the category and not the thing; it said "world", which this estate has already given a
+   * specific meaning to — a Forge Worlds season is a world, and the front door borrowing the word
+   * for something else costs the word; and it named nothing. A stranger who read it learned that
+   * we are in crypto, which they could tell from the address.
+   *
+   * The estate has exactly one thing at the centre of it that nobody else has: a proof-of-work
+   * currency anybody can produce on a laptop, which is also the funding rail for everything built
+   * around it. So the line names the currency and then says there is more than the currency. That
+   * is the whole positioning, and it is checkable — `test/content.test.ts` asserts the spine names
+   * EMBER, so a future rewrite that drifts back to a category noun fails rather than ships.
+   */
+  spine: 'EMBER, and everything built on it.',
   /**
    * The search-result and link-preview description.
    *
@@ -26,7 +42,7 @@ export const HOME = {
    * holds every blurb on this site to that budget.
    */
   blurb:
-    'One account, one wallet and one ledger under several crypto products. Mine it, hold it, make it, trade it, sell it, play in it.',
+    'EMBER is proof-of-work money you can mine on an ordinary processor, and an ecosystem of places to spend it — one account, one wallet, one ledger. Mine it, hold it, make it, trade it, sell it, play in it.',
   /**
    * The verbs, in the order the story is told. NOT the registry's order, which is tuned for the
    * colour separation of neighbouring switcher entries and says so in capitals.
@@ -34,19 +50,33 @@ export const HOME = {
    */
   verbLine: 'Mine it, hold it, make it, trade it, sell it, play in it.',
   standfirst:
-    'Almost every consumer crypto platform is an exchange with features bolted on. This is the inverse: a set of things worth doing, funded by a currency you can produce yourself on a laptop, with one account, one wallet and one ledger underneath all of them.',
+    'Almost every consumer crypto platform is an exchange with features bolted on. This is the inverse: it starts with EMBER — a currency you can produce yourself on the machine you already own — and builds an ecosystem of places worth spending it, over one account, one wallet and one ledger.',
   /**
-   * The loop, which is the actual product. Source: the diagram in
+   * What EMBER does, in the four steps of its life. Source: the diagram in
    * docs/ecosystem/01-product-vision.md §1, flattened into four steps because the branch in the
-   * middle of it is the product grid and does not need drawing twice.
+   * middle of it is the ecosystem grid and does not need drawing twice.
+   *
+   * ── This block was headed "The loop is the product" ─────────────────────────────────────────
+   *
+   * It was removed on the owner's instruction, and the instruction was right for a reason worth
+   * writing down rather than just obeying. "The loop is the product" is a sentence about the
+   * ARCHITECTURE, addressed to somebody who has already been convinced there is something here —
+   * it argues that the parts are joined up, which is a second-order virtue. A reader on the front
+   * page has not yet been told what the first-order thing is.
+   *
+   * It also quietly demoted EMBER to one arrow of four. EMBER is not a step in a circuit; it is
+   * the thing the circuit exists to move, the only part of this estate that could not be
+   * assembled out of someone else's components, and the reason a person would care about any of
+   * the rest. So the four steps survive — they were good, and each is still something that has to
+   * actually work — under a heading about the currency instead of about the diagram.
    */
-  loop: {
+  ember: {
     // The steps carry no ordinal of their own. The rail numbers them from their position, so a
     // step inserted in the middle renumbers the rest — the failure mode of typed ordinals is two
     // number threes, and it is the sort of thing that survives review because nothing is wrong
     // with either line on its own.
-    title: 'The loop is the product',
-    lede: 'Not a portfolio of apps that share a logo. One circuit, and every arrow in it is something the platform has to actually do.',
+    title: 'It starts with the currency',
+    lede: 'EMBER is not a token bolted onto an ecosystem. The ecosystem is what makes EMBER worth mining, and every step below is something that has to actually work for that to be true.',
     steps: [
       {
         verb: 'Mine',
@@ -63,7 +93,7 @@ export const HOME = {
       {
         verb: 'Spend',
         accentKey: 'site' as SurfaceKey,
-        title: 'Use it across every product',
+        title: 'Use it everywhere in the ecosystem',
         body: `The money is EMBER itself. What you see is the Spark — ${claim('sparksPerEmber')} Sparks to one EMBER — which is a shorter way of writing the same balance and never a second currency with its own rate. One asset, one ledger, and no balance anywhere that the chain does not back.`,
       },
       {
@@ -83,9 +113,9 @@ export const HOME = {
    * so that neither can be wrong again.
    */
   products: {
-    title: 'What you can do here',
-    lede: `${sentenceCase(productCount())} products on one account. Each is a place to do something, not a feature of the last one.`,
-    hubAside: `It is not a ${nextProductOrdinal()} product. It is the thing the other ${productCount()} are standing on.`,
+    title: 'Where the EMBER goes',
+    lede: `${sentenceCase(productCount())} places to spend it, on one account. Each is somewhere to do something, not a feature of the last one.`,
+    hubAside: `It is not a ${nextProductOrdinal()} destination. It is the thing the other ${productCount()} are standing on.`,
   },
   /** The one-account promise, in the terms a reader can check. */
   spans: {
@@ -94,21 +124,21 @@ export const HOME = {
     points: [
       {
         title: 'Sign in once',
-        body: 'One identity issues the tokens every product verifies against one key set. There is no per-product account, because there is only one account.',
+        body: 'One identity issues the tokens every surface verifies against one key set. There is no per-destination account, because there is only one account.',
       },
       {
         title: 'One wallet',
-        body: `${claim('chains')} chains behind one balance — EMBER, Bitcoin, Ethereum, Solana and the XRP Ledger — with the same receive and send screens whichever product you arrived from.`,
+        body: `${claim('chains')} chains behind one balance — EMBER, Bitcoin, Ethereum, Solana and the XRP Ledger — with the same receive and send screens whichever part of the ecosystem you arrived from.`,
       },
       {
         title: 'One history',
-        body: 'Every account, money, asset and game event on one timeline, kept for as long as the account exists. Not one feed per product, joined by hand.',
+        body: 'Every account, money, asset and game event on one timeline, kept for as long as the account exists. Not one feed per destination, joined by hand.',
       },
     ],
   },
   closing: {
     title: 'Built in the open, with the state of it written down',
-    body: 'This platform is being rebuilt from the ground up and none of it is open to the public yet. Rather than take that sentence off the site until it stops being true, there is a page that says exactly where each part stands.',
+    body: 'Most of this ecosystem is built and running, and none of it is open to the public. Rather than pick whichever half of that sentence flatters, there is a page that says exactly where each part stands and how each of those states is checked.',
   },
 } as const
 
@@ -122,20 +152,35 @@ export const HOME = {
  * opposite directions, on the same screen.
  */
 export const PRODUCTS_INDEX = {
-  eyebrow: 'Products',
+  eyebrow: 'The ecosystem',
   headline: `${sentenceCase(surfaceCount())} surfaces, one account`,
   standfirst: [
-    `${sentenceCase(productCount())} products a person chooses between, and the control centre they all sit on. Each carries the state it is actually in, which is not the same on any two of them.`,
+    `${sentenceCase(productCount())} destinations a person chooses between, and the control centre they all sit on. Each carries the state it is actually in, derived from the estate rather than typed in here.`,
   ],
   controlCentreTitle: 'The control centre',
-  productsTitle: `The ${productCount()} products`,
+  productsTitle: `The ${productCount()} destinations`,
   productsLede:
     'In the order the switcher lists them, which is chosen so that no two neighbouring accents can be confused with each other.',
+  /**
+   * ── This block said the opposite, and had said it for weeks ─────────────────────────────────
+   *
+   * It read: "A developer platform — projects, keys, webhooks, a software development kit and a
+   * sandbox — is intended and is not built." At the time that was checked, `devplatform` and
+   * `devportal-web` were both declared in `deploy/compose/docker-compose.estate.yml`, both
+   * running healthy, and the developer surface was one of the sixteen `beacon smoke` drives in a
+   * real browser through the real gateway.
+   *
+   * It is kept as a section rather than deleted because the shape of the mistake is the lesson.
+   * The paragraph was written to be safe — announcing nothing is the conservative move — and the
+   * estate then built the thing and nobody came back. **A cautious false statement is still a
+   * false statement**, and this one had the additional property that no reader would ever go and
+   * check it, because nobody investigates a claim that something does not exist.
+   */
   notHere: {
-    title: 'What is not here yet',
+    title: 'What has no page here, and why',
     body: [
-      'A developer platform — projects, keys, webhooks, a software development kit and a sandbox — is intended and is not built. It has no page on this site, because a page about it would be a page about an intention, and an intention with a marketing page attached is how the estate ended up selling things that no code path delivered.',
-      'It will get one when there is something behind it. Until then this paragraph is the whole announcement.',
+      'The developer platform — projects, keys, webhooks, a software development kit and a sandbox — is built and running alongside everything else, on its own surface. It has no page in this section because this section is about where a person spends EMBER, and a developer platform is something a reader either already knows they want or does not; a marketing page would be the least useful thing to give them.',
+      'This paragraph replaces one saying that the developer platform did not exist. It said so for weeks after it did, which is the mirror image of the failure the rest of this site is arranged against: a claim that understates is not a safe claim, it is a different wrong one, and nobody ever audits a sentence that promises less.',
     ],
   },
 } as const
@@ -217,14 +262,35 @@ export const PLATFORM = {
 
 /* ────────────────────────────── about ─────────────────────────────── */
 
+/**
+ * ── The headline here was "A small company that owns its whole stack" ─────────────────────────
+ *
+ * It was replaced on the owner's instruction, and both halves of it were wrong in a way worth
+ * recording, because the replacement is not simply a bigger boast.
+ *
+ * "Small company" was the wrong SUBJECT. Nothing on this page is about a company — every sentence
+ * under it is about what gets made, who owns what, and which trade-offs are settled in advance.
+ * Leading with a size gave a reader a fact that predicts none of that, and it is the one fact on
+ * the page that changes without anything else changing.
+ *
+ * "Owns its whole stack" was the wrong CLAIM. Owning a stack is a procurement position; plenty of
+ * companies own theirs and it tells you nothing. What is actually unusual here is that the
+ * currency at the bottom and the places to spend it at the top are the same project, so a promise
+ * made about one is enforceable in the other — and that is a property of an ECOSYSTEM rather than
+ * of a stack. A stack is what you stand on. An ecosystem is a set of things that need each other.
+ *
+ * The eyebrow moved with it, from "The company" to "The ecosystem", because an eyebrow that says
+ * "company" over a headline that says ecosystem just restores the demotion one line higher up.
+ */
 export const ABOUT = {
-  eyebrow: 'The company',
-  headline: 'A small company that owns its whole stack',
+  eyebrow: 'The ecosystem',
+  headline: 'An ecosystem, from the currency up',
   blurb:
     'CloudsForge makes the currency, the rails that move it, the tools that create with it and the worlds that spend it. The principles it decides by, and what it refuses to become.',
   standfirst: [
-    'CloudsForge makes the currency, the rails that move it, the tools that create things with it, and the worlds that spend it. Owning all four is the only reason it can make promises a company owning one of them cannot.',
-    'A processor-mineable coin that is the actual funding rail for real products is a story nobody else is telling. Most of the work is engineering, and none of the engineering is marketing.',
+    'CloudsForge makes the currency, the rails that move it, the tools that create things with it, and the worlds that spend it. Owning all four is the only reason it can make promises to a holder that anyone owning one of them cannot.',
+    'That is what makes this an ecosystem rather than a stack. A stack is what a company stands on and it is nobody else\'s business; here the layers need each other in public — EMBER is worth mining because there is somewhere to spend it, and there is somewhere to spend it because EMBER funds the building of it.',
+    'A processor-mineable coin that is the actual funding rail for real destinations is a story nobody else is telling. Most of the work is engineering, and none of the engineering is marketing.',
   ],
   /** Source: docs/ecosystem/01-product-vision.md §5. Tie-breakers, not slogans. */
   principles: {
@@ -294,12 +360,12 @@ export const ABOUT = {
 
 export const BUILD = {
   eyebrow: 'Build status',
-  headline: 'What is built, and what is not',
+  headline: 'Where each part actually is',
   blurb:
-    'An honest account of where this platform stands: which parts are built and tested, which are still being written, and the fact that none of it is serving the public yet.',
+    'An honest account of where this ecosystem stands: what runs in-house, what is still being written, and the fact that none of it is serving the public. Every state on this page is derived from the estate.',
   standfirst: [
-    'This platform is being rebuilt as a set of independent services and applications. They are built, and they now run together — on one machine, behind a gateway that nobody outside the project can reach.',
-    'Both halves of that sentence are on this page because leaving the second one off is how a launch date becomes a thing people plan around.',
+    'This ecosystem has been rebuilt as a set of independent services and applications. They are built, and they now run together — on one machine, behind a gateway that nobody outside the project can reach.',
+    'Both halves of that sentence are on this page because leaving the second one off is how a launch date becomes a thing people plan around, and leaving the FIRST one off is how this page spent weeks describing things as unbuilt while they were running.',
   ],
   /**
    * Source: docs/ecosystem/18-build-status.md §1.
@@ -342,7 +408,55 @@ export const BUILD = {
    * exactly the failure this whole site is arranged to make impossible.
    */
   perSurfaceNote:
-    'Each surface below carries the same state as its own page, because both are read from one declaration.',
+    'Each surface below carries the same state as its own page, because both are read from one declaration — and that declaration is checked against the estate rather than trusted.',
+  /**
+   * How a stage is arrived at. Rendered above the legend.
+   *
+   * This paragraph is the difference between a status page and a mood board, so it says the
+   * mechanism rather than promising rigour. `test/estate-stages.test.ts` implements exactly what
+   * is described here.
+   */
+  derivation: {
+    title: 'Where these states come from',
+    body: [
+      'None of the states below is typed in by hand and left. Each is recomputed by a test that opens the estate\'s own deployment file and requires every container a surface depends on to be declared in it, then opens the smoke tier\'s surface list and requires that a real browser is driven at that surface through the real gateway with nothing intercepted. A surface that fails either check cannot be published as running, whatever this site would prefer to say.',
+      'Both halves are needed and neither is enough. A container in a deployment file proves something was meant to run. Only a browser proves a person could have opened it — this estate has shipped surfaces that were deployed, green on their own health probe, and completely unstyled on screen.',
+      'What no test here can establish is the last state on the scale, because there is nothing to point it at. "Open to the public" is measured by there being an address on the public internet, and there is not one.',
+    ],
+  },
+  /**
+   * The self-custody wallets — the one part of this ecosystem not at `running`.
+   *
+   * They are a separate block rather than rows in the table above for a structural reason: the
+   * table is per SURFACE, a surface is a thing the registry in `@cloudsforge/ui` knows about and
+   * the gateway routes, and a desktop application, a browser extension and a phone application are
+   * none of those. Adding them to the surface table would mean either inventing registry entries
+   * for things that have no host, or loosening what a row means until it means nothing.
+   *
+   * ── The stage is RECORDED, not derived, and the difference is stated on the page ─────────────
+   *
+   * The floor under them IS derived: `test/estate-stages.test.ts` asserts that none of the four
+   * repositories is a service in the estate's deployment file or a surface the smoke tier drives,
+   * so none of them can ever be published as running. What a test run in THIS repository cannot
+   * establish is the positive half — that each one builds and its suite passes — because that is a
+   * pipeline in another repository, and a marketing site asserting a green tick it has not seen is
+   * the defect this estate keeps finding in its own gates.
+   *
+   * So `recordedBy` names who read it, what they read, and that it is a reading. It is RENDERED. A
+   * recorded claim whose recorder exists only in a comment is a recorded claim the reader has been
+   * given no way to weigh.
+   */
+  wallets: {
+    title: 'Built and not shipped: the self-custody wallets',
+    body: [
+      'Everything above runs in the estate. The wallets are the exception, and not for the usual reason — they are built and their suites pass, and there is nowhere to get them. They are self-custody: a desktop application, a browser extension and a phone application that hold their own keys and speak to the chain directly, with no CloudsForge account and nothing of yours on our side of the wire.',
+      'That is deliberately the opposite posture to Forge Hub, and it is why they are separate things rather than another screen inside it. A custodial account and a self-custody wallet make incompatible promises about who can lose your money, and anything that quietly does both leaves a reader unable to tell which promise covers them.',
+      'The signing core underneath all three is differentially tested against the chain\'s own node, which is the check that actually matters for a key: two independent implementations must agree on every address and every signature, or one of them is silently wrong and nothing else would notice. What is missing is not code. It is a release — signed installers, a listing in two browser stores and two phone stores, and the update channel that has to exist before any of that is safe to publish.',
+    ],
+    /** Rendered. See the note above on why a recorder who exists only in a comment is no recorder. */
+    recordedBy:
+      'Recorded rather than derived. The four repositories were read, and their pipelines\' latest conclusions were quoted from the runs themselves, by the agent that rewrote this site on the day of the commit carrying this sentence. Every other state on this page is recomputed from the estate on each run; this one cannot be, because the evidence lives in another repository\'s pipeline and this site has no business asserting a green tick it did not watch.',
+  },
   gate: {
     title: 'What "ready" will mean',
     body: [

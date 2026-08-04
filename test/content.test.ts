@@ -35,7 +35,8 @@ import { fileURLToPath } from 'node:url'
 import { describe, it } from 'node:test'
 import { PRODUCTS, SURFACES } from '@cloudsforge/ui'
 import { CLAIMS, allowedNumbers } from '../src/content/claims.ts'
-import { PRODUCT_PAGES, STAGE_LABEL, hubPage, productCards } from '../src/content/products.ts'
+import { PRODUCT_PAGES, hubPage, productCards } from '../src/content/products.ts'
+import { STAGE_LABEL, STAGE_MEANING } from '../src/content/stages.ts'
 import { ABOUT, BUILD, HOME, NOT_FOUND, PLATFORM, PRODUCTS_INDEX } from '../src/content/pages.ts'
 import { LEGAL_PAGES } from '../src/content/legal.ts'
 import { ROUTES } from '../src/lib/routes.ts'
@@ -111,6 +112,10 @@ function publishedCopy(): CopyString[] {
   // Stage labels reach the screen on every card. Registered here so a stage called "Q3" would be
   // caught by the number rule rather than by somebody noticing.
   collect(STAGE_LABEL, 'STAGE_LABEL', out)
+  // The legend's sentences are rendered in full on the build page, so they are copy and are held
+  // to every rule below — the number register included. A stage explained as "ready in Q3" would
+  // otherwise reach the screen through the one content file nothing walked.
+  collect(STAGE_MEANING, 'STAGE_MEANING', out)
   return out
 }
 
@@ -310,6 +315,30 @@ describe('the product pages and the registry', () => {
     for (const page of PRODUCT_PAGES) {
       const titles = page.sections.map((s) => s.title)
       assert.equal(new Set(titles).size, titles.length, `${page.slug} repeats a section title`)
+    }
+  })
+})
+
+describe('the spine', () => {
+  /**
+   * The positioning line names the currency.
+   *
+   * It read "One crypto world." — a category noun and a word this estate had already given a
+   * different meaning to, naming nothing. The replacement names EMBER, and this is what stops a
+   * later rewrite drifting back to a category: the whole site is a footnote to this one line, and a
+   * line that could be any crypto company's is a line that was not worth the space.
+   */
+  it('names EMBER, which is the one thing here that is nobody else\'s', () => {
+    assert.match(HOME.spine, /\bEMBER\b/, `the spine no longer names the currency: ${HOME.spine}`)
+  })
+
+  it('does not sell the architecture on the front page', () => {
+    // "The loop is the product" was removed on the owner's instruction. It argued that the parts
+    // are joined up — a second-order virtue — to a reader who had not yet been told what the
+    // first-order thing was. Asserted over the whole of the home page rather than over the one
+    // heading, because the sentence's natural home if reintroduced is a lede.
+    for (const { path, text } of COPY.filter((c) => c.path.startsWith('HOME'))) {
+      assert.ok(!/the loop is the product/i.test(text), `${path} restores the loop framing`)
     }
   })
 })

@@ -23,6 +23,24 @@
  * address on the public internet. The unflattering measure moved; it did not go away. `./pages.ts`
  * BUILD.honesty carries the current wording and the reason it changed.
  *
+ * ── AND THE SITE THEN SAT ON THE OTHER SIDE OF THAT MISTAKE FOR AS LONG AGAIN ─────────────────
+ *
+ * Six of these seven surfaces carried "Being built" while every one of them was deployed in
+ * `deploy/compose/docker-compose.estate.yml`, healthy, and walked by `beacon smoke` in real
+ * Chromium through the real gateway. The notes were worse than the labels: this file said the
+ * application a creator would use was "not yet rebuilt" while `mint-web` was up and answering, and
+ * the products index said a developer platform "is not built" while `devplatform` and
+ * `devportal-web` were both running and the smoke tier had a scenario for the surface.
+ *
+ * That is the same defect as the sentence above it, pointing the other way, and it is worth saying
+ * so plainly: **understatement is not a safe direction to be stale in.** It is simply a different
+ * false statement, and a reader who is told a thing does not exist does not go and look.
+ *
+ * So the stage is no longer typed by hand into this file and left. `./stages.ts` defines four
+ * states as three yes/no questions about the estate, and `test/estate-stages.test.ts` opens the
+ * compose file and the smoke tier's surface list and recomputes every value below. A stage a
+ * reader can check is the only kind worth publishing.
+ *
  * A site that described these six as though a reader could go and use them today would be lying,
  * and it would be lying in the one voice this company has decided is an asset —
  * `docs/ecosystem/01-product-vision.md` §5.5, "Honest copy… This voice is an asset. Protect it."
@@ -40,29 +58,7 @@
  */
 import { PRODUCTS, surface, type SurfaceKey } from '@cloudsforge/ui'
 import { claim } from './claims.ts'
-
-/**
- * How far along a surface is.
- *
- * Three values, not five. A scale with more steps invites the halfway-house label that means
- * nothing — the estate has already learned that "in progress" and "nearly done" are the same
- * status reported twice.
- */
-export type Stage = 'built' | 'in-build' | 'not-built'
-
-/** The label and the shape that go with a stage. Colour is never the only channel. */
-export const STAGE_LABEL: Readonly<Record<Stage, string>> = {
-  built: 'Built',
-  'in-build': 'Being built',
-  'not-built': 'Not built yet',
-}
-
-/** A glyph per stage, so the three are separable without colour. */
-export const STAGE_GLYPH: Readonly<Record<Stage, string>> = {
-  built: '●',
-  'in-build': '◐',
-  'not-built': '○',
-}
+import type { Stage } from './stages.ts'
 
 export interface Section {
   readonly title: string
@@ -126,9 +122,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'Forge Hub is where a CloudsForge account lives: portfolio, wallets, deposits, withdrawals, activity and security on one screen. Not a product you choose — the container the others sit inside.',
-    stage: 'built',
+    stage: 'running',
     stageNote:
-      'Built and tested, and running against the service behind it. It has no address on the public internet, so there is nothing to sign into yet.',
+      'Deployed with the service behind it, and opened in a real browser through the gateway with a sign-in that completes. Nobody outside the project can reach that gateway, so there is nothing to sign into yet.',
     sections: [
       {
         title: 'One screen instead of six',
@@ -167,9 +163,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'EMBER is proof-of-work money mined on ordinary processors. Memory-hard, ASIC-resistant, and an account-model chain that speaks Ethereum. No rig to buy and no pool to join.',
-    stage: 'in-build',
+    stage: 'running',
     stageNote:
-      'The chain itself runs, on testnet, and is the one part of the estate being carried across unchanged. Its explorer, its faucet and its public site are being rebuilt.',
+      'The chain runs — as a test network, mined on the machine it was built on — with the explorer, the faucet and the indexer deployed beside it and answering in a browser. There is no public node and no main network.',
     sections: [
       {
         title: 'Proof of work, without the industry',
@@ -207,9 +203,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'Deploy a real token contract from committed, compiled bytecode. Your wallet is the owner from the first block; the platform pays the gas and holds no authority over it.',
-    stage: 'in-build',
+    stage: 'running',
     stageNote:
-      'The deployment service and the brand-generation service are both built and tested. The application a creator would use is not yet rebuilt.',
+      'The deployment service, the brand-generation service and the application a creator uses are all deployed and walked in a browser. Every contract any of them has deployed went to a private test network, and no stranger has ordered one.',
     sections: [
       {
         title: 'The deploy leaves the request',
@@ -246,9 +242,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'Backtest a strategy against real market history with fees and slippage charged, promote what survives to paper, and only then to money. Modelled, never promised. Not an exchange.',
-    stage: 'in-build',
+    stage: 'running',
     stageNote:
-      'The engine — backtesting, fills, fees and the performance accounting — is written and tested. Live trading is deliberately off, and stays off until a complete cycle has run on testnet.',
+      'The engine — backtesting, fills, fees and the performance accounting — is deployed behind an application that answers in a browser. Live trading is switched off in the running service rather than missing from it, and stays off until a complete cycle has run on testnet.',
     sections: [
       {
         title: 'The backtest charges you',
@@ -286,9 +282,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'Parimutuel markets on future events. Stakes go to the contract, not to us; payouts come from the pool, not from our balance sheet. Odds are the pool ratio, and they move until it closes.',
-    stage: 'in-build',
+    stage: 'running',
     stageNote:
-      'The service and the contract are written and tested, including the arithmetic that proves fee plus every payout plus the residue equals the pool exactly. Nothing is deployed to a public chain — the only network any of it has touched is a private EMBER test network.',
+      'The service, the contract, the application a person stakes in and the console an operator opens questions from are all deployed and walked. The only chain any of it has touched is a private EMBER test network.',
     sections: [
       {
         title: 'The contract holds the money, not the platform',
@@ -327,9 +323,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'Listings, offers, escrow and settlement for what people make. The fee, the royalty and the seller\'s proceeds are constrained to add up by the database, not by the code that writes them.',
-    stage: 'in-build',
+    stage: 'running',
     stageNote:
-      'The service — listings, bids, escrow, the order split and the risk indicators — is written, tested and running. Nothing is listed on it, because nobody outside the project can reach it to list anything.',
+      'Listings, bids, escrow, the order split and the risk indicators run behind an application a browser reaches through the gateway. Nothing is listed on it, because nobody outside the project can reach it to list anything.',
     sections: [
       {
         title: 'The split is checked by the database',
@@ -367,9 +363,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'A shared map, resources that genuinely run out, and a season that ends and is kept rather than deleted. Nothing purchasable is powerful — scarcity is the game.',
-    stage: 'in-build',
+    stage: 'running',
     stageNote:
-      'The world platform is built, including the private worlds that used to be sold and never provisioned. The first title itself is the one substantial application still to be carried across.',
+      'The platform is deployed, including the private worlds that used to be sold and never provisioned, and so are both titles that run on it. Nobody outside the project has ever played one, and no season has ended with a stranger in it.',
     sections: [
       {
         title: 'Scarcity is the game',

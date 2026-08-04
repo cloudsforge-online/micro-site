@@ -750,16 +750,65 @@ a:hover {
   white-space: nowrap;
 }
 
-.si-stage--built {
+/*
+ * Three stages, three colours, and the colour is the channel that carries the least of it. The
+ * glyph is a fill ramp and the label is a phrase, so a reader who sees neither colour still reads
+ * the scale correctly — which is the point, because `--si-good` on a chip reading "Built" would be
+ * the most misleading thing this stylesheet could paint.
+ */
+.si-stage--running {
   color: var(--si-good);
 }
 
-.si-stage--in-build {
+.si-stage--tested {
   color: var(--si-warn);
 }
 
-.si-stage--not-built {
-  color: var(--cf-fg-mute);
+/*
+ * Nothing is `open` yet, so this rule paints nothing but the legend. It is here rather than added
+ * later because an unstyled chip inherits the body colour and would read as the most muted state
+ * on the page on the day it becomes the most advanced one.
+ *
+ * `--si-accent` resolves to the company ember outside an accent-scoped subtree, and the legend is
+ * not one. Inside a product row it would take that product's accent — which is why the legend, and
+ * not a product row, is the only place this can appear until something is genuinely open.
+ */
+.si-stage--open {
+  color: var(--si-accent);
+}
+
+/*
+ * The legend on the build page: one chip against its own definition.
+ *
+ * A description list rather than a table for the same reason the status list above is one — two
+ * facts per row, nothing to compare across columns, and a two-column table of prose is a table
+ * that scrolls sideways on a phone for no benefit.
+ */
+.si-legend {
+  margin: var(--cf-space-xl) 0 0;
+  display: grid;
+  gap: var(--cf-space-md);
+}
+
+.si-legend__row {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  gap: var(--cf-space-md);
+  align-items: baseline;
+}
+
+.si-legend__row dd {
+  margin: 0;
+  color: var(--cf-fg-dim);
+}
+
+@media (max-width: 34rem) {
+  /* The chip and its definition stack rather than squeezing the sentence into a column an inch
+     wide, which is what a max-content column does once the viewport stops cooperating. */
+  .si-legend__row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--cf-space-2xs);
+  }
 }
 
 .si-stage__glyph {

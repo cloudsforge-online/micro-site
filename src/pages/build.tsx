@@ -13,14 +13,15 @@
 import { Link } from 'react-router-dom'
 import { surface } from '@cloudsforge/ui'
 import { BUILD } from '../content/pages.ts'
-import { PRODUCT_PAGES, STAGE_LABEL, type Stage } from '../content/products.ts'
+import { PRODUCT_PAGES } from '../content/products.ts'
+import { STAGE_MEANING, STAGE_ORDER } from '../content/stages.ts'
 import { PageHead, Prose, Ridge, Section, StageChip, SurfaceMark, accentProps } from '../components/parts.tsx'
 
-/** Order the table by how far along a surface is, most-finished first. */
-const STAGE_ORDER: Readonly<Record<Stage, number>> = { built: 0, 'in-build': 1, 'not-built': 2 }
-
 export function BuildPage() {
-  const rows = [...PRODUCT_PAGES].sort((a, b) => STAGE_ORDER[a.stage] - STAGE_ORDER[b.stage])
+  // Most-finished first, from the one declaration of the order. A second copy of it here is how
+  // the legend and the table would eventually disagree about which end of the scale is which.
+  const rank = (stage: (typeof STAGE_ORDER)[number]): number => STAGE_ORDER.indexOf(stage)
+  const rows = [...PRODUCT_PAGES].sort((a, b) => rank(a.stage) - rank(b.stage))
 
   return (
     <>
@@ -63,13 +64,46 @@ export function BuildPage() {
             )
           })}
         </dl>
-        <p className="si-aside">
-          {/* Spelled out from the same declaration, so the legend cannot list a stage that no longer
-              exists or omit one that does. */}
-          {(Object.keys(STAGE_ORDER) as Stage[]).map((stage) => STAGE_LABEL[stage]).join(' · ')} — three
-          states, not five. A scale with more steps invites the halfway-house label that means
-          nothing.
-        </p>
+      </Section>
+
+      <Ridge />
+
+      {/*
+        The legend, and the derivation above it.
+
+        Rendered as real chips rather than as a joined string of labels, so a reader meets the exact
+        glyph and colour they will see on a row before they have to interpret one — and so the
+        `open` chip, which appears nowhere else because nothing is open, is on screen at all. A
+        scale whose top rung is invisible reads as if its top rung is wherever everybody is
+        standing.
+
+        The whole legend is derived from STAGE_ORDER, so it cannot list a stage that no longer
+        exists, omit one that does, or fall out of order with the table above.
+      */}
+      <Section title={BUILD.derivation.title} id="derivation">
+        <Prose body={BUILD.derivation.body} />
+        <dl className="si-legend">
+          {STAGE_ORDER.map((stage) => (
+            <div className="si-legend__row" key={stage}>
+              <dt>
+                <StageChip stage={stage} />
+              </dt>
+              <dd>{STAGE_MEANING[stage]}</dd>
+            </div>
+          ))}
+        </dl>
+      </Section>
+
+      <Ridge />
+
+      {/*
+        The wallets. Not rows in the table above, because a table row is a SURFACE — something the
+        registry knows and the gateway routes — and a desktop application, a browser extension and a
+        phone application are none of those.
+      */}
+      <Section title={BUILD.wallets.title} id="wallets">
+        <Prose body={BUILD.wallets.body} />
+        <p className="si-aside">{BUILD.wallets.recordedBy}</p>
       </Section>
 
       <Ridge />

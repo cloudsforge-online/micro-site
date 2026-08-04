@@ -27,7 +27,7 @@
  * last suite here checks it.
  */
 import assert from 'node:assert/strict'
-import { readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { extname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, it } from 'node:test'
@@ -178,6 +178,123 @@ describe('the incomplete notice', () => {
       hasOutstanding({ ...TERMS, sections: TERMS.sections.filter((s) => s.status === 'stated') }),
       false,
     )
+  })
+})
+
+/* ─────────────── the licensing section, against the files it describes ─────────────── */
+
+/**
+ * The one section of the terms that was written rather than briefed, checked against disk.
+ *
+ * ── Why this suite exists and is not merely thorough ──────────────────────────────────────────
+ *
+ * The whole justification for marking this section `stated` instead of `counsel` is that it
+ * describes files rather than creating obligations. That justification is worth exactly as much as
+ * the checking behind it: an unchecked description of a file is a paragraph somebody wrote once
+ * about a file that has since changed, which is the same object as an unchecked number.
+ *
+ * It reads the estate and does NOT skip when the estate is absent, for the reason
+ * `test/estate-claims.test.ts` gives at length — a check that turns itself off produces the same
+ * green tick as one that ran.
+ */
+describe('the licensing section, against the files it describes', () => {
+  const ESTATE = fileURLToPath(new URL('../../', import.meta.url))
+  const section = TERMS.sections.find((s) => s.title.startsWith('Licensing'))
+  const text = (section?.body ?? []).join(' ')
+
+  it('is on the terms page, and is stated rather than outstanding', () => {
+    assert.ok(section, 'the terms no longer carry a licensing section')
+    assert.equal(section?.status, 'stated')
+  })
+
+  it('describes this repository\'s own licence correctly', () => {
+    // The nearest file it makes a claim about, and the only one guaranteed to be beside this test.
+    const licence = readFileSync(join(root, 'LICENSE'), 'utf8')
+    assert.match(licence, /MIT License/, 'this repository is no longer MIT-licensed')
+    assert.match(text, /\bMIT licence\b/, 'the terms no longer name the code licence')
+    // MIT's actual condition, which the paragraph states and which is the part people get wrong.
+    assert.match(licence, /above copyright notice[\s\S]*shall be included/)
+  })
+
+  it('describes the artwork licence, and the reason it is a different one', () => {
+    const assets = join(ESTATE, 'brand/LICENSE-ASSETS')
+    assert.ok(existsSync(assets), 'micro-brand is not checked out; this check will not skip')
+    const licence = readFileSync(assets, 'utf8')
+    assert.match(licence, /Creative Commons Attribution 4\.0 International/)
+    // The reason the terms give for the split is the reason the licence file itself gives. If
+    // micro-brand ever restates it differently, the terms page is the thing that is now wrong.
+    assert.match(licence, /MIT is a software\s*\n?licence and these are not software/)
+    assert.match(text, /Creative Commons Attribution licence/)
+    assert.match(text, /not software/, 'the terms no longer say WHY the artwork is licensed apart')
+    assert.match(text, /attribution is required for the pictures and is not required for the code/i)
+  })
+
+  /**
+   * The over-claim guard, and it is written the way it is because the obvious version was wrong.
+   *
+   * The first draft looped over a list of four marks typed into this test and asserted each
+   * appeared in both the notice and the copy. It was then broken on purpose by adding a FIFTH mark
+   * to the terms page that the estate reserves nothing about — and it stayed green, because a test
+   * that iterates a hard-coded list can only ever check the things on the list.
+   *
+   * So the marks are EXTRACTED FROM THE PUBLISHED SENTENCE and each is resolved against the notice.
+   * Over-claiming is the one direction of error a reader cannot detect and cannot recover from: a
+   * trademark asserted over a name the company has not reserved is a threat made on false
+   * pretences, and it is made in the company's own voice on its own terms page.
+   */
+  it('reserves exactly the marks the trademark notice reserves, and no more', () => {
+    const notice = readFileSync(join(ESTATE, 'brand/TRADEMARKS.md'), 'utf8')
+    const sentence = (section?.body ?? []).find((p) => p.includes('reserved from both grants'))
+    assert.ok(sentence, 'the terms no longer state which marks are reserved')
+
+    // The capitalised names in the reservation sentence, minus the ordinary sentence-initial words
+    // any English sentence starts with. Deriving the list is the whole point; a miss here is a
+    // mark the estate never claimed being asserted on a public terms page.
+    const claimed = [...new Set(sentence.match(/\b[A-Z][A-Za-z]+\b/g) ?? [])].filter(
+      (word) => !['The', 'You', 'It', 'A', 'This', 'They'].includes(word),
+    )
+    assert.ok(claimed.length >= 4, `only found ${claimed.length} marks in the sentence`)
+    const unreserved = claimed.filter((mark) => !notice.includes(mark))
+    assert.deepEqual(
+      unreserved,
+      [],
+      `the terms assert a trademark the estate's own notice does not reserve: ${unreserved.join(', ')}`,
+    )
+
+    // And the other direction, so dropping a mark from the copy is visible too.
+    for (const mark of ['CloudsForge', 'Forge', 'Hearth', 'EMBER']) {
+      assert.ok(notice.includes(mark), `the trademark notice no longer names ${mark}`)
+      assert.ok(claimed.includes(mark), `the terms no longer reserve ${mark}`)
+    }
+    assert.match(notice, /are trademarks of CloudsForge/)
+    // The nominative permission, which is the half that makes the reservation reasonable rather
+    // than merely restrictive. A terms page stating only the prohibition would be accurate and
+    // would misrepresent the position.
+    assert.match(text, /say truthfully what your work is/)
+    assert.match(notice, /nominatively/)
+  })
+
+  it('makes no undertaking, which is what keeps it out of counsel\'s hands', () => {
+    // Broader than the generic heuristic above, because this section is the one most likely to
+    // drift into a warranty: it is the only place on the page where something is being granted.
+    for (const paragraph of section?.body ?? []) {
+      assert.ok(
+        !/\b(we|CloudsForge) (warrant|guarantee|undertake|indemnif|shall be liable)/i.test(paragraph),
+        `the licensing section makes an undertaking: ${paragraph.slice(0, 90)}`,
+      )
+    }
+  })
+
+  it('leaves every section that needs a lawyer exactly where it was', () => {
+    // The instruction was to populate the licensing, not to populate the terms. This is the guard
+    // on that boundary: adding a drafted section must not have been an excuse to draft others.
+    const stated = TERMS.sections.filter((s) => s.status === 'stated').map((s) => s.title)
+    assert.deepEqual(stated, [
+      'Your account',
+      'How the system treats your money',
+      'Withdrawal and export',
+      'Licensing: the code, the artwork and the names',
+    ])
   })
 })
 

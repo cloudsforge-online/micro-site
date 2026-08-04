@@ -24,7 +24,27 @@
  * The visible marker is deliberately not subtle. A reader is entitled to know that the terms they
  * are looking at are incomplete, and a company that hides that from them has already answered the
  * question of what kind of company it is.
+ *
+ * ── What "not populated" turned out to mean, and what was done about it ───────────────────────
+ *
+ * The owner's report was that the terms of service are not populated. Measured in a real browser
+ * through the real gateway before anything was written: `/terms` answers 200, renders, and is
+ * linked from the footer of every page — the routing is fine. What a reader met was a page whose
+ * own heading said eight of eleven sections were undrafted, which is exactly what it looked like.
+ *
+ * The design above is right and it survives. What was missing was a section that could be written
+ * WITHOUT counsel and had simply never been added: the licensing. It is not a matter of opinion,
+ * it is not jurisdiction-specific, and it is on disk in every repository in the estate — one MIT
+ * `LICENSE` per repository, a `LICENSE-ASSETS` under Creative Commons Attribution wherever there
+ * is artwork, and a `TRADEMARKS.md` reserving the names from both. That is a `stated` section by
+ * the definition above: an engineer can be held to it because it is a description of files.
+ *
+ * Nothing else moved. No entity, no jurisdiction, no age limit, no sanctions posture and no
+ * governing law was invented, and the sections that need a lawyer still say so and still carry
+ * empty bodies. A page that LOOKS complete stops anybody chasing the parts that are not.
  */
+
+import { claim } from './claims.ts'
 
 export type LegalStatus = 'stated' | 'counsel'
 
@@ -106,6 +126,37 @@ export const TERMS: LegalPage = {
       ],
     },
     {
+      /**
+       * The one section on this page that was written rather than briefed.
+       *
+       * It qualifies as `stated` for a specific reason and not as an exception: every sentence in
+       * it is a description of a file that exists in every repository of this estate, and
+       * `test/legal.test.ts` reads those files rather than taking the paragraphs' word for it. It
+       * creates no obligation, limits no liability, and names no jurisdiction — the moment it
+       * starts doing any of those it has become a section for counsel and belongs in one.
+       */
+      title: 'Licensing: the code, the artwork and the names',
+      status: 'stated',
+      body: [
+        'The software is offered under the MIT licence, and every repository in this estate carries a copy of it. MIT is short and permissive: you may use it, change it, sell it and redistribute it, and what it asks in return is that the notice travels with the copy. There is no attribution requirement on the code beyond keeping that notice intact.',
+        `The artwork is licensed separately, under the Creative Commons Attribution licence, version ${claim('assetLicenceVersion')} international, in a LICENSE-ASSETS file beside the MIT one wherever there are images. The reason is a limit of the first licence rather than a change of posture — MIT speaks throughout of "the Software", and a generated image is not software. The images may be shared and adapted, including commercially, and the single condition is credit.`,
+        'That asymmetry is the usual one and it surprises people, so it is worth stating plainly: attribution is required for the pictures and is not required for the code.',
+        // ── One sentence, holding nothing but the marks ────────────────────────────────────────
+        //
+        // The guard in `test/legal.test.ts` EXTRACTS the reserved names from this sentence and
+        // resolves each against the estate's own trademark notice, rather than checking a list
+        // typed into the test — which is the only version of that guard that can catch a mark
+        // being added here that the estate never reserved.
+        //
+        // The consequence is that this sentence may name nothing capitalised except a mark. The
+        // filename that used to sit at the end of it moved to the next paragraph for exactly that
+        // reason, and the reason is here so nobody moves it back.
+        'The names and the marks are reserved from both grants: CloudsForge, Forge, Hearth and EMBER, together with the logos and wordmarks that identify them, are covered by neither licence.',
+        'You may use them to say truthfully what your work is — that it builds on this, forks it, or works with it. You may not use them to label your own thing as though it were this one. Each repository that carries artwork carries the boundary in full, in a trademark notice beside the two licence files.',
+        'The reservation is what makes the rest safe to give away rather than a hedge against it. A brand mark works by telling somebody who made a thing, and a mark that anybody may apply to anything has stopped doing the one job it has.',
+      ],
+    },
+    {
       title: 'Fees',
       status: 'counsel',
       body: [],
@@ -176,6 +227,21 @@ export const PRIVACY: LegalPage = {
       status: 'stated',
       body: [
         'If you sign in from this site you are sent to the CloudsForge account service and returned here with a single-use hand-off code in the address. That code is removed from the address bar before it is exchanged, so it is not left in your browser history, in the referrer of anything the page loads next, or in a screenshot taken while the exchange is in flight.',
+      ],
+    },
+    {
+      /**
+       * The licensing distinction, stated where it is actually useful on a privacy page.
+       *
+       * A privacy notice's weakest form is a list of assurances a reader has no way to test. The
+       * section above makes three claims about a static file; this one says the file is public and
+       * licensed for them to go and check, which is what turns the assurance into a claim.
+       */
+      title: 'You can check the section above without asking us',
+      status: 'stated',
+      body: [
+        'Everything the previous section claims is a claim about a static file, and that file\'s source is public and under the MIT licence — you may read it, build it and run its checks without asking anyone. The check that fails the build when a request to an external host appears in the bundle is in that source too, and it runs on every change.',
+        'This is the only kind of privacy claim worth making about a website: one you can refute. A notice that describes behaviour nobody outside the company can observe is a statement of intent wearing the clothes of a disclosure, and the difference matters most exactly when it is least visible.',
       ],
     },
     {
