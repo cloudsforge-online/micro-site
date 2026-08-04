@@ -371,13 +371,29 @@ describe('stages', () => {
     // which is a test holding copy hostage to a fact that has expired.
     //
     // The claim moved rather than weakened. "Nothing runs" became "nothing serves the public",
-    // which is the stronger of the two to have to keep true, and is asserted here in the same
-    // shape. `test/estate-claims.test.ts` additionally fails if the OLD sentences come back.
-    assert.match(BUILD.honesty.title, /nothing is serving the public/i)
+    // which is the stronger of the two to have to keep true.
+    //
+    // AND ON 2026-08-05 IT MOVED AGAIN, for the third time: the estate went public, so "nothing is
+    // serving the public" is now false too and this assertion would have held the copy hostage to
+    // a fact that had expired — exactly what the paragraph above warns against.
+    //
+    // So what is pinned is no longer a single sentence but the SHAPE of the honest disclosure,
+    // which is what actually protects a reader. Being reachable is the flattering half; each of
+    // these is a limit that a crypto reader will otherwise supply the opposite of, and every one
+    // is independently true today.
     assert.ok(
-      BUILD.honesty.body.some((p) => /no public address for any of it/i.test(p)),
-      'the build page no longer says that nothing has a public address',
+      /open to the public/i.test(BUILD.honesty.title),
+      'the honesty block no longer says the estate is open, which it is',
     )
+    const honesty = BUILD.honesty.body.join(' ')
+    for (const [what, pattern] of [
+      ['EMBER has no market or price', /no market, no listing and no price/i],
+      ['nobody outside has used it', /nobody outside the project has used/i],
+      ['one machine, no failover', /no redundancy, no failover/i],
+      ['no restored backup', /no backup that has ever been restored/i],
+    ] as const) {
+      assert.ok(pattern.test(honesty), `the honesty block no longer says: ${what}`)
+    }
   })
 })
 

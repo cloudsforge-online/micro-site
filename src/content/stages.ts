@@ -42,11 +42,27 @@
  *
  * ── The failure this vocabulary is designed against ───────────────────────────────────────────
  *
- * A single word "Built" is the danger, not the shortage of words. **Nothing here serves the
- * public.** The services run composed against real databases, the chain is a testnet on one
- * machine, and no surface has a user who is not the owner. A chip reading "Built" on a crypto
- * platform's marketing site is read as "live, and I may sign up", and a reader who acts on that
- * reading has been misled by a word that was technically true.
+ * A single word "Built" is the danger, not the shortage of words. A chip reading "Built" on a
+ * crypto platform's marketing site is read as "live, and I may sign up", and a reader who acts on
+ * that reading has been misled by a word that was technically true.
+ *
+ * ── `open` HAS MEMBERS NOW, AND THAT IS THE CHANGE THIS FILE WAS BUILT TO SURVIVE ─────────────
+ *
+ * What used to be here read "**Nothing here serves the public.** The services run composed against
+ * real databases, the chain is a testnet on one machine, and no surface has a user who is not the
+ * owner." Every clause of that is now false. On 2026-08-05 the estate went public: the surfaces
+ * below answer on the public internet under a publicly trusted certificate.
+ *
+ * The design held. `open` was defined from the start as an EVENT — "is there an address on the
+ * public internet?" — so the fix was to derive that event rather than to re-label anything. The
+ * labels, the glyphs and the meanings of `tested` and `running` are untouched.
+ *
+ * **What being `open` does NOT assert**, and the reason the meaning below says so out loud: not
+ * that the surface is finished, not that it is load-bearing, not that anyone has used it, and
+ * emphatically not that EMBER is worth anything. The estate is one home server behind a tunnel,
+ * with no redundancy and no backup anybody has ever restored. "Open" means a stranger can reach
+ * it, which is the weakest of the three claims to make and the only one that can be checked from
+ * outside — see `test/public-endpoints.test.ts`, which fetches every address published here.
  *
  * So no label is a bare past participle. Each is a phrase that says where the thing IS:
  * "Built, not shipped" → "Running in-house" → "Open to the public". A stranger reading only the
@@ -70,11 +86,16 @@
 /**
  * The three states, in order.
  *
- * `'open'` has no member and that is the most important entry in the table. A scale whose top rung
- * is the one everybody is standing on tells a reader nothing about how far there is to go; leaving
- * "Open to the public" visible and empty is what makes "Running in-house" read as the honest
- * halfway house it is. `test/estate-stages.test.ts` asserts that nothing claims it, and will keep
- * asserting that until there is a public address to point at.
+ * `'open'` used to have no member, and the note here said so: "A scale whose top rung is the one
+ * everybody is standing on tells a reader nothing about how far there is to go … and will keep
+ * asserting that until there is a public address to point at."
+ *
+ * There is a public address to point at now, so the assertion inverted rather than being deleted.
+ * `test/estate-stages.test.ts` no longer asserts `open` is empty; it derives membership from
+ * `PUBLIC_AT` below against the estate's own tunnel configuration, IN BOTH DIRECTIONS — a surface
+ * published as `open` without a public hostname fails, and so does a surface that has one and is
+ * still published as `running`. The second direction is the one that matters, because an
+ * understated claim is never investigated.
  */
 export type Stage = 'tested' | 'running' | 'open'
 
@@ -112,7 +133,7 @@ export const STAGE_MEANING: Readonly<Record<Stage, string>> = {
     'The code exists and its own tests pass, and nothing runs it where a person could reach it. Passing your own tests is not the same as having been run alongside everything else.',
   running:
     'Deployed in the estate and reached by a real browser through the real gateway, intercepting nothing. It has no address on the public internet.',
-  open: 'Anyone can use it. Nothing is here, and that is the honest state of this ecosystem today.',
+  open: 'There is an address on the public internet and a stranger can open it. That is all this says: not that it is finished, not that it has been used, and not that anything on it is worth money. It runs on one machine with no failover.',
 }
 
 /**
@@ -157,6 +178,48 @@ export const SELF_CUSTODY_REPOS: readonly string[] = [
   'wallet-extension',
   'wallet-mobile',
 ]
+
+/**
+ * Where a surface answers on the public internet. The evidence for `open`, and nothing else.
+ *
+ * ── Why a hostname and not a boolean ──────────────────────────────────────────────────────────
+ *
+ * A `public: true` flag would be a hand-typed claim of exactly the kind `RUNS_ON` exists to
+ * replace, and it is the kind that rots upward: nobody audits a page for being too generous about
+ * itself. A hostname is checkable twice over, and `test/estate-stages.test.ts` and
+ * `test/public-endpoints.test.ts` check it both ways:
+ *
+ *   * STATICALLY — the name must appear as a `hostname:` in the estate's own Cloudflare Tunnel
+ *     configuration, `deploy/cloudflared/config.mainnet.public.yml`. That file is what actually
+ *     causes the address to exist, so it is the source, not a description of one.
+ *   * OVER THE NETWORK — the address is fetched, and must answer. A documented endpoint that does
+ *     not answer fails the build rather than waiting for somebody to notice.
+ *
+ * The two are independent and both are needed. The tunnel config proves the address was MEANT to
+ * exist; only the fetch proves it does. The estate has already shipped a configured hostname with
+ * no DNS record behind it (`worlds-api.cloudsforge.online`) and one that answers 502
+ * (`api.cloudsforge.online`) — neither is on this list, and neither would survive being added.
+ *
+ * ── The mainnet tunnel only ───────────────────────────────────────────────────────────────────
+ *
+ * `config.testnet.public.yml` declares a parallel set of `*.testnet.cloudsforge.online` names and
+ * NONE of them may be published here. Cloudflare's Universal SSL certificate covers the
+ * single-label wildcard `*.cloudsforge.online`, which matches `testnet.cloudsforge.online` and does
+ * not match `hub.testnet.cloudsforge.online`; a two-label wildcard needs Advanced Certificate
+ * Manager, which is paid and is not bought. So every testnet subdomain fails the TLS handshake at
+ * Cloudflare's edge, before it ever reaches the estate. They are configured, and they are not
+ * reachable, and the difference is the entire reason this map is checked over the network as well
+ * as against the configuration.
+ */
+export const PUBLIC_AT: Readonly<Record<string, string>> = {
+  hub: 'hub.cloudsforge.online',
+  network: 'network.cloudsforge.online',
+  create: 'create.cloudsforge.online',
+  trade: 'trade.cloudsforge.online',
+  foresight: 'foresight.cloudsforge.online',
+  market: 'market.cloudsforge.online',
+  worlds: 'worlds.cloudsforge.online',
+}
 
 export const RUNS_ON: Readonly<Record<string, readonly string[]>> = {
   hub: ['hub-web', 'hub-api'],

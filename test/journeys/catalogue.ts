@@ -168,7 +168,7 @@ export const CATALOGUE: readonly Scenario[] = [
   /* ---- doc 22 BJ-SITE-02 ---------------------------------------------- */
   {
     id: 'BJ-SITE-02',
-    title: 'the build page says nothing serves the public at the top, then goes surface by surface',
+    title: 'the build page states the limits of being public at the top, then goes surface by surface',
     tier: 1,
     asserts: 'presentation',
     gate: true,
@@ -199,6 +199,20 @@ export const CATALOGUE: readonly Scenario[] = [
          * The claim was not softened, it MOVED: from "nothing is deployed" to "nothing is serving
          * the public", which is the harder of the two to keep true and the one a reader actually
          * needs. `test/estate-claims.test.ts` fails if the old wording returns.
+         *
+         * ── AND IT MOVED A THIRD TIME, ON 2026-08-05, WHEN THE ESTATE WENT PUBLIC ─────────────
+         *
+         * "Nothing is serving the public" became false, and this assertion went red and had to be
+         * argued for rather than merged — which is the mechanism working, for the second time.
+         *
+         * What is anchored here changed shape with it. There is no longer one sentence carrying
+         * the whole disclosure, because the honest position is no longer one sentence: the estate
+         * IS reachable, and the thing a reader must not be allowed to miss is the set of limits
+         * around that. So the literals below are the limits, not the good news. A page that says
+         * it is open and drops any one of them fails here.
+         *
+         * That is deliberately harder to satisfy than the old single anchor, because this is the
+         * first version of this page that has anything to gain from overstating.
          */
         // Scoped to the callout, not to the page. The first version of this searched the whole
         // body and passed after the callout's title was softened, because the phrase also appears
@@ -207,21 +221,23 @@ export const CATALOGUE: readonly Scenario[] = [
         // this go red.
         const callout = await session.page.locator('.si-callout').first().innerText()
         assert.ok(
-          callout.includes('Nothing is serving the public'),
-          `the honesty block no longer says, in those words, that nothing serves the public. It says: ${callout.slice(0, 200)}`,
+          callout.includes('Open to the public, and one day old'),
+          `the honesty block no longer carries its heading. It says: ${callout.slice(0, 200)}`,
         )
-        // The second half of the claim, in the rendered body rather than the heading — a heading
-        // that survives while the paragraph under it turns into reassurance is the shape this
-        // whole page is arranged against. Was `/Not one of them is running/`, changed with the
-        // heading and for the same reason: things are running now.
-        assert.ok(
-          /no public address for any of it/i.test(callout),
-          'the honesty block no longer says that none of it has a public address',
-        )
-        assert.ok(
-          /nothing here to sign up for/i.test(callout),
-          'the honesty block no longer says there is nothing to sign up for',
-        )
+        // The limits, in the rendered body rather than the heading — a heading that survives while
+        // the paragraph under it turns into reassurance is the shape this whole page is arranged
+        // against. Each is checked separately so that losing one cannot be hidden by the others.
+        for (const [what, pattern] of [
+          ['EMBER has no market, listing or price', /no market, no listing and no price/i],
+          ['nobody outside the project has used it', /nobody outside the project has used/i],
+          ['there is no redundancy or failover', /no redundancy, no failover/i],
+          ['no backup has ever been restored', /no backup that has ever been restored/i],
+        ] as const) {
+          assert.ok(
+            pattern.test(callout),
+            `the honesty block no longer says, on the front door, that ${what}. It says: ${callout.slice(0, 200)}`,
+          )
+        }
         // ABOVE the table, not below it. A crypto front door that implies everything on it is
         // running is the failure this page exists to avoid, and a caveat under the status list is
         // one a reader reaches after they have already formed the impression.

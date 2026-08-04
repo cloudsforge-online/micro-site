@@ -362,10 +362,10 @@ export const BUILD = {
   eyebrow: 'Build status',
   headline: 'Where each part actually is',
   blurb:
-    'An honest account of where this ecosystem stands: what runs in-house, what is still being written, and the fact that none of it is serving the public. Every state on this page is derived from the estate.',
+    'An honest account of where this ecosystem stands: what is open to the public, what runs in-house, what is still being written, and how new all of it is. Every state on this page is derived from the estate.',
   standfirst: [
-    'This ecosystem has been rebuilt as a set of independent services and applications. They are built, and they now run together — on one machine, behind a gateway that nobody outside the project can reach.',
-    'Both halves of that sentence are on this page because leaving the second one off is how a launch date becomes a thing people plan around, and leaving the FIRST one off is how this page spent weeks describing things as unbuilt while they were running.',
+    'This ecosystem has been rebuilt as a set of independent services and applications. They are built, they run together, and as of today they answer on the public internet — from one machine, with no failover and no backup anyone has ever restored.',
+    'Both halves of that sentence are on this page because leaving the second one off is how a launch becomes a thing people trust with money, and leaving the FIRST one off is how this page spent weeks describing things as unbuilt while they were running.',
   ],
   /**
    * Source: docs/ecosystem/18-build-status.md §1.
@@ -384,15 +384,30 @@ export const BUILD = {
    * precisely how the estate this replaces ended up claiming EMBER credited at the chain tip long
    * after it stopped doing so. So the heading changed with the fact.
    *
+   * ── AND IT MOVED AGAIN, ON 2026-08-05, FOR THE SAME REASON ─────────────────────────────────
+   *
+   * "Nothing is serving the public" is now false too. The estate went public: the surfaces answer
+   * on the public internet under a publicly trusted certificate. The heading moved with the fact a
+   * second time, and what replaces it is deliberately not a celebration — the honest claim is once
+   * again the SMALL one, and it is now small in the other direction. Reachable is not established,
+   * and this section's whole job is to keep those apart.
+   *
+   * The temptation this block now has to resist is the opposite of the old one. It is no longer
+   * "leave a modest sentence up too long"; it is "let a true sentence about reachability be read as
+   * a claim about safety, maturity or value". A reader who arrives at a crypto platform and sees
+   * "open to the public" will supply the rest themselves unless it is denied explicitly, so it is
+   * denied explicitly.
+   *
    * NOTHING here is stated as a number. The container count, the smoke-suite score and the chain
    * height are all true right now and all three move hourly; a marketing page is the worst possible
    * place to pin one. See the "No estate census" note in ./claims.ts.
    */
   honesty: {
-    title: 'Nothing is serving the public',
+    title: 'Open to the public, and one day old',
     body: [
-      'Every service and application described on this site is built, and all of them now run together: real databases, a real EMBER test network, and one gateway in front with its own certificate authority. A browser-driven smoke suite walks that gateway the way a person would, faking nothing.',
-      'All of it sits on one machine that is not on the internet. There is no public address for any of it, nobody outside the project has ever used it, and there is nothing here to sign up for — nothing on this site asks you to. There are no user numbers on this page for the same reason there is no uptime figure: both would be either zero or invented, and there is no third option.',
+      'Every service and application described on this site is built, they run together against real databases and a real EMBER network, and as of today they answer on the public internet under a publicly trusted certificate. A browser-driven smoke suite walks the gateway the way a person would, faking nothing.',
+      'What that does not mean: the main network is a few hundred blocks old and EMBER has no market, no listing and no price. Nobody outside the project has used any of this yet. There are no user numbers on this page for the same reason there is no uptime figure — both would be either zero or invented, and there is no third option.',
+      'All of it sits on one machine behind a tunnel. There is no redundancy, no failover, and no backup that has ever been restored. Being able to reach something is the weakest claim a platform can make about itself, and today it is the only one this ecosystem has earned.',
     ],
   },
   expensive: {

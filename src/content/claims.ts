@@ -175,6 +175,31 @@ export const CLAIMS = {
       'A reorg this deep halts crediting for the chain and pages an operator. Deliberately below the credit depth: a shallower reorg cannot have produced a wrong credit.',
     source: 'contracts/packages/chain/src/index.ts:198 — CHAINS.EMBER.reorgAlarmDepth',
   },
+  /**
+   * The two retention periods the privacy notice publishes.
+   *
+   * These are the first claims on this site read out of a SERVICE's configuration rather than out
+   * of a contract package or a document, and they are here for a reason worth recording: a privacy
+   * notice is the one page where a number nobody enforces is not merely wrong but a
+   * misrepresentation. Both are cited to the line that defines the default in the service that runs
+   * the deletion job, so the page cannot state a period the code does not keep.
+   *
+   * Only the two a reader is actually affected by are published. The estate has several more —
+   * error events, issue groupings, rollups, inbox rows — and publishing all of them would put six
+   * numbers on a page to be checked in order to say one thing.
+   */
+  rumRetentionDays: {
+    rendered: '30',
+    meaning:
+      'Days a browser error or performance report is kept in Lantern before a scheduled job deletes it. The default of LANTERN_RUM_RETENTION_DAYS.',
+    source: 'lantern/src/env.ts:289 — LANTERN_RUM_RETENTION_DAYS',
+  },
+  analyticsRetentionDays: {
+    rendered: '400',
+    meaning:
+      'Days a pseudonymised product-analytics event is kept. The default of ANALYTICS_EVENT_RETENTION_DAYS. Chosen to exceed a year so a year-on-year comparison is possible at all.',
+    source: 'analytics/src/env.ts:208 — ANALYTICS_EVENT_RETENTION_DAYS',
+  },
   chains: {
     rendered: '5',
     meaning: 'On-chain assets the platform custodies: EMBER, BTC, ETH, SOL and XRP.',

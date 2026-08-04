@@ -72,6 +72,19 @@ function field(block: string, name: string): number {
   return Number(match[1])
 }
 
+/**
+ * The DEFAULT of an `integer(source, 'NAME', default, min, max)` declaration, by variable name.
+ *
+ * Throws rather than returning a fallback when the name is absent: an environment variable that has
+ * been renamed must fail this build, not quietly leave the old number on the privacy notice. That
+ * is the whole failure mode these two claims exist to prevent.
+ */
+function envDefault(text: string, name: string): string {
+  const match = new RegExp(`integer\\([^,]+,\\s*'${name}',\\s*(\\d[\\d_]*)`).exec(text)
+  if (!match?.[1]) throw new Error(`no integer() default for ${name}`)
+  return match[1].replace(/_/g, '')
+}
+
 /** Superscript digits, for `10⁻⁶` as the tessera design writes it. */
 const SUPERSCRIPT = '⁰¹²³⁴⁵⁶⁷⁸⁹'
 
@@ -89,6 +102,30 @@ const DERIVATIONS: Readonly<Record<string, Derivation>> = {
     reads: CHAIN_SPEC,
     witness: /reorgAlarmDepth:\s*\d+/,
     derive: (text) => String(field(emberBlock(text), 'reorgAlarmDepth')),
+  },
+
+  /**
+   * The two retention periods on the privacy notice, recomputed from the services that enforce them.
+   *
+   * Both are read out of an `integer(source, 'NAME', default, min, max)` call, and the DEFAULT is
+   * the third argument. Parsed by name rather than by position in the file, because these files
+   * declare a dozen of these calls and a positional read would silently follow the next one added.
+   *
+   * The bounds are deliberately not published. `LANTERN_RUM_RETENTION_DAYS` may legally be set to
+   * anything from 1 to 400, so the default is what an unconfigured deployment keeps and not a
+   * promise about every deployment — which is precisely why the notice says the number is read from
+   * the configuration rather than claiming it is a policy.
+   */
+  rumRetentionDays: {
+    reads: 'lantern/src/env.ts',
+    witness: /LANTERN_RUM_RETENTION_DAYS/,
+    derive: (text) => envDefault(text, 'LANTERN_RUM_RETENTION_DAYS'),
+  },
+
+  analyticsRetentionDays: {
+    reads: 'analytics/src/env.ts',
+    witness: /ANALYTICS_EVENT_RETENTION_DAYS/,
+    derive: (text) => envDefault(text, 'ANALYTICS_EVENT_RETENTION_DAYS'),
   },
 
   /**
@@ -438,15 +475,29 @@ describe('what this site claims about being live', () => {
     }
   })
 
-  it('still says, in the honesty block, that the public cannot reach any of it', () => {
-    assert.match(BUILD.honesty.title, /nothing is serving the public/i)
+  it('never lets the good news be published without the limits that qualify it', () => {
+    // This asserted, until 2026-08-05, that the site still said the public could not reach any of
+    // it. The estate went public and that became a false sentence the test was requiring, so the
+    // guard was inverted rather than deleted.
+    //
+    // It is inverted into the shape that actually protects a reader. The risk on a crypto site is
+    // never that "open to the public" goes unsaid — it is that it is said ALONE, and a reader
+    // fills in maturity, safety and value that nobody claimed. So the page may say it is open only
+    // while it also says what that does not mean, and each clause below is separately checked so
+    // that dropping any one of them fails.
+    const honesty = BUILD.honesty.body.join(' ')
     assert.ok(
-      BUILD.honesty.body.some((p) => /no public address for any of it/i.test(p)),
-      'the build page no longer states that there is no public address',
+      /no market, no listing and no price/i.test(honesty),
+      'the honesty block no longer says EMBER has no market, listing or price',
     )
     assert.ok(
-      BUILD.honesty.body.some((p) => /nothing here to sign up for/i.test(p)),
-      'the build page no longer states that there is nothing to sign up for',
+      /no redundancy, no failover/i.test(honesty) &&
+        /no backup that has ever been restored/i.test(honesty),
+      'the honesty block no longer states the single-machine risk',
+    )
+    assert.ok(
+      /nobody outside the project has used/i.test(honesty),
+      'the honesty block no longer states that nobody outside the project has used it',
     )
   })
 

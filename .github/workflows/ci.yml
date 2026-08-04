@@ -145,6 +145,20 @@ jobs:
           repository: cloudsforge-online/micro-beacon
           path: beacon
           token: ${{ secrets.ESTATE_READ_TOKEN }}
+      # The privacy notice publishes two retention periods, and each is recomputed from the
+      # service that actually runs the deletion job rather than from a document describing it.
+      # A retention number on a privacy notice that nothing enforces is not a stale figure, it is
+      # a misrepresentation, so these two checkouts are load-bearing.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-lantern
+          path: lantern
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-analytics
+          path: analytics
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
 
       # Pinned, because the checkout lives at site/ and the action looks for the
       # packageManager field in the workspace root, where there is no package.json.

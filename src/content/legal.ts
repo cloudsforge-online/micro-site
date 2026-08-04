@@ -194,13 +194,62 @@ export const TERMS: LegalPage = {
   ],
 }
 
+/**
+ * ── WHY THIS PAGE GREW ON 2026-08-05 ──────────────────────────────────────────────────────────
+ *
+ * Until today this notice made exactly one claim — that the build fails if a request to an external
+ * host appears in the bundle — and said outright that this was "the only kind of privacy claim a
+ * static site is in a position to make on its own". That was **honest and correct while the
+ * marketing site was all there was**. It became wrong by omission the moment the estate went
+ * public, because there are now real accounts behind it and the notice was describing a brochure.
+ *
+ * The original claim survives untouched below. What is added around it is the same kind of claim:
+ * every sentence describes something a reader could go and check in source, and each is cited here
+ * so the next person does not have to rediscover it.
+ *
+ *   no cookies              no `document.cookie` write and no `Set-Cookie` exists in any frontend
+ *                           in the estate. `test/legal.test.ts:390` already asserted this for this
+ *                           repository before today. Sessions are `cf.accessToken` /
+ *                           `cf.refreshToken` in `localStorage` — `hub-web/src/lib/api.ts:53-56`,
+ *                           `market-web/src/lib/api.ts:27-28`, `worlds-web/src/lib/api.ts:27-28`.
+ *   telemetry session id    `sessionStorage` under `cf-obs-session`, random, dies with the tab:
+ *                           `src/lib/obs.ts:182-197`.
+ *   RUM retention           30 days, `lantern/src/env.ts:289`. Errors 7 days (`:250`), issues 90
+ *                           (`:251`), rollups 400 (`:288`).
+ *   analytics pseudonym     salted per subject so erasure is possible at all; the salt is the only
+ *                           thing destroyed. `analytics/src/pseudonym.ts` header, and the pepper is
+ *                           never written to that service's database.
+ *   analytics retention     events 400 days, rollups 1200: `analytics/src/env.ts:208-209`.
+ *   account deletion        a real three-state lifecycle, `identity/src/deletion.ts`, wired at
+ *                           `identity/src/server.ts:1669` and `:1692`, grace default 7 days at
+ *                           `identity/src/env.ts:270`.
+ *
+ * ── ONE CLAIM WAS PUT TO ME AND IS NOT WRITTEN HERE, BECAUSE IT IS NOT TRUE YET ───────────────
+ *
+ * I was told Mailtrap is the SMTP relay for registration and reset mail. **The estate has no SMTP
+ * configured at all** — `grep -cE '^SMTP_' .env` returns 0, and `notify/src/email.ts:81` returns a
+ * `no_transport` failure rather than sending when `SMTP_HOST` is unset, which the module documents
+ * as a supported mode. Mailtrap appears once in `.env.example:64`, in a list beside Brevo, Resend,
+ * SendGrid and postfix, as an *example* of what generic SMTP can point at. Naming a processor that
+ * is not processing anything would be exactly the invented paragraph the header of this file
+ * exists to forbid, so the notice says no mail provider is configured and what happens when one is.
+ *
+ * ── THIS NEEDS A LAWYER AND HAS NOT HAD ONE ───────────────────────────────────────────────────
+ *
+ * Everything below is a description of code, written by an engineer, and it is accurate to source.
+ * It is NOT a data-protection notice: it establishes no lawful basis, grants no right, names no
+ * controller and makes no cross-border transfer assessment. The sections that require those are
+ * still `counsel` and still empty. A custodial crypto service's privacy notice carries regulatory
+ * weight and this one has not been reviewed.
+ */
 export const PRIVACY: LegalPage = {
   slug: 'privacy',
   title: 'Privacy notice',
   blurb:
-    'What this website itself does — no cookies, no analytics, no third-party requests — written out and checked by a test. What the platform behind it does with personal data is marked as undrafted.',
+    'What this website and the platform behind it do with data, written from the code: no cookies anywhere, pseudonymised analytics, real retention periods. The legal sections are marked undrafted, not invented.',
   standfirst: [
-    'This notice is not finished either. What this website itself does is written out and is verifiable; what the platform behind it does with personal data is a data-protection question and is left to be drafted properly.',
+    'This notice is not finished. What the code does is written out and is checkable against public source; the parts that create legal rights and obligations — who the controller is, on what basis data is processed, and how you enforce your rights — are data-protection questions and are left to be drafted properly.',
+    'Everything in the written sections is a description of software, not a promise about it. Where a thing is not implemented, this page says it is not implemented rather than stating a policy nobody enforces.',
   ],
   notice:
     'This document is incomplete. The sections marked below have not been drafted and nothing on this page should be relied on as a data-protection notice.',
@@ -245,6 +294,63 @@ export const PRIVACY: LegalPage = {
       ],
     },
     {
+      title: 'There are no cookies, on any CloudsForge site',
+      status: 'stated',
+      body: [
+        'Not "no advertising cookies" and not "only essential cookies" — none. No page in this estate writes a cookie, and no service sets one on a response. That is why there is no cookie banner: there is nothing to consent to, and a banner that asked would be theatre.',
+        'Signing in stores two tokens in your browser\'s local storage instead. Local storage is per-origin, which means the tokens are readable only by the exact site that stored them and are never attached automatically to a request the way a cookie is. A consequence a reader can verify: signing into one CloudsForge surface does not sign you into another on a different subdomain, because the storage does not cross origins.',
+        'Clearing site data in your browser removes them completely, and signing out removes them and revokes the session at the server.',
+      ],
+    },
+    {
+      title: 'What the platform holds about you, if you have an account',
+      status: 'stated',
+      body: [
+        'Your account itself — address, credentials, any second factor, and the list of sessions and devices you are signed in from. Credentials are stored as verifiers rather than as passwords, so the stored value cannot be used to sign in as you elsewhere.',
+        'If you hold assets: a double-entry ledger record of every movement, and, for a custodial wallet, key material held under an encryption envelope in a service that exists for nothing else. Financial records are the category least likely to be deletable on request, because a ledger that can be edited after the fact is not a ledger.',
+        'Your activity history across the products. This is deliberately kept without a retention limit — it is a product promise that you can look back at what you did — and that sits in tension with a right to erasure. The tension is stated here rather than resolved, because resolving it is a legal question and this section is not one.',
+      ],
+    },
+    {
+      title: 'Errors and performance this page reports about itself',
+      status: 'stated',
+      body: [
+        'When something in a CloudsForge page fails — an uncaught error, a script that would not load, a page that took an unreasonable time to render — a report goes to CloudsForge\'s own error-collection service. It carries the message, the stack, the address of the page, the build identifier and the browser\'s user-agent string.',
+        `Those reports are held for ${claim('rumRetentionDays')} days and then deleted, and the deletion is a scheduled job rather than an intention. Before anything is stored, the message and the stack are scrubbed for credentials, and an HTTP header that looks like a session is stripped out — error text is exactly where a secret gets printed by accident.`,
+        'To join two reports from one visit, the page mints a random identifier in session storage. It dies when you close the tab, it never follows you between visits, and it says nothing about who you are. That service has no column to put an identity in.',
+      ],
+    },
+    {
+      title: 'Product analytics, and why it can actually be erased',
+      status: 'stated',
+      body: [
+        'Usage of the products is recorded against a pseudonym rather than against your account. The mechanism matters and is unusual, so it is worth stating: the pseudonym is salted with random bytes minted once for you and stored separately, rather than being a plain keyed hash of your user id.',
+        'The difference is the whole point. A keyed hash of your id is a pure function of two values that both survive an erasure request, so anyone holding the key could recompute it afterwards and find your entire history again — that is an index into a person wearing the word "pseudonym". Because ours is salted, erasing you destroys the salt, and after that the pseudonym cannot be reached from your identity by any means short of guessing a value that no longer exists anywhere. The rows survive as data about nobody.',
+        'The key that derives pseudonyms is never written to the analytics database. Someone who obtained a copy of that database would hold, for each subject, two unrelated values and a random salt, with no way to test a guess at whose they are.',
+        `Analytics events are kept for ${claim('analyticsRetentionDays')} days. That number is read from the configuration that enforces it rather than being a policy stated on a page and enforced nowhere.`,
+      ],
+    },
+    {
+      title: 'Who else sees your data, and where it physically is',
+      status: 'stated',
+      body: [
+        'Cloudflare. Every request to every CloudsForge address passes through Cloudflare, which terminates the connection and forwards it down a tunnel. Cloudflare therefore sees your IP address, the address you asked for and the metadata of the request. This became true on the day the estate first went public, and it is the only third party in the path of an ordinary request.',
+        'No mail provider is configured at present. Registration and password-reset mail is sent over plain SMTP with no provider SDK, and with no SMTP server configured the system records that no mail was sent rather than failing or silently losing it. When one is configured, that operator will see the address the mail is sent to.',
+        'There is no advertising network, no tag manager, no third-party analytics, no embedded font and no external script anywhere in these pages. The build fails if a request to an external host appears in the bundle.',
+        'The platform runs on a single home server behind that tunnel. There is no second site, no failover, and no backup that has ever been restored. That is a statement about resilience rather than about privacy, but it is the kind of thing a reader deciding what to trust with money is entitled to know.',
+      ],
+    },
+    {
+      title: 'Deleting your account',
+      status: 'stated',
+      body: [
+        'You can request deletion, and it is a real operation rather than a flag. Your sessions are revoked immediately, the account enters a pending state, and an erasure signal is written in the same database transaction — so it cannot be lost if the process dies at the wrong moment.',
+        'A grace period of seven days follows, during which you can cancel. This exists because a deletion requested by someone who had hijacked your session should be recoverable by you, and you will have noticed, having been signed out everywhere.',
+        'After it, the row keeps only its identifier and its dates. Address, handle, credentials, second factors and profile are gone or overwritten. The identifier is kept deliberately: it is what other services reference, and keeping it is what allows the question "was this person erased, or did they never exist" to be answered at all.',
+        'What this does not yet do is guarantee that every service downstream has finished erasing before the identifier is tombstoned. The signal is published and the services consume it; the end-to-end proof that all of them completed is not something this page can claim today.',
+      ],
+    },
+    {
       title: 'Who the data controller is',
       status: 'counsel',
       body: [],
@@ -256,7 +362,7 @@ export const PRIVACY: LegalPage = {
       status: 'counsel',
       body: [],
       outstanding:
-        'The categories of data, the lawful basis for each, and the purpose limitation on each. This has to be produced from the actual schemas rather than from a template, and reviewed.',
+        'The LAWFUL BASIS for each category and the purpose limitation on each. The categories themselves are now written out above, from the schemas rather than from a template — what is still missing is the part an engineer cannot supply: which basis is relied on for each, and what that commits the company to.',
     },
     {
       title: 'Identity verification',
@@ -270,14 +376,14 @@ export const PRIVACY: LegalPage = {
       status: 'counsel',
       body: [],
       outstanding:
-        'How long each category is kept and what is deleted on account closure. Note the tension to resolve: the activity history is deliberately kept without a retention limit as a product promise, and that has to be reconciled with erasure rights rather than left for a reader to discover.',
+        'The retention periods that ARE implemented are stated above and are read from the code that enforces them: error reports and their groupings, analytics events and their rollups, and a seven-day grace before an account is tombstoned. What is outstanding is everything with no period implemented at all — ledger records, custody material and identity rows are not on a deletion schedule, and the activity history is deliberately kept without a limit as a product promise. That last one has to be reconciled with erasure rights by somebody qualified to, rather than left for a reader to discover.',
     },
     {
       title: 'Sharing, and transfers out of your territory',
       status: 'counsel',
       body: [],
       outstanding:
-        'Every processor and sub-processor, what each of them is given and why, and the lawful basis for any transfer of personal data across a border. This one has to be produced from the deployment inventory rather than from a template, and it stops being accurate the day a dependency is added.',
+        'The LAWFUL BASIS for transferring personal data across a border, and the transfer mechanism relied on. The processors themselves are now listed above from the deployment inventory — Cloudflare in the path of every request, and no mail provider configured yet — but which jurisdictions the data reaches and what makes that lawful is not an engineering question. This section stops being accurate the day a dependency is added, so it is checked against the tunnel configuration rather than remembered.',
     },
     {
       title: 'Your rights, and how to exercise them',

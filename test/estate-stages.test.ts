@@ -29,13 +29,34 @@
  *               file, AND the surface key is one the smoke tier drives.
  *   `tested`    neither of the above. The code passes its own tests somewhere else; nothing here
  *               runs it where a person could reach it.
- *   `open`      there is an address on the public internet. There is not one, so this is asserted
- *               EMPTY — and that assertion is the single most load-bearing line in this file.
+ *   `open`      the surface has a hostname in `PUBLIC_AT` and that name is published by the
+ *               estate's own mainnet Cloudflare Tunnel configuration.
  *
  * Both halves of `running` are required and neither is sufficient. A service in a compose file
  * proves something was meant to run; only the smoke tier proves a person could have opened it, and
  * it is the tier that can prove it because it intercepts nothing and fails structurally if a
  * request intercept ever appears in its own source.
+ *
+ * ── `open` WAS ASSERTED EMPTY UNTIL 2026-08-05, AND IS NOW DERIVED ────────────────────────────
+ *
+ * What stood here read: "there is an address on the public internet. There is not one, so this is
+ * asserted EMPTY — and that assertion is the single most load-bearing line in this file."
+ *
+ * On 2026-08-05 the estate went public and that assertion started failing, correctly, naming all
+ * seven surfaces. It was not relaxed; it was INVERTED, and the inversion is checked in both
+ * directions:
+ *
+ *   * a surface published as `open` with no hostname in the tunnel configuration fails, which is
+ *     the overstatement direction and the one a marketing page drifts in;
+ *   * a surface WITH a public hostname still published as `running` also fails, which is the
+ *     understatement direction — the one that is never investigated, because nobody goes looking
+ *     for evidence that a thing exists after being told it does not. That is the exact failure
+ *     recorded at the top of this file, and it would have recurred today without this half.
+ *
+ * The tunnel configuration is the right source because it is CAUSAL: that file is what makes the
+ * address exist, so it cannot agree with a surface that is not really published. It is still not
+ * sufficient on its own — a name can be configured and have no DNS record, which is true right now
+ * of `worlds-api.cloudsforge.online` — so `test/public-endpoints.test.ts` fetches each one.
  */
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
@@ -44,6 +65,7 @@ import { describe, it } from 'node:test'
 import { PRODUCT_PAGES } from '../src/content/products.ts'
 import { BUILD } from '../src/content/pages.ts'
 import {
+  PUBLIC_AT,
   RUNS_ON,
   SELF_CUSTODY_REPOS,
   STAGE_GLYPH,
@@ -58,10 +80,16 @@ const ESTATE = fileURLToPath(new URL('../..', import.meta.url))
 
 const COMPOSE = `${ESTATE}deploy/compose/docker-compose.estate.yml`
 const SMOKE = `${ESTATE}beacon/src/browser/smoke.ts`
+/** The file that actually causes the public addresses to exist. */
+const TUNNEL = `${ESTATE}deploy/cloudflared/config.mainnet.public.yml`
+/** Its testnet twin, read only to prove none of ITS names is published. */
+const TUNNEL_TESTNET = `${ESTATE}deploy/cloudflared/config.testnet.public.yml`
 
 const REQUIRED: ReadonlyArray<{ file: string; repo: string; dir: string }> = [
   { file: COMPOSE, repo: 'micro-deploy', dir: 'deploy' },
   { file: SMOKE, repo: 'micro-beacon', dir: 'beacon' },
+  { file: TUNNEL, repo: 'micro-deploy', dir: 'deploy' },
+  { file: TUNNEL_TESTNET, repo: 'micro-deploy', dir: 'deploy' },
 ]
 
 /* ─────────────────────────── reading the estate ─────────────────────────── */
@@ -106,13 +134,48 @@ export function smokeSurfaces(text: string): Set<string> {
   return new Set([...text.slice(start, end).matchAll(/key: '([^']+)'/g)].map((m) => m[1] as string))
 }
 
-/** The stage the estate supports for a surface. Pure, so `selfCheck` below can drive it. */
+/**
+ * Every hostname the estate's tunnel publishes.
+ *
+ * Read as `hostname:` entries under `ingress:`. A `hostname` key is only meaningful there, and
+ * matching the token anywhere in the file would pick it up out of the comments — this file's
+ * comments discuss hostnames at length, which is the same hazard `composeServices` guards against.
+ *
+ * The catch-all rule at the end of a cloudflared config has no `hostname` and so contributes
+ * nothing, which is correct: it is what answers 404 for everything not named above it.
+ */
+export function tunnelHostnames(text: string): Set<string> {
+  const out = new Set<string>()
+  let inIngress = false
+  for (const raw of text.split('\n')) {
+    if (/^ingress:\s*$/.test(raw)) {
+      inIngress = true
+      continue
+    }
+    if (inIngress && /^[^\s#]/.test(raw)) break
+    if (!inIngress) continue
+    const match = /^\s*-?\s*hostname:\s*([A-Za-z0-9.-]+)\s*(#.*)?$/.exec(raw)
+    if (match?.[1]) out.add(match[1])
+  }
+  return out
+}
+
+/**
+ * The stage the estate supports for a surface. Pure, so the self-tests below can drive it.
+ *
+ * `open` is checked FIRST and independently of the other two. A surface answering on the public
+ * internet is open whether or not this site's compose list happens to name every container behind
+ * it — the reader's experience is the address, and a bookkeeping gap here must not be able to
+ * publish a quieter status than the truth.
+ */
 export function stageFor(
   key: string,
   needs: readonly string[],
   services: ReadonlySet<string>,
   walked: ReadonlySet<string>,
+  published: ReadonlySet<string>,
 ): Stage {
+  if (published.has(key)) return 'open'
   const deployed = needs.every((service) => services.has(service))
   return deployed && walked.has(key) ? 'running' : 'tested'
 }
@@ -185,21 +248,87 @@ describe('the readers themselves', () => {
 
   it('requires BOTH deployment and a browser before it will say running', () => {
     const both = new Set(['a-web'])
-    assert.equal(stageFor('a', ['a-web'], both, new Set(['a'])), 'running')
-    assert.equal(stageFor('a', ['a-web'], both, new Set()), 'tested', 'deployed but never opened')
-    assert.equal(stageFor('a', ['a-web'], new Set(), new Set(['a'])), 'tested', 'walked but absent')
+    const none = new Set<string>()
+    assert.equal(stageFor('a', ['a-web'], both, new Set(['a']), none), 'running')
+    assert.equal(stageFor('a', ['a-web'], both, new Set(), none), 'tested', 'deployed but not opened')
+    assert.equal(stageFor('a', ['a-web'], new Set(), new Set(['a']), none), 'tested', 'walked, absent')
     // And every named container, not just one of them.
-    assert.equal(stageFor('a', ['a-web', 'a-api'], both, new Set(['a'])), 'tested')
+    assert.equal(stageFor('a', ['a-web', 'a-api'], both, new Set(['a']), none), 'tested')
+  })
+
+  it('says open only when the surface is published, and regardless of the rest', () => {
+    const published = new Set(['a'])
+    assert.equal(stageFor('a', ['a-web'], new Set(['a-web']), new Set(['a']), published), 'open')
+    // Publication outranks the other two: a public address is a public address.
+    assert.equal(stageFor('a', ['a-web'], new Set(), new Set(), published), 'open')
+    // And nothing else can produce `open`.
+    assert.equal(stageFor('a', ['a-web'], new Set(['a-web']), new Set(['a']), new Set()), 'running')
+  })
+
+  it('reads hostnames out of the ingress block and not out of anything else', () => {
+    const names = tunnelHostnames(
+      [
+        'tunnel: abc',
+        'credentials-file: /etc/x.json',
+        '# a comment naming hostname: not-real.cloudsforge.online',
+        'ingress:',
+        '  - hostname: hub.cloudsforge.online',
+        '    service: https://127.0.0.1:443',
+        '    originRequest:',
+        '      noTLSVerify: true',
+        '  - hostname: market.cloudsforge.online',
+        '    service: https://127.0.0.1:443',
+        '  # the catch-all, which has no hostname and must contribute nothing',
+        '  - service: http_status:404',
+        'warp-routing:',
+        '  enabled: false',
+      ].join('\n'),
+    )
+    assert.deepEqual([...names].sort(), ['hub.cloudsforge.online', 'market.cloudsforge.online'])
+  })
+
+  it('finds nothing when there is no ingress block, rather than scraping the file', () => {
+    // The failure this pins: a reader that matched `hostname:` anywhere would return the name in
+    // the comment above, and a surface would be published as open on the strength of a comment.
+    assert.deepEqual([...tunnelHostnames('# hostname: fake.cloudsforge.online\nother: 1')], [])
   })
 })
 
 describe('the stage of every surface, recomputed', () => {
   const services = composeServices(readFileSync(COMPOSE, 'utf8'))
   const walked = smokeSurfaces(readFileSync(SMOKE, 'utf8'))
+  const tunnel = tunnelHostnames(readFileSync(TUNNEL, 'utf8'))
+  /** Surface keys whose published hostname the estate really serves. */
+  const published = new Set(
+    Object.entries(PUBLIC_AT)
+      .filter(([, host]) => tunnel.has(host))
+      .map(([key]) => key),
+  )
 
   it('found a real estate, so nothing below is comparing two empty sets', () => {
     assert.ok(services.size >= 40, `the compose file declared ${services.size} services`)
     assert.ok(walked.size >= 10, `the smoke tier drives ${walked.size} surfaces`)
+    assert.ok(tunnel.size >= 15, `the mainnet tunnel publishes ${tunnel.size} hostnames`)
+  })
+
+  it('publishes no hostname the estate does not actually serve', () => {
+    // The overstatement direction. A name typed into PUBLIC_AT that the tunnel never routes would
+    // put "Open to the public" on a page pointing at nothing.
+    const unrouted = Object.entries(PUBLIC_AT)
+      .filter(([, host]) => !tunnel.has(host))
+      .map(([key, host]) => `${key} claims ${host}, which the mainnet tunnel does not publish`)
+    assert.deepEqual(unrouted, [])
+  })
+
+  it('never publishes a testnet hostname, which would fail at Cloudflare before reaching us', () => {
+    // Universal SSL covers the single-label wildcard only, so `hub.testnet.cloudsforge.online`
+    // fails the TLS handshake at the edge. Configured is not reachable, and this is the one place
+    // that distinction can be enforced rather than remembered.
+    const testnet = tunnelHostnames(readFileSync(TUNNEL_TESTNET, 'utf8'))
+    const leaked = Object.entries(PUBLIC_AT)
+      .filter(([, host]) => testnet.has(host) || /\.testnet\./.test(host))
+      .map(([key, host]) => `${key} publishes ${host}, which is a testnet name`)
+    assert.deepEqual(leaked, [])
   })
 
   it('names, for every page, the containers it depends on', () => {
@@ -214,29 +343,34 @@ describe('the stage of every surface, recomputed', () => {
   it('agrees with the estate about every one of them', () => {
     const disagreements = PRODUCT_PAGES.flatMap((page) => {
       const needs = RUNS_ON[page.key] ?? []
-      const actual = stageFor(page.key, needs, services, walked)
+      const actual = stageFor(page.key, needs, services, walked, published)
       if (actual === page.stage) return []
       const absent = needs.filter((s) => !services.has(s))
       return [
         `${page.slug} is published as ${JSON.stringify(page.stage)} but the estate gives ` +
           `${JSON.stringify(actual)} — ` +
           (absent.length > 0 ? `not declared in compose: ${absent.join(', ')}. ` : '') +
-          (walked.has(page.key) ? '' : 'the smoke tier does not drive this surface.'),
+          (walked.has(page.key) ? '' : 'the smoke tier does not drive this surface. ') +
+          (published.has(page.key) ? 'it HAS a public address. ' : 'it has no public address. '),
       ]
     })
     assert.deepEqual(disagreements, [])
   })
 
-  it('publishes nothing as open to the public, because nothing is', () => {
-    // The load-bearing assertion of this file, and the one that must be hardest to delete. It is
-    // asserted over the pages AND over the wallets block, so a surface promoted by hand fails here
-    // rather than on somebody noticing the chip went green.
-    const claimed = PRODUCT_PAGES.filter((p) => p.stage === 'open').map((p) => p.slug)
+  it('calls a surface open when, and only when, it has a public address', () => {
+    // Both directions in one assertion, which is the point. Until 2026-08-05 this file asserted
+    // that NOTHING was open; when the estate went public that assertion failed naming all seven
+    // surfaces, and it was inverted rather than relaxed.
+    //
+    // The second direction is the one worth the trouble: a surface that is publicly reachable and
+    // still published as "Running in-house" understates, and an understatement is never
+    // investigated — which is the exact failure recorded at the top of this file.
+    const openPages = PRODUCT_PAGES.filter((p) => p.stage === 'open').map((p) => p.key).sort()
+    const reachable = [...published].sort()
     assert.deepEqual(
-      claimed,
-      [],
-      'a surface claims to be open to the public. There is no address on the public internet for ' +
-        'anything in this estate; if that has changed, this test is where the change is argued.',
+      openPages,
+      reachable,
+      'the set of surfaces published as open disagrees with the set the estate actually serves.',
     )
   })
 })

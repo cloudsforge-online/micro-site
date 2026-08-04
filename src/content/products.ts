@@ -17,11 +17,13 @@
  *   is deployed. Every repository listed below exists as code that passes its own tests. Not one
  *   of them is running anywhere."
  *
- * **That quotation has been overtaken and is kept as the reason rather than as the fact.** The
- * estate now runs end to end behind a gateway, so "not one of them is running anywhere" is false;
- * what is still true, and is what every note below is written against, is that none of it has an
- * address on the public internet. The unflattering measure moved; it did not go away. `./pages.ts`
- * BUILD.honesty carries the current wording and the reason it changed.
+ * **That quotation has been overtaken TWICE and is kept as the reason rather than as the fact.**
+ * The estate now runs end to end behind a gateway, so "not one of them is running anywhere" is
+ * false; and on 2026-08-05 it went public, so "none of it has an address on the public internet" —
+ * which is what this paragraph said next, and what every note below used to be written against —
+ * is false too. The unflattering measure moved again rather than going away, and it is now this:
+ * the surfaces are reachable, nobody outside the project has used them, and EMBER has no market,
+ * no listing and no price. `./pages.ts` BUILD.honesty carries the current wording.
  *
  * ── AND THE SITE THEN SAT ON THE OTHER SIDE OF THAT MISTAKE FOR AS LONG AGAIN ─────────────────
  *
@@ -36,10 +38,10 @@
  * so plainly: **understatement is not a safe direction to be stale in.** It is simply a different
  * false statement, and a reader who is told a thing does not exist does not go and look.
  *
- * So the stage is no longer typed by hand into this file and left. `./stages.ts` defines four
- * states as three yes/no questions about the estate, and `test/estate-stages.test.ts` opens the
- * compose file and the smoke tier's surface list and recomputes every value below. A stage a
- * reader can check is the only kind worth publishing.
+ * So the stage is no longer typed by hand into this file and left. `./stages.ts` defines three
+ * states as yes/no questions about the estate, and `test/estate-stages.test.ts` opens the compose
+ * file, the smoke tier's surface list and the estate's own Cloudflare Tunnel configuration and
+ * recomputes every value below. A stage a reader can check is the only kind worth publishing.
  *
  * A site that described these six as though a reader could go and use them today would be lying,
  * and it would be lying in the one voice this company has decided is an asset —
@@ -122,9 +124,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'Forge Hub is where a CloudsForge account lives: portfolio, wallets, deposits, withdrawals, activity and security on one screen. Not a product you choose — the container the others sit inside.',
-    stage: 'running',
+    stage: 'open',
     stageNote:
-      'Deployed with the service behind it, and opened in a real browser through the gateway with a sign-in that completes. Nobody outside the project can reach that gateway, so there is nothing to sign into yet.',
+      'Deployed with the service behind it, opened in a real browser through the gateway with a sign-in that completes, and now reachable on the public internet. It went public today, so nobody outside the project has used it yet — reachable is what is being claimed, not proven under strangers.',
     sections: [
       {
         title: 'One screen instead of six',
@@ -163,9 +165,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'EMBER is proof-of-work money mined on ordinary processors. Memory-hard, ASIC-resistant, and an account-model chain that speaks Ethereum. No rig to buy and no pool to join.',
-    stage: 'running',
+    stage: 'open',
     stageNote:
-      'The chain runs — as a test network, mined on the machine it was built on — with the explorer, the faucet and the indexer deployed beside it and answering in a browser. There is no public node and no main network.',
+      'The main network is running and mining, with a public node answering JSON-RPC and a public block explorer beside it. It is hours old and only a few hundred blocks deep, so it is reachable rather than established, and EMBER has no market, no listing and no price. The faucet serves the test network, which has no publicly reachable endpoint yet.',
     sections: [
       {
         title: 'Proof of work, without the industry',
@@ -203,9 +205,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'Deploy a real token contract from committed, compiled bytecode. Your wallet is the owner from the first block; the platform pays the gas and holds no authority over it.',
-    stage: 'running',
+    stage: 'open',
     stageNote:
-      'The deployment service, the brand-generation service and the application a creator uses are all deployed and walked in a browser. Every contract any of them has deployed went to a private test network, and no stranger has ordered one.',
+      'The deployment service, the brand-generation service and the application a creator uses are all deployed, walked in a browser, and reachable on the public internet. Every contract any of them has deployed so far went to a test network, and no stranger has ordered one.',
     sections: [
       {
         title: 'The deploy leaves the request',
@@ -242,9 +244,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'Backtest a strategy against real market history with fees and slippage charged, promote what survives to paper, and only then to money. Modelled, never promised. Not an exchange.',
-    stage: 'running',
+    stage: 'open',
     stageNote:
-      'The engine — backtesting, fills, fees and the performance accounting — is deployed behind an application that answers in a browser. Live trading is switched off in the running service rather than missing from it, and stays off until a complete cycle has run on testnet.',
+      'The engine — backtesting, fills, fees and the performance accounting — is deployed behind an application that is now reachable on the public internet. Live trading is switched off in the running service rather than missing from it, and stays off until a complete cycle has run on testnet. Reaching the page and being able to trade on it are different things, and only the first is true.',
     sections: [
       {
         title: 'The backtest charges you',
@@ -282,9 +284,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'Parimutuel markets on future events. Stakes go to the contract, not to us; payouts come from the pool, not from our balance sheet. Odds are the pool ratio, and they move until it closes.',
-    stage: 'running',
+    stage: 'open',
     stageNote:
-      'The service, the contract, the application a person stakes in and the console an operator opens questions from are all deployed and walked. The only chain any of it has touched is a private EMBER test network.',
+      'The service, the contract, the application a person stakes in and the console an operator opens questions from are all deployed, walked, and now reachable on the public internet. The only chain any of it has settled on so far is an EMBER test network, and no stranger has taken a position.',
     sections: [
       {
         title: 'The contract holds the money, not the platform',
@@ -323,9 +325,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'Listings, offers, escrow and settlement for what people make. The fee, the royalty and the seller\'s proceeds are constrained to add up by the database, not by the code that writes them.',
-    stage: 'running',
+    stage: 'open',
     stageNote:
-      'Listings, bids, escrow, the order split and the risk indicators run behind an application a browser reaches through the gateway. Nothing is listed on it, because nobody outside the project can reach it to list anything.',
+      'Listings, bids, escrow, the order split and the risk indicators run behind an application that is now reachable on the public internet. Nothing is listed on it yet — it opened today, and an empty market is what an empty market looks like.',
     sections: [
       {
         title: 'The split is checked by the database',
@@ -363,9 +365,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'A shared map, resources that genuinely run out, and a season that ends and is kept rather than deleted. Nothing purchasable is powerful — scarcity is the game.',
-    stage: 'running',
+    stage: 'open',
     stageNote:
-      'The platform is deployed, including the private worlds that used to be sold and never provisioned, and so are both titles that run on it. Nobody outside the project has ever played one, and no season has ended with a stranger in it.',
+      'The platform is deployed, including the private worlds that used to be sold and never provisioned, and so are both titles that run on it, and all of it is now reachable on the public internet. Nobody outside the project has ever played one, and no season has ended with a stranger in it.',
     sections: [
       {
         title: 'Scarcity is the game',
