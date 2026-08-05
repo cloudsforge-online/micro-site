@@ -209,12 +209,26 @@ export const SELF_CUSTODY_REPOS: readonly string[] = [
  *
  * ── The mainnet tunnel only ───────────────────────────────────────────────────────────────────
  *
- * The testnet tunnel declares a parallel set of two-label names and none of them may be published.
- * Cloudflare's Universal SSL certificate covers a SINGLE-LABEL wildcard: it matches the testnet
- * apex and it does not match a surface underneath it. A two-label wildcard needs Advanced
- * Certificate Manager, which is paid and is not bought, so every testnet subdomain fails the TLS
- * handshake at Cloudflare's edge before it ever reaches the estate. Configured is not reachable,
- * and that gap is the entire reason the list is checked over the network as well as on disk.
+ * The testnet tunnel declares a parallel set of names — `hub-testnet`, `market-testnet`, and the
+ * bare environment label for this very page — and none of them may appear on this list. The reason
+ * is that they are A DIFFERENT ENVIRONMENT. A reader told a product is "Open to the public" and
+ * sent to a testnet address is being shown a rehearsal: throwaway money, a chain that gets reset,
+ * and nothing on the card that says so.
+ *
+ * That is a WEAKER reason than the one recorded here until 2026-08-05, and the difference is worth
+ * writing down because it moved a guarantee out of this file's reach. Testnet used to be an apex
+ * PREFIX — `hub.testnet.<apex>` — and Cloudflare's Universal SSL certificate is a SINGLE-LABEL
+ * wildcard, so every two-label testnet name failed the TLS handshake at Cloudflare's edge before a
+ * request reached the estate at all. Testnet was configured and unreachable, and any testnet name
+ * published here would have been caught by the network tier below simply by refusing to connect.
+ * Covering two labels needs Advanced Certificate Manager, which is paid and is not bought, so the
+ * environment moved to a SUFFIX ON THE SUBDOMAIN instead. Those names are one label deep, the
+ * certificate that already exists covers them, and they answer. A testnet address published here
+ * would now return 200 and sail through the fetch; what refuses it is `test/estate-stages.test.ts`
+ * reading the environment out of the first label.
+ *
+ * Configured is still not reachable — `worlds-api` and `api` above are the standing proof — and
+ * that gap remains the reason this list is checked over the network as well as on disk.
  */
 export const PUBLIC_SURFACES: readonly string[] = [
   'hub',

@@ -64,7 +64,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, it } from 'node:test'
 import { PRODUCT_PAGES } from '../src/content/products.ts'
 import { BUILD } from '../src/content/pages.ts'
-import { surface, type SurfaceKey } from '@cloudsforge/ui'
+import { ENV_LABELS, splitEnvLabel, surface, type SurfaceKey } from '@cloudsforge/ui'
 import {
   PUBLIC_SURFACES,
   RUNS_ON,
@@ -169,18 +169,70 @@ export function tunnelHostnames(text: string): Set<string> {
  * what keeps the literal string out of this repository, which is the rule `PUBLIC_SURFACES`
  * exists to respect. A hard-coded apex here would reintroduce exactly the second copy that CI
  * rejected the first draft of this change for.
+ *
+ * ── The premise is now ASSERTED, because it stopped being true of every file in the estate ────
+ *
+ * "Every other hostname is a subdomain of the shortest one" holds of the mainnet configuration and
+ * used to hold of the testnet one, back when testnet was an apex prefix and its names really did
+ * sit under `testnet.<apex>`. Since testnet became a suffix on the subdomain the two environments
+ * SHARE an apex: the testnet file's shortest name is the bare environment label, and every other
+ * name in it is that name's SIBLING rather than its child. Deriving an apex from that file would
+ * now return a wrong answer and say nothing, so the premise is checked instead of assumed.
  */
 export function apexOf(hostnames: ReadonlySet<string>): string {
   const sorted = [...hostnames].sort((a, b) => a.split('.').length - b.split('.').length)
   const apex = sorted[0]
   assert.ok(apex !== undefined, 'the tunnel configuration publishes no hostname at all')
+  assert.deepEqual(
+    sorted.filter((host) => host !== apex && !host.endsWith(`.${apex}`)),
+    [],
+    `these hostnames are not under the derived apex ${apex}, so it is not an apex`,
+  )
   return apex
 }
 
-/** Where a surface answers publicly: its registry subdomain, under the estate's apex. */
+/**
+ * Where a surface answers publicly ON MAINNET: its registry subdomain, under the estate's apex.
+ *
+ * The environment is the empty one, and since both environments share an apex that is now a
+ * property of the FIRST LABEL rather than of the apex — `hub.<apex>` is mainnet precisely because
+ * its first label carries no environment suffix. `namesAnEnvironment` below is the inverse test,
+ * and is what stops a name composed here from being a testnet one.
+ */
 export function hostFor(key: string, apex: string): string {
   const sub = surface(key as SurfaceKey).subdomain
   return sub === '' ? apex : `${sub}.${apex}`
+}
+
+/**
+ * True when a hostname names a NON-PRODUCTION ENVIRONMENT, in either shape.
+ *
+ * ── This replaced `/\.testnet\./`, which by then could not fail ───────────────────────────────
+ *
+ * Until 2026-08-05 testnet was an apex PREFIX (`hub.testnet.<apex>`) and that regex matched it.
+ * The environment then moved to a SUFFIX on the subdomain (`hub-testnet.<apex>`), because
+ * Cloudflare's Universal SSL is a single-label wildcard and the two-label shape failed the TLS
+ * handshake at the edge — configured and unreachable. After that move NO HOSTNAME THIS ESTATE
+ * COMPOSES CAN MATCH `/\.testnet\./`, so the check below was green because it was measuring
+ * nothing. That is the same defect as a check that skips, and it is the one this repository keeps
+ * finding.
+ *
+ * Both shapes are recognised. The old one still resolves on purpose — `cloudsforgeHosts()` keeps
+ * its `KNOWN_SUBS` branch so a bundle is correct on an old hostname — and a name in the old shape
+ * would be exactly as wrong on a marketing page as a name in the new one.
+ *
+ * The environment words are NOT listed here. `ENV_LABELS` and `splitEnvLabel` come from the
+ * surface registry, which is the same source `cloudsforgeHosts()` resolves with and the same one
+ * `deploy/scripts/check-apex-prefix.py` reads. A local list of environment names would be the
+ * second, unversioned copy that this whole file exists to refuse.
+ */
+export function namesAnEnvironment(host: string): boolean {
+  const [first = '', ...rest] = host.split('.')
+  // The new shape: an environment suffix on the first label, or the bare label for the apex
+  // surface — which is this site, whose subdomain is the empty string.
+  if (splitEnvLabel(first) !== null) return true
+  // The old shape: the environment was a label of the apex.
+  return rest.some((label) => ENV_LABELS.has(label))
 }
 
 /**
@@ -315,6 +367,39 @@ describe('the readers themselves', () => {
     // the comment above, and a surface would be published as open on the strength of a comment.
     assert.deepEqual([...tunnelHostnames('# hostname: fake.cloudsforge.online\nother: 1')], [])
   })
+
+  it('derives the apex as the name every other one sits under', () => {
+    assert.equal(apexOf(new Set(['hub.example.com', 'example.com', 'a.b.example.com'])), 'example.com')
+  })
+
+  it('refuses a set whose shortest name is not an apex of the rest', () => {
+    // The shape the testnet tunnel now has: the shortest name is the environment's own apex
+    // surface and every other name is its sibling, not its child. Deriving an apex from that would
+    // compose `hub.testnet.example.com` for every surface — names nothing serves — and would say
+    // nothing about it.
+    assert.throws(
+      () => apexOf(new Set(['testnet.example.com', 'hub-testnet.example.com'])),
+      /not under the derived apex/,
+    )
+  })
+
+  it('reads an environment out of a hostname in both shapes', () => {
+    // The new shape: a suffix on the first label, including the bare label the apex surface takes.
+    assert.equal(namesAnEnvironment('hub-testnet.cloudsforge.online'), true)
+    assert.equal(namesAnEnvironment('testnet.cloudsforge.online'), true)
+    assert.equal(namesAnEnvironment('market-staging.cloudsforge.online'), true)
+    // The one registry subdomain with a hyphen of its own, which is what decides that the split is
+    // on the LAST hyphen rather than the first.
+    assert.equal(namesAnEnvironment('worlds-api-testnet.cloudsforge.online'), true)
+    // The old two-label shape, which still resolves and would be just as wrong on this page.
+    assert.equal(namesAnEnvironment('hub.testnet.cloudsforge.online'), true)
+    // And mainnet, including the three names most easily mistaken for an environment: the apex
+    // itself, a hyphenated subdomain, and a subdomain that merely contains no hyphen at all.
+    assert.equal(namesAnEnvironment('cloudsforge.online'), false)
+    assert.equal(namesAnEnvironment('worlds-api.cloudsforge.online'), false)
+    assert.equal(namesAnEnvironment('hub.cloudsforge.online'), false)
+    assert.equal(namesAnEnvironment('developers.cloudsforge.online'), false)
+  })
 })
 
 describe('the stage of every surface, recomputed', () => {
@@ -340,14 +425,20 @@ describe('the stage of every surface, recomputed', () => {
     assert.deepEqual(unrouted, [])
   })
 
-  it('never publishes a testnet hostname, which would fail at Cloudflare before reaching us', () => {
-    // Universal SSL covers the single-label wildcard only, so `hub.testnet.cloudsforge.online`
-    // fails the TLS handshake at the edge. Configured is not reachable, and this is the one place
-    // that distinction can be enforced rather than remembered.
+  it('never publishes a hostname belonging to another environment', () => {
+    // Both environments now share an apex and testnet's names ANSWER, so the network tier can no
+    // longer catch this by failing to connect — see the note in `test/public-endpoints.test.ts`.
+    // This is the only place the distinction survives.
+    //
+    // Two ways of catching it, and neither subsumes the other. The first compares against the
+    // testnet tunnel's own ingress list, which is causal: it catches a name this estate really
+    // does serve on testnet. The second reads the environment out of the name itself, which
+    // catches one that is in no tunnel file at all — a staging name, or a testnet name added here
+    // before it was added there.
     const testnet = tunnelHostnames(readFileSync(TUNNEL_TESTNET, 'utf8'))
     const leaked = PUBLIC_SURFACES.filter(
-      (key) => testnet.has(hostFor(key, apex)) || /\.testnet\./.test(hostFor(key, apex)),
-    ).map((key) => `${key} publishes ${hostFor(key, apex)}, which is a testnet name`)
+      (key) => testnet.has(hostFor(key, apex)) || namesAnEnvironment(hostFor(key, apex)),
+    ).map((key) => `${key} publishes ${hostFor(key, apex)}, which is not a mainnet name`)
     assert.deepEqual(leaked, [])
   })
 

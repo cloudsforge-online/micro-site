@@ -24,17 +24,24 @@
  * A reader cannot tell those apart from a working surface by reading a configuration file, and
  * neither can a test that only reads one. So this fetches.
  *
- * ── And why the testnet names make this mandatory rather than nice to have ────────────────────
+ * ── The testnet names were a second reason until 2026-08-05, and are not one now ──────────────
  *
- * Cloudflare's Universal SSL certificate covers a SINGLE-LABEL wildcard under the apex: it matches
- * the testnet apex itself and it does not match a surface underneath it. A two-label wildcard needs
- * Advanced Certificate Manager, which is paid and is not bought, so every testnet subdomain
- * resolves to Cloudflare and then fails the TLS handshake before a byte of HTTP is exchanged.
+ * Testnet used to be an apex PREFIX — `hub.testnet.<apex>`. Cloudflare's Universal SSL certificate
+ * covers a SINGLE-LABEL wildcard, so every two-label testnet name resolved to Cloudflare and then
+ * failed the TLS handshake before a byte of HTTP was exchanged. That failure was invisible to DNS,
+ * invisible to the tunnel configuration, and invisible to any check that did not complete a TLS
+ * session — so this file was the only thing in the repository that could have caught a testnet
+ * address published as open.
  *
- * That failure is invisible to DNS, invisible to the tunnel configuration, and invisible to any
- * check that does not complete a TLS session. Publishing one of those addresses would put a link
- * on a public marketing site that cannot be opened by anyone, ever, and nothing but a real fetch
- * would have caught it.
+ * It is no longer. Covering two labels needs Advanced Certificate Manager, which is paid and is not
+ * bought, so testnet moved to a SUFFIX ON THE SUBDOMAIN — `hub-testnet.<apex>` — which is one label
+ * deep, is covered by the certificate that already exists, and ANSWERS 200. A testnet address
+ * published by mistake would now pass every assertion in this file.
+ *
+ * The guarantee did not disappear, it moved: `./estate-stages.test.ts` refuses such a name by
+ * reading the environment out of its first label rather than by failing to reach it. This is
+ * recorded rather than deleted because a reason that has quietly stopped applying is how a check
+ * ends up green for a cause that no longer exists.
  *
  * ── What this asserts, and what it deliberately does not ──────────────────────────────────────
  *
