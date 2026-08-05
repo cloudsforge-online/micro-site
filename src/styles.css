@@ -54,41 +54,23 @@ body {
 }
 
 /**
- * The light scope.
+ * THE LIGHT SCOPE MOVED INTO THE DESIGN SYSTEM.
  *
- * The design system is dark and says so — "The system is dark only and does not pretend
- * otherwise". Its tokens file also states the one sanctioned way for a host to want a light mode:
- * "override the semantic tokens, never the ash or bone ramps". That is exactly what this block
- * does, and it is the whole of the light theme.
+ * This file used to carry a whole light theme — eleven semantic tokens and a second, hand-tuned
+ * accent mix, inside a `@media (prefers-color-scheme: light)` block — because @cloudsforge/ui was
+ * dark only and said so. It is not, since 1.1: `data-cf-scheme` on <html> (set in index.html)
+ * selects `auto`, `light` or `dark`, and the palette for all three lives in tokens.css where the
+ * other sixteen surfaces can have it.
  *
- * The shared bar stays dark, because it carries `.cf-dark` and re-asserts the semantic layer for
- * itself. That is not a bug being tolerated: the bar is company chrome and reading as a dark band
- * above a light page is a deliberate, legible result, where inverting it would put a second
- * opinion about the brand's colour on every surface at once.
+ * The local copy is DELETED rather than left in place, and that is not tidiness. It declared
+ * `:root` inside a bare media query, so it would have won over the shared block on specificity and
+ * source order — and, worse, it would have applied on a light operating system even to a reader
+ * who had explicitly chosen `data-cf-scheme="dark"`. A duplicated theme is a theme that overrides
+ * the choice the reader made.
  *
- * The values are the ash and bone ramps read the other way up, with contrast measured rather than
- * guessed — `test/contrast.test.ts` holds every pair used for text to WCAG AA on both grounds.
+ * What is left below is the part that is genuinely this surface's: how it derives a TYPE colour
+ * from whatever accent a card has scoped to itself.
  */
-@media (prefers-color-scheme: light) {
-  :root {
-    --cf-bg: #f4f0e8;
-    --cf-bg-raised: #fbf8f2;
-    --cf-bg-sunken: #e8e2d6;
-    --cf-fg: #1a1613;
-    --cf-fg-dim: #4a4239;
-    --cf-fg-mute: #6b6155;
-
-    --cf-line: color-mix(in srgb, #1a1613 14%, transparent);
-    --cf-line-strong: color-mix(in srgb, #1a1613 24%, transparent);
-    --cf-surface: color-mix(in srgb, #fbf8f2 82%, transparent);
-    --cf-surface-solid: #fbf8f2;
-    --cf-surface-hover: color-mix(in srgb, #1a1613 6%, transparent);
-  }
-
-  body {
-    color-scheme: light;
-  }
-}
 
 /**
  * The accent, made safe to set TYPE in.
@@ -134,26 +116,32 @@ body {
 *,
 *::before,
 *::after {
+  /*
+   * ONE DECLARATION, BOTH SCHEMES, AND THE REASON IS THAT --cf-fg NOW FLIPS.
+   *
+   * This used to be two rules: mix toward `var(--cf-fg)` on the dark ground, and a second block
+   * inside a light media query mixing toward `#000`. The second existed because `--cf-fg` was
+   * always bone, so mixing toward it could only ever LIGHTEN — which is right on exactly one of
+   * the two grounds.
+   *
+   * With the scheme in the token layer, `--cf-fg` is bone on a dark page and char on a light one,
+   * so this single mix lightens where lightening is correct and darkens where darkening is. The
+   * light block, its two hand-tuned percentages and the two status mixes below it are all gone,
+   * and nothing about how the page looks in either scheme changed.
+   */
   --si-accent: color-mix(in srgb, var(--cf-accent) 88%, var(--cf-fg));
-  /* Hover goes LIGHTER on a dark ground. */
   --si-accent-hover: color-mix(in srgb, var(--cf-accent) 70%, var(--cf-fg));
-  /* The two status colours already clear AA on both dark surfaces unmixed. */
-  --si-good: var(--cf-viz-good);
-  --si-warn: var(--cf-viz-warn);
+  /*
+   * The stage colours are the design system's severity TEXT steps rather than its chart roles.
+   * A chart role is validated at 3:1 against a panel, because it colours a mark; a stage chip
+   * sets a WORD in it. That is the same distinction as --cf-accent against --cf-accent-text, and
+   * `--cf-good-text` / `--cf-warn-text` are the tokens that carry it, on both schemes.
+   */
+  --si-good: var(--cf-good-text);
+  --si-warn: var(--cf-warn-text);
 }
 
-@media (prefers-color-scheme: light) {
-  *,
-  *::before,
-  *::after {
-    --si-accent: color-mix(in srgb, var(--cf-accent) 68%, #000);
-    /* Hover goes DARKER on a light ground. The design system's own `--cf-accent-hover` only knows
-       how to go lighter, which is correct on exactly one of the two grounds. */
-    --si-accent-hover: color-mix(in srgb, var(--cf-accent) 62%, #000);
-    --si-good: color-mix(in srgb, var(--cf-viz-good) 60%, #000);
-    --si-warn: color-mix(in srgb, var(--cf-viz-warn) 55%, #000);
-  }
-}
+
 
 /* ─────────────────────────────── chrome ─────────────────────────────── */
 
@@ -162,23 +150,9 @@ body {
  * hidden on focus is worse than none, because the reader activates it and cannot tell whether it
  * did anything.
  */
-.si-skip {
-  position: absolute;
-  left: var(--cf-space-sm);
-  top: -4rem;
-  z-index: 100;
-  padding: var(--cf-space-sm) var(--cf-space-xl);
-  border-radius: var(--cf-radius);
-  background: var(--cf-accent);
-  color: var(--cf-accent-ink);
-  font-weight: 600;
-  text-decoration: none;
-  transition: top var(--cf-speed) var(--cf-ease);
-}
-
-.si-skip:focus {
-  top: calc(var(--cf-bar-h) + var(--cf-space-sm));
-}
+/* `.si-skip` was here. The skip link is `<SkipLink>` from @cloudsforge/ui now, styled by
+   `.cf-skip` — this surface had the estate's only one, and a bypass for a bar that every surface
+   renders belongs beside the bar rather than beside one of its consumers. */
 
 /* The site's own navigation, docked at exactly the shared bar's height token. */
 .si-nav {

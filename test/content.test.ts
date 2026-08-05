@@ -424,13 +424,22 @@ describe('images', () => {
     }
   })
 
-  it('ships the site-level card, the favicons and robots.txt', () => {
+  it('ships the site-level card and the favicons', () => {
+    /*
+     * `public/robots.txt` used to be in this list and is deliberately not any more. It is served
+     * by nginx now, composed with `$host` so that the `Sitemap:` line can be absolute without the
+     * artefact naming a hostname — the tension the file itself recorded and resolved by having no
+     * Sitemap line at all. Keeping the static copy would have been worse than deleting it: the
+     * `location = /robots.txt` that serves the generated one wins over the prefix that serves this
+     * directory, so the file would have been deployed, unreachable, and edited to no effect by the
+     * next reader. `test/sitemap.test.ts` asserts both halves — that the generated body is what
+     * the design system produces, and that the static file has not come back.
+     */
     for (const file of [
       'public/og-1200x630.png',
       'public/favicon-32x32.png',
       'public/favicon-192x192.png',
       'public/favicon-512x512.png',
-      'public/robots.txt',
     ]) {
       assert.ok(existsSync(new URL(`../${file}`, import.meta.url)), `${file} is missing`)
     }

@@ -105,36 +105,60 @@ function token(css: string, name: string): Rgb {
   return parseHex(match[1] ?? '')
 }
 
-/** A declaration inside the light-scope block of the site's own stylesheet. */
+/**
+ * The light ramp, READ OUT OF THE DESIGN SYSTEM rather than out of this repository.
+ *
+ * This function used to parse a `@media (prefers-color-scheme: light) { :root { … } }` block in
+ * `src/styles.css` — this surface's own private light theme, which was the only one in the estate.
+ * @cloudsforge/ui 1.1 has a light scheme at token level, so the block is gone and the values it
+ * held are now `--cf-kiln-*` and `--cf-char*` in tokens.css, available to all seventeen surfaces.
+ *
+ * The mapping below is the light block's own: `--cf-bg` resolves to `--cf-kiln-100`, and so on.
+ * Reading the RAW ramp rather than the semantic name is deliberate — `token()` takes the first
+ * declaration in the file, and the semantic names are declared for the dark scheme first.
+ */
+const LIGHT_RAMP: Readonly<Record<string, string>> = {
+  'cf-bg': 'cf-kiln-100',
+  'cf-bg-raised': 'cf-kiln-50',
+  'cf-bg-sunken': 'cf-kiln-200',
+  'cf-fg': 'cf-char',
+  'cf-fg-dim': 'cf-char-dim',
+  'cf-fg-mute': 'cf-char-mute',
+}
+
 function lightToken(name: string): Rgb {
-  const block = /@media \(prefers-color-scheme: light\) \{\s*:root \{([\s\S]*?)\n  \}/.exec(siteCss)
-  assert.ok(block, 'the light scope is missing from src/styles.css')
-  return token(block[1] ?? '', name)
+  const raw = LIGHT_RAMP[name]
+  assert.ok(raw, `${name} has no light counterpart in LIGHT_RAMP`)
+  return token(tokensCss, raw)
 }
 
 /**
- * The percentage in a `--si-*` mix declaration, for a given mixing partner.
+ * The percentage in a `--si-*` mix declaration.
  *
- * Two partners are in play and they are what makes the scheme work in both directions: the accent
- * is lifted toward `var(--cf-fg)` on the dark ground and darkened toward `#000` on the light one.
- * Passing the partner in is what stops this reading the wrong declaration of the same property.
+ * There used to be two partners — `var(--cf-fg)` on the dark ground and `#000` on the light one —
+ * because `--cf-fg` was always bone and mixing toward it could only lighten. It flips with the
+ * scheme now, so there is ONE declaration, one partner and one percentage, and this function no
+ * longer needs to be told which of two rules to read. That collapse is the change; if a second
+ * declaration ever reappears this returns the first and the assertions below stop describing what
+ * the browser paints, so `found real values` pins the count as well as the value.
  */
-function mixPercent(name: string, partner: 'var(--cf-fg)' | '#000'): number {
-  const escaped = partner.replace(/[()\\-]/g, (c) => `\\${c}`)
-  const match = new RegExp(
-    `--${name}: color-mix\\(in srgb, var\\(--cf-accent\\) (\\d+)%, ${escaped}\\)`,
-  ).exec(siteCss)
-  assert.ok(match, `${name} is not declared as an srgb mix with ${partner}`)
-  return Number(match[1])
+function mixPercent(name: string): number {
+  const matches = [
+    ...siteCss.matchAll(
+      new RegExp(`--${name}: color-mix\\(in srgb, var\\(--cf-accent\\) (\\d+)%, var\\(--cf-fg\\)\\)`, 'g'),
+    ),
+  ]
+  assert.equal(matches.length, 1, `--${name} is declared ${matches.length} times, not once`)
+  return Number(matches[0]?.[1])
 }
 
-/** The same, for a status colour, which only has a light-ground mix. */
-function statusMixPercent(name: string, source: string): number {
-  const match = new RegExp(
-    `--${name}: color-mix\\(in srgb, var\\(--${source}\\) (\\d+)%, #000\\)`,
-  ).exec(siteCss)
-  assert.ok(match, `${name} is not declared as an srgb mix with black`)
-  return Number(match[1])
+/** Every `--cf-accent-light` hex tokens.css declares, which is what a light page actually paints. */
+function lightAccents(): Rgb[] {
+  const found = [...tokensCss.matchAll(/--cf-(?:accent|ember)-light: (#[0-9a-f]{6})/g)].map((m) =>
+    parseHex(m[1] ?? ''),
+  )
+  assert.ok(found.length >= 7, `only ${found.length} light accents found in tokens.css`)
+  return found
 }
 
 /* ───────────────────────── the two grounds ────────────────────────── */
@@ -157,8 +181,22 @@ const LIGHT = {
   fgMute: lightToken('cf-fg-mute'),
 }
 
-const VIZ_GOOD = token(tokensCss, 'cf-viz-good')
-const VIZ_WARN = token(tokensCss, 'cf-viz-warn')
+/**
+ * The stage colours, as the chip actually paints them: the severity TEXT steps.
+ *
+ * `--cf-viz-good` is a CHART role, validated at 3:1 against a panel because it colours a mark. The
+ * stage chip sets a word in it. That is the same distinction as `--cf-accent` against
+ * `--cf-accent-text`, and 1.1 gives severity the same treatment — so `src/styles.css` points
+ * `--si-good` and `--si-warn` at `--cf-good-text` / `--cf-warn-text`, and this reads those.
+ */
+const GOOD = token(tokensCss, 'cf-good-text')
+const WARN = token(tokensCss, 'cf-warn-text')
+/** Their light counterparts, declared inside the `[data-cf-scheme='light']` block. */
+function lightSeverity(name: 'good' | 'warn'): Rgb {
+  const block = /\[data-cf-scheme='light'\] \{([\s\S]*?)\n\}/.exec(tokensCss)
+  assert.ok(block, "the [data-cf-scheme='light'] block is missing from tokens.css")
+  return token(block[1] ?? '', `cf-${name}-text`)
+}
 
 /** Every accent this site ever paints: the company's, plus the five products'. */
 const ACCENTS: ReadonlyArray<{ name: string; rgb: Rgb }> = [
@@ -166,18 +204,13 @@ const ACCENTS: ReadonlyArray<{ name: string; rgb: Rgb }> = [
   ...PRODUCT_ACCENTS.map((hex, i) => ({ name: `product ${i + 1} (${hex})`, rgb: parseHex(hex) })),
 ]
 
-/** Dark ground: the accent lifted toward the bone foreground so it can carry type. */
-const DARK_ACCENT_MIX = mixPercent('si-accent', 'var(--cf-fg)')
-const DARK_ACCENT_HOVER_MIX = mixPercent('si-accent-hover', 'var(--cf-fg)')
-/** Light ground: the accent darkened toward black for the same reason. */
-const LIGHT_ACCENT_MIX = mixPercent('si-accent', '#000')
-const LIGHT_ACCENT_HOVER_MIX = mixPercent('si-accent-hover', '#000')
-const GOOD_MIX = statusMixPercent('si-good', 'cf-viz-good')
-const WARN_MIX = statusMixPercent('si-warn', 'cf-viz-warn')
+/** The one mix, which lightens on the dark ground and darkens on the light one. */
+const ACCENT_MIX = mixPercent('si-accent')
+const ACCENT_HOVER_MIX = mixPercent('si-accent-hover')
 
 /** An accent as this site actually paints TYPE in it, on each ground. */
-const asDarkType = (accent: Rgb): Rgb => mix(accent, DARK_ACCENT_MIX, DARK.fg)
-const asLightType = (accent: Rgb): Rgb => mix(accent, LIGHT_ACCENT_MIX, BLACK)
+const asDarkType = (accent: Rgb): Rgb => mix(accent, ACCENT_MIX, DARK.fg)
+const asLightType = (accent: Rgb): Rgb => mix(accent, ACCENT_MIX, LIGHT.fg)
 
 const TEXT_AA = 4.5
 const NON_TEXT_AA = 3
@@ -213,13 +246,15 @@ describe('the contrast maths', () => {
     // A regex that matched nothing would make every check below a comparison of two zeroes.
     assert.notDeepEqual(DARK.page, LIGHT.page)
     for (const [name, percent] of [
-      ['dark accent', DARK_ACCENT_MIX],
-      ['light accent', LIGHT_ACCENT_MIX],
-      ['good', GOOD_MIX],
-      ['warn', WARN_MIX],
+      ['accent', ACCENT_MIX],
+      ['accent hover', ACCENT_HOVER_MIX],
     ] as const) {
       assert.ok(percent > 0 && percent < 100, `the ${name} mix is ${percent}%`)
     }
+    // The light palette must actually differ from the dark one, or every light assertion below is
+    // measuring the dark ground twice.
+    assert.notDeepEqual(GOOD, lightSeverity('good'))
+    assert.notDeepEqual(lightAccents()[0], parseHex(CLOUDSFORGE_EMBER))
   })
 })
 
@@ -277,7 +312,7 @@ describe('the dark ground', () => {
     for (const accent of ACCENTS) {
       check(
         `${accent.name} hover`,
-        mix(accent.rgb, DARK_ACCENT_HOVER_MIX, DARK.fg),
+        mix(accent.rgb, ACCENT_HOVER_MIX, DARK.fg),
         DARK.page,
         TEXT_AA,
       )
@@ -285,16 +320,19 @@ describe('the dark ground', () => {
   })
 
   it('sets the two stage colours at AA', () => {
-    check('viz-good on the page', VIZ_GOOD, DARK.page, TEXT_AA)
-    check('viz-warn on the page', VIZ_WARN, DARK.page, TEXT_AA)
-    check('viz-good on a panel', VIZ_GOOD, DARK.raised, TEXT_AA)
-    check('viz-warn on a panel', VIZ_WARN, DARK.raised, TEXT_AA)
+    check('good on the page', GOOD, DARK.page, TEXT_AA)
+    check('warn on the page', WARN, DARK.page, TEXT_AA)
+    check('good on a panel', GOOD, DARK.raised, TEXT_AA)
+    check('warn on a panel', WARN, DARK.raised, TEXT_AA)
   })
 
   it('keeps the label on the company button legible against its fill', () => {
     // The one accent FILL on this site, and the only place `--cf-accent-ink` is used. Product
     // accents are drawn as outlines instead, precisely because their ink is tighter than this.
-    check('ember-ink on ember', token(tokensCss, 'cf-ember-ink'), parseHex(CLOUDSFORGE_EMBER), TEXT_AA)
+    // `-dark` because 1.1 splits the ember family per scheme: `--cf-ember-ink` is now the mapping
+    // and `--cf-ember-ink-dark` is the hex. The registry ember is the DARK one, so this pairs the
+    // two values the browser actually composites on a dark page.
+    check('ember-ink on ember', token(tokensCss, 'cf-ember-ink-dark'), parseHex(CLOUDSFORGE_EMBER), TEXT_AA)
   })
 })
 
@@ -329,42 +367,41 @@ describe('the light ground', () => {
     )
   })
 
-  it('sets every mixed accent as type at AA', () => {
-    for (const accent of ACCENTS) {
-      const mixed = asLightType(accent.rgb)
-      check(`${accent.name} mixed, on the page`, mixed, LIGHT.page, TEXT_AA)
-      check(`${accent.name} mixed, on a panel`, mixed, LIGHT.raised, TEXT_AA)
+  it('sets every LIGHT-SCHEME accent as type at AA, raw and mixed', () => {
+    /*
+     * The set is `--cf-accent-light`, not the registry accents. That is the change 1.1 makes to
+     * this file: the light palette is no longer the dark hexes with a local correction applied on
+     * top, it is a derived set of its own, and the design system's own suite measures it on every
+     * ground it composes text on. What is checked HERE is the extra step this surface adds — the
+     * `--si-accent` mix a scoped card paints its type in — on this surface's own two grounds.
+     */
+    for (const accent of lightAccents()) {
+      const label = `#${accent.map((v) => v.toString(16).padStart(2, '0')).join('')}`
+      check(`${label} raw, on the page`, accent, LIGHT.page, TEXT_AA)
+      check(`${label} mixed, on the page`, asLightType(accent), LIGHT.page, TEXT_AA)
+      check(`${label} mixed, on a panel`, asLightType(accent), LIGHT.raised, TEXT_AA)
     }
   })
 
   it('keeps the hover state at AA as well, in both directions', () => {
     // A hover colour that fails is a link that becomes unreadable at the moment the reader is
-    // pointing at it.
-    for (const accent of ACCENTS) {
-      check(
-        `${accent.name} hover, on the page`,
-        mix(accent.rgb, LIGHT_ACCENT_HOVER_MIX, BLACK),
-        LIGHT.page,
-        TEXT_AA,
-      )
+    // pointing at it. On a light ground the SAME mix darkens, because --cf-fg is the dark ink here.
+    for (const accent of lightAccents()) {
+      check('hover, on the page', mix(accent, ACCENT_HOVER_MIX, LIGHT.fg), LIGHT.page, TEXT_AA)
     }
   })
 
-  it('sets the two mixed stage colours at AA', () => {
-    check('good mixed', mix(VIZ_GOOD, GOOD_MIX, BLACK), LIGHT.page, TEXT_AA)
-    check('warn mixed', mix(VIZ_WARN, WARN_MIX, BLACK), LIGHT.page, TEXT_AA)
-    check('good mixed, on a panel', mix(VIZ_GOOD, GOOD_MIX, BLACK), LIGHT.raised, TEXT_AA)
-    check('warn mixed, on a panel', mix(VIZ_WARN, WARN_MIX, BLACK), LIGHT.raised, TEXT_AA)
+  it('sets the two stage colours at AA', () => {
+    for (const name of ['good', 'warn'] as const) {
+      const colour = lightSeverity(name)
+      check(`${name} on the page`, colour, LIGHT.page, TEXT_AA)
+      check(`${name} on a panel`, colour, LIGHT.raised, TEXT_AA)
+    }
   })
 
   it('keeps the focus ring and the card edge visible as non-text', () => {
-    for (const accent of ACCENTS) {
-      check(
-        `${accent.name} mixed, as a control edge`,
-        asLightType(accent.rgb),
-        LIGHT.page,
-        NON_TEXT_AA,
-      )
+    for (const accent of lightAccents()) {
+      check('as a control edge', asLightType(accent), LIGHT.page, NON_TEXT_AA)
     }
   })
 })

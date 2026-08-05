@@ -11,7 +11,14 @@
  * Everything this app adds goes below the bar.
  */
 import { useEffect } from 'react'
-import { CloudsForgeBar, PRODUCTS as REGISTRY_PRODUCTS, surface } from '@cloudsforge/ui'
+import {
+  CloudsForgeBar,
+  CookieBanner,
+  MainRegion,
+  PRODUCTS as REGISTRY_PRODUCTS,
+  SkipLink,
+  surface,
+} from '@cloudsforge/ui'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { hosts, PRODUCT } from '../lib/hosts.ts'
 import { NAV, ROUTES } from '../lib/routes.ts'
@@ -26,25 +33,34 @@ export function AppShell() {
   return (
     <>
       {/*
-        The skip link is the first focusable thing in the document. It is visually hidden until it
-        takes focus, at which point it must become VISIBLE — a skip link that stays hidden when
-        focused is worse than none, because a keyboard reader activates it and cannot tell whether
-        anything happened.
+        The skip link is the first focusable thing in the document, and it is now the SHARED one.
+        This surface had the estate's only skip link; sixteen others had none, so a keyboard reader
+        reached the content of Forge Hub or the operator console by tabbing past the logo, the
+        product switcher and the account menu on every navigation. Moving it into @cloudsforge/ui
+        is the whole point of this phase — and `MainRegion` below is the half that is easy to get
+        wrong, because a <main> without `tabIndex={-1}` scrolls without moving focus.
       */}
-      <a className="si-skip" href="#main">
-        Skip to content
-      </a>
+      <SkipLink />
 
       <CloudsForgeBar current={PRODUCT} account={account} onSignIn={() => signIn()} onSignOut={signOut} />
 
       <SiteNav />
       <DocumentMeta />
 
-      <main className="si-main" id="main">
+      <MainRegion className="si-main">
         <Outlet />
-      </main>
+      </MainRegion>
 
       <SiteFooter />
+
+      {/*
+        Last in the document, and therefore last in the tab order. That is deliberate: the banner
+        is a dialog and is explicitly NOT modal, so a reader who came here to read something can
+        read it and answer afterwards. A consent banner that traps focus is the coercion the
+        regulation is about. It renders nothing at all until it knows the reader has not already
+        answered, and nothing on an origin where analytics would not report anyway.
+      */}
+      <CookieBanner />
     </>
   )
 }
