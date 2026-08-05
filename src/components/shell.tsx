@@ -164,8 +164,20 @@ function SiteFooter() {
               <li>
                 <a href={h.hub}>{surface('hub').name}</a>
               </li>
+              {/*
+                `signin`, NOT `account`. The `account` row is a RESERVED hostname that nothing
+                serves and that has no DNS record — `account.cloudsforge.online` does not resolve,
+                measured 2026-08-05 — so this footer entry was a dead link on the estate's public
+                front page. Its own registry row says so: "do not resolve this one for a redirect
+                until something answers it" (`ui/packages/ui/src/surfaces.ts`, the `account` row).
+                The address a person is actually sent to is the `signin` row, which rides on Hub as
+                `hub.<apex>/account` and therefore resolves and is served.
+
+                Found while fixing the same defect class in `worlds-web`, whose API_SURFACE pointed
+                at the equally unresolvable `worlds-api.<apex>`.
+              */}
               <li>
-                <a href={h.account}>{surface('account').name}</a>
+                <a href={h.signin}>{surface('signin').name}</a>
               </li>
               <li>
                 <a href={h.developers}>{surface('developers').name}</a>
