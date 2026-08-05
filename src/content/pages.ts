@@ -128,7 +128,10 @@ export const HOME = {
       },
       {
         title: 'One wallet',
-        body: `${claim('chains')} chains behind one balance — EMBER, Bitcoin, Ethereum, Solana and the XRP Ledger — with the same receive and send screens whichever part of the ecosystem you arrived from.`,
+        // The names are a claim for the same reason the count is: they were typed here, so the
+        // count re-derived itself to 6 while the list beside it still read five chains. See the
+        // note on `chainNames` in claims.ts.
+        body: `${claim('chains')} chains behind one balance — ${claim('chainNames')} — with the same receive and send screens whichever part of the ecosystem you arrived from.`,
       },
       {
         title: 'One history',

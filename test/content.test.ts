@@ -183,6 +183,23 @@ describe('numbers', () => {
       // as a word and derived from the registry. Its entry exists so the count has a source and so
       // the test below has something to compare against.
       if (key === 'products') continue
+
+      // A claim need not be a NUMBER. `chainNames` is the list of custodied chains as prose, and it
+      // is registered for the reason this whole file exists: the count beside it was derived and
+      // re-derived itself to 6, while the names were typed and would have gone on saying five
+      // chains in the same sentence. A registered value with no digits cannot be matched against
+      // the digit scan, so it is matched against the copy directly — which is the stronger check of
+      // the two, and the one that would notice the string being edited in place.
+      // `/\d/` and NOT `DIGITS.test(...)`: `DIGITS` carries the `g` flag, so `.test` advances
+      // `lastIndex` and returns a different answer on the next claim in this very loop. A stateful
+      // regex in a predicate is its own defect and it would have made this check alternate.
+      if (!/\d/.test(entry.rendered)) {
+        assert.ok(
+          COPY.some(({ text }) => text.includes(entry.rendered)),
+          `${key} (${entry.rendered}) is registered but appears in no copy`,
+        )
+        continue
+      }
       assert.ok(printed.has(entry.rendered), `${key} (${entry.rendered}) is registered but unused`)
     }
   })

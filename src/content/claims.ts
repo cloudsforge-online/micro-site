@@ -201,9 +201,36 @@ export const CLAIMS = {
     source: 'analytics/src/env.ts:208 — ANALYTICS_EVENT_RETENTION_DAYS',
   },
   chains: {
-    rendered: '5',
-    meaning: 'On-chain assets the platform custodies: EMBER, BTC, ETH, SOL and XRP.',
-    source: 'contracts/packages/chain/src/index.ts:271-277 — ON_CHAIN_ASSETS',
+    rendered: '6',
+    meaning: 'On-chain assets the platform custodies: EMBER, BTC, ETH, LTC, SOL and XRP.',
+    source: 'contracts/packages/chain/src/index.ts:356-363 — ON_CHAIN_ASSETS',
+  },
+
+  /**
+   * The same list, spelled the way a sentence spells it.
+   *
+   * ── WHY A LIST OF WORDS IS IN A REGISTER OF NUMBERS ──────────────────────────────────────────
+   *
+   * Because the failure it prevents is the one this file exists for, and the digit rule did not
+   * catch it. `pages.ts` read: "`${claim('chains')}` chains behind one balance — EMBER, Bitcoin,
+   * Ethereum, Solana and the XRP Ledger". The COUNT was derived and updated itself to 6 the moment
+   * Litecoin was listed upstream. The NAMES beside it were typed, so the sentence would have gone
+   * out reading "6 chains behind one balance — EMBER, Bitcoin, Ethereum, Solana and the XRP
+   * Ledger": a number contradicted by the list immediately after it, on the page that promises one
+   * wallet across every chain, published by a platform that custodies the money.
+   *
+   * That is worse than a stale number, because the derived half makes it look maintained. So the
+   * names are derived too — from the same array, through the same mechanism, failing the same way.
+   *
+   * The rendered form carries no digits, so `content.test.ts` has nothing to say about it; this
+   * entry earns its place by being RECOMPUTED in `estate-claims.test.ts` from the upstream chain
+   * names, which is the check that matters.
+   */
+  chainNames: {
+    rendered: 'EMBER, Bitcoin, Ethereum, Litecoin, Solana, XRP Ledger',
+    meaning:
+      'The on-chain assets written as prose, in ON_CHAIN_ASSETS order, using each chain\'s own `name` from the CHAINS table — "Hearth" being the exception, since the asset a reader holds is EMBER and the network it settles on is Hearth. A plain comma list: whether a name takes an article ("the XRP Ledger") is an English fact that is not in the data, so the copy sets the list off with dashes rather than the derivation guessing. Derived so that the sentence and the count beside it cannot disagree.',
+    source: 'contracts/packages/chain/src/index.ts:356-363 — ON_CHAIN_ASSETS',
   },
   products: {
     rendered: '6',
