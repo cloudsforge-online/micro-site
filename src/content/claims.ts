@@ -203,7 +203,7 @@ export const CLAIMS = {
   chains: {
     rendered: '6',
     meaning: 'On-chain assets the platform custodies: EMBER, BTC, ETH, LTC, SOL and XRP.',
-    source: 'contracts/packages/chain/src/index.ts:356-363 — ON_CHAIN_ASSETS',
+    source: 'contracts/packages/chain/src/index.ts:371-378 — ON_CHAIN_ASSETS',
   },
 
   /**
@@ -230,7 +230,7 @@ export const CLAIMS = {
     rendered: 'EMBER, Bitcoin, Ethereum, Litecoin, Solana, XRP Ledger',
     meaning:
       'The on-chain assets written as prose, in ON_CHAIN_ASSETS order, using each chain\'s own `name` from the CHAINS table — "Hearth" being the exception, since the asset a reader holds is EMBER and the network it settles on is Hearth. A plain comma list: whether a name takes an article ("the XRP Ledger") is an English fact that is not in the data, so the copy sets the list off with dashes rather than the derivation guessing. Derived so that the sentence and the count beside it cannot disagree.',
-    source: 'contracts/packages/chain/src/index.ts:356-363 — ON_CHAIN_ASSETS',
+    source: 'contracts/packages/chain/src/index.ts:371-378 — ON_CHAIN_ASSETS',
   },
   products: {
     rendered: '6',
