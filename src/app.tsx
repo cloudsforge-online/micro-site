@@ -56,6 +56,7 @@ export function App() {
             */}
             <Route path="terms" element={<LegalPageView />} />
             <Route path="privacy" element={<LegalPageView />} />
+            <Route path="risk" element={<LegalPageView />} />
             {/* Unknown addresses render inside the shell, so a reader keeps the navigation they
                 need to get back out. The status line is nginx's job and it says 404. */}
             <Route path="*" element={<NotFoundPage />} />

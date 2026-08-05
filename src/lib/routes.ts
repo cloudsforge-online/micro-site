@@ -120,6 +120,13 @@ export const ROUTES: readonly SiteRoute[] = [
     wildcard: false,
     summary: 'Privacy notice — what this site does, and what has still to be drafted.',
   },
+  {
+    path: 'risk',
+    label: null,
+    wildcard: false,
+    summary:
+      'Risk disclosure — how this platform can lose you money, written from the code that would do it.',
+  },
 ]
 
 /** What the header renders, with the leading slash a `NavLink` wants. */
@@ -133,4 +140,4 @@ export const NON_INDEX_PATHS: readonly string[] = ROUTES.filter((r) => r.path !=
 )
 
 /** The legal pages, for the footer. Derived, so adding one does not mean editing the footer. */
-export const LEGAL_PATHS: readonly string[] = ['terms', 'privacy']
+export const LEGAL_PATHS: readonly string[] = ['terms', 'privacy', 'risk']

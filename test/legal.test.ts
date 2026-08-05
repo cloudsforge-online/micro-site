@@ -311,9 +311,25 @@ describe('the licensing section, against the files it describes', () => {
   it('leaves every section that needs a lawyer exactly where it was', () => {
     // The instruction was to populate the licensing, not to populate the terms. This is the guard
     // on that boundary: adding a drafted section must not have been an excuse to draft others.
+    //
+    // ── Why this list grew by one on 2026-08-05, and why that is not the thing it guards against ──
+    //
+    // "What it means mechanically that we hold your keys" was added beneath the Custody hole. The
+    // guard is doing its job by making that an explicit, reviewed edit rather than a silent one, so
+    // the reasoning is recorded here where the next person meets it.
+    //
+    // It is a description of mechanism, not a term: the operator can decrypt stored keys because of
+    // how `custody/src/crypto.ts` derives them and where the secret comes from; there are no
+    // backups; loss of the keyring is unrecoverable; there is no insurance or proof of reserves.
+    // None of that characterises the assets in law, allocates a loss or limits a liability — which
+    // is why the Custody section above it is STILL `counsel` and still empty, and why the assertion
+    // below that it is counsel is the one that actually matters.
+    //
+    // The thing this test exists to catch would be that hole quietly acquiring prose. It has not.
     const stated = TERMS.sections.filter((s) => s.status === 'stated').map((s) => s.title)
     assert.deepEqual(stated, [
       'Your account',
+      'What it means mechanically that we hold your keys',
       'How the system treats your money',
       'Withdrawal and export',
       'Licensing: the code, the artwork and the names',
