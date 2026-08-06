@@ -74,8 +74,8 @@ export const ROUTES: readonly SiteRoute[] = [
      * surface in the estate and links `/products` from it", so a rename would 404 a link on
      * sixteen surfaces. **The shared footer links no `/products` path at all.** Its three
      * navigation columns are surface HOSTNAMES resolved through `cloudsforgeHosts()`, and its only
-     * two site-relative links are `/terms` and `/privacy` (`ui/packages/ui/src/index.tsx`,
-     * and the fourth column at :1008-1021). Nothing outside this repository links `/products`;
+     * two site-relative links are `/terms` and `/privacy`, in the footer's fourth column
+     * (`ui/packages/ui/src/index.tsx`). Nothing outside this repository links `/products`;
      * `micro-billing`'s `/products` is an unrelated API route.
      *
      * The conclusion survives the correction — the inbound links are reason enough — but the
