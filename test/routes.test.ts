@@ -331,6 +331,19 @@ describe('the sitemap', () => {
     }
   })
 
+  it('refuses to publish either file on a non-apex host', () => {
+    // The estate serves ONE image from the apex, the testnet host and a laptop. A testnet page in
+    // an index competes with the mainnet page it is a copy of, under a hostname that pays in
+    // worthless EMBER — and the testnet copy is the newer document, which is the one a crawler
+    // prefers. Both guards, because either alone still invites the crawl.
+    assert.match(directives, /map \$host \$cf_env \{/, 'nginx.conf no longer classifies the host')
+    const sitemap = /location = \/sitemap\.xml \{[\s\S]*?\n    \}/.exec(directives)?.[0] ?? ''
+    assert.match(sitemap, /if \(\$cf_env\) \{ return 404; \}/, 'the sitemap is published on every host')
+    const robots = /location = \/robots\.txt \{[\s\S]*?\n    \}/.exec(directives)?.[0] ?? ''
+    assert.match(robots, /if \(\$cf_env\) \{ return 200 'User-agent: \*\\nDisallow: \/\\n'; \}/,
+      'robots.txt does not refuse crawlers on an environment host')
+  })
+
   it('lists each address exactly once', () => {
     // A duplicate is not fatal to a crawler and it is a reliable sign the block was edited by hand
     // rather than against the declarations, which is the state this test exists to catch.
@@ -346,10 +359,12 @@ describe('the sitemap', () => {
     const block = /location = \/robots\.txt \{[\s\S]*?\n    \}/.exec(directives)?.[0] ?? ''
     assert.ok(block.includes('Sitemap: $scheme://$host/sitemap.xml'), 'robots.txt does not point at the sitemap')
     // The nginx copy is inside a `return 200 '…'`, so the first rule shares a line with the
-    // directive that emits it. Stripping the directive is what makes the two comparable at all.
+    // directive that emits it. Stripping the directive is what makes the two comparable at all —
+    // EVERY occurrence, because the block also carries the one-line environment refusal above it,
+    // and stripping only the first left the real rules still prefixed.
     const rules = (text: string): string[] =>
       text
-        .replace(/return 200 '/, '')
+        .replaceAll("return 200 '", '')
         .split('\n')
         .map((line) => line.trim())
         .filter((line) => /^(User-agent|Allow|Disallow):/i.test(line))
