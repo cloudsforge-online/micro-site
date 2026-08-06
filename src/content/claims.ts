@@ -221,6 +221,32 @@ export const CLAIMS = {
       'The on-chain assets written as prose, in ON_CHAIN_ASSETS order, using each chain\'s own `name` from the CHAINS table — "Hearth" being the exception, since the asset a reader holds is EMBER and the network it settles on is Hearth. A plain comma list: whether a name takes an article ("the XRP Ledger") is an English fact that is not in the data, so the copy sets the list off with dashes rather than the derivation guessing. Derived so that the sentence and the count beside it cannot disagree.',
     source: 'contracts/packages/chain/src/index.ts — ON_CHAIN_ASSETS',
   },
+  /**
+   * The three figures a developer needs before they can point a wallet or a deployment tool at
+   * Hearth. They are published because "it is EVM-compatible" is unverifiable and a chain id is
+   * not: a reader can add the network, send a transaction and find out.
+   *
+   * All three are read out of `CHAINS.EMBER`, which is the same declaration the custody and
+   * settlement services sign against, so the site cannot advertise a network the estate does not
+   * use.
+   */
+  emberChainId: {
+    rendered: '7411',
+    meaning: 'Hearth main network chain id, for EIP-155 replay protection and for adding the network to a wallet.',
+    source: 'contracts/packages/chain/src/index.ts — CHAINS.EMBER.chainId.mainnet',
+  },
+  emberTestnetChainId: {
+    rendered: '7412',
+    meaning:
+      'Hearth test network chain id. Separate from the main network by requirement rather than convention: one id shared between them would make every test transaction replayable on the main network.',
+    source: 'contracts/packages/chain/src/index.ts — CHAINS.EMBER.chainId.testnet',
+  },
+  emberDecimals: {
+    rendered: '18',
+    meaning:
+      'Decimal places in one EMBER. Eighteen because every piece of Ethereum tooling assumes eighteen for a native asset, and a chain that picks a different number displays wrong in wallets it never tested against.',
+    source: 'contracts/packages/chain/src/index.ts — CHAINS.EMBER.decimals',
+  },
   products: {
     rendered: '6',
     meaning:
@@ -232,13 +258,6 @@ export const CLAIMS = {
     meaning:
       'The statements that define "one platform". Not a score and not a boast: the count of rows in the table this site reproduces.',
     source: 'docs/ecosystem/01-product-vision.md — the numbered rows of the table in §2',
-  },
-  accentSeparationBefore: {
-    rendered: '4.1',
-    meaning:
-      'Worst all-pairs separation of the accent set this one replaced, as ΔE under normal vision. Below about 10 two colours are not reliably distinguishable, so the switcher was telling six products apart by a channel that told two apart.',
-    source:
-      'ui/packages/ui/src/tokens.css — the "WHY THESE FIVE" paragraph of the "Per-product accents" block: "the worst all-pairs distance was #ff5a1e to #e8622c at dE 4.1 under normal vision and dE 1.3 under protanopia"',
   },
   httpNotFound: {
     rendered: '404',
@@ -267,20 +286,6 @@ export const CLAIMS = {
       'The version of the Creative Commons Attribution licence the estate\'s generated artwork is published under, as distinct from the MIT licence on the code. MIT speaks of "the Software" throughout, and an image is not software.',
     source:
       'brand/TRADEMARKS.md — "not covered by the MIT licence in `LICENSE` or by the CC BY 4.0 licence in `LICENSE-ASSETS`", the sentence that separates the two grants and reserves the marks from both',
-  },
-  accentSeparation: {
-    rendered: '36.1',
-    meaning:
-      'Worst ADJACENT separation across the six product accents under normal vision, as ΔE. Adjacent is the honest gate because the product switcher is a vertical list, so only neighbours ever touch.',
-    source:
-      'ui/packages/ui/src/tokens.css — "worst ADJACENT dE 36.1 (#2a9e93|#b28e1e, normal vision)", reproducible with ui/scripts/validate_palette.mjs',
-  },
-  accentSeparationAllPairs: {
-    rendered: '5.6',
-    meaning:
-      'Worst ALL-PAIRS separation of the same six accents, as ΔE under deuteranopia — the figure that is WORSE than the set it replaced, and is published beside the flattering one for that reason. Network\'s red and Create\'s gold are near-identical to a deuteranopic reader; they are never adjacent in the switcher, and colour is never the only channel.',
-    source:
-      'ui/packages/ui/src/tokens.css — "worst ALL-PAIRS dE 5.6 (#d6412f|#b28e1e, deuteranopia)", reproducible with ui/scripts/validate_palette.mjs',
   },
 } as const satisfies Record<string, Claim>
 

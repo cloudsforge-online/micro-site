@@ -3,11 +3,14 @@
 # Everything here is public and intended to be indexed. There is nothing behind a session on this
 # surface, so there is nothing to disallow.
 #
-# There is deliberately NO `Sitemap:` line. A sitemap must carry absolute URLs, which means naming
-# a hostname, and no artefact built in this repository is allowed to name one — the same image is
-# served from localhost, from a preview deployment and from the apex, and a sitemap baked with the
-# wrong host is worse than none. It belongs to whatever terminates TLS for the apex, which is the
-# one component that knows what the apex is.
+# THIS FILE IS THE DEVELOPMENT COPY. In production nginx serves /robots.txt itself, from a block in
+# nginx.conf, because the `Sitemap:` line has to carry an ABSOLUTE URL and no artefact built in
+# this repository is allowed to name a hostname — the same image is served from localhost, from the
+# testnet host and from the apex. nginx derives it from the request with `$scheme://$host`, which
+# it can and this file cannot.
+#
+# The two copies are compared rather than trusted: test/routes.test.ts reads the rules out of both
+# and fails if they disagree, so only the Sitemap line may ever differ.
 
 User-agent: *
 Allow: /

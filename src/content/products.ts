@@ -2,61 +2,18 @@
  * The product pages, as data.
  *
  * The name, the accent, the verb, the one-line blurb and the URL of every surface come from
- * `@cloudsforge/ui`'s registry and are never restated here — only the prose is local. The registry
- * exists because the same list was once maintained by hand in eight places and had already drifted
- * (see the header of `ui/packages/ui/src/surfaces.ts`); the marketing site was one of the eight.
- * So a sixth product is a registry entry plus one block below, and the site cannot disagree with
- * the switcher about what CloudsForge sells.
+ * `@cloudsforge/ui`'s registry and are never restated here — only the prose is local. So a seventh
+ * product is a registry entry plus one block below, and this site cannot disagree with the product
+ * switcher about what CloudsForge offers.
  *
- * ── The stage field is the point of this file ─────────────────────────────────────────────────
+ * Every page carries a `stage` and a `stageNote`, and both are rendered on the card and at the top
+ * of the page. `./stages.ts` defines the three states as yes/no questions about the running estate,
+ * and `test/estate-stages.test.ts` recomputes every value below from the deployment file and the
+ * browser smoke tier. A stage a reader can check is the only kind worth publishing.
  *
- * Every page carries a `stage` and a `stageNote`, and both are rendered, prominently, on the card
- * and at the top of the page. That is unusual for a marketing site and it is deliberate:
- *
- *   `docs/ecosystem/18-build-status.md` §1 — "The measure that is not flattering at all: nothing
- *   is deployed. Every repository listed below exists as code that passes its own tests. Not one
- *   of them is running anywhere."
- *
- * **That quotation has been overtaken TWICE and is kept as the reason rather than as the fact.**
- * The estate now runs end to end behind a gateway, so "not one of them is running anywhere" is
- * false; and on 2026-08-05 it went public, so "none of it has an address on the public internet" —
- * which is what this paragraph said next, and what every note below used to be written against —
- * is false too. The unflattering measure moved again rather than going away, and it is now this:
- * the surfaces are reachable, nobody outside the project has used them, and EMBER has no market,
- * no listing and no price. `./pages.ts` BUILD.honesty carries the current wording.
- *
- * ── AND THE SITE THEN SAT ON THE OTHER SIDE OF THAT MISTAKE FOR AS LONG AGAIN ─────────────────
- *
- * Six of these seven surfaces carried "Being built" while every one of them was deployed in
- * `deploy/compose/docker-compose.estate.yml`, healthy, and walked by `beacon smoke` in real
- * Chromium through the real gateway. The notes were worse than the labels: this file said the
- * application a creator would use was "not yet rebuilt" while `mint-web` was up and answering, and
- * the products index said a developer platform "is not built" while `devplatform` and
- * `devportal-web` were both running and the smoke tier had a scenario for the surface.
- *
- * That is the same defect as the sentence above it, pointing the other way, and it is worth saying
- * so plainly: **understatement is not a safe direction to be stale in.** It is simply a different
- * false statement, and a reader who is told a thing does not exist does not go and look.
- *
- * So the stage is no longer typed by hand into this file and left. `./stages.ts` defines three
- * states as yes/no questions about the estate, and `test/estate-stages.test.ts` opens the compose
- * file, the smoke tier's surface list and the estate's own Cloudflare Tunnel configuration and
- * recomputes every value below. A stage a reader can check is the only kind worth publishing.
- *
- * A site that described these six as though a reader could go and use them today would be lying,
- * and it would be lying in the one voice this company has decided is an asset —
- * `docs/ecosystem/01-product-vision.md` §5.5, "Honest copy… This voice is an asset. Protect it."
- *
- * The alternative was to ship a page per product with the stage left off until launch. That is how
- * the estate ended up selling a private world that provisioned nothing: the copy went out ahead of
- * the code and nothing anywhere held the two together.
- *
- * ── Content, not components ───────────────────────────────────────────────────────────────────
- *
- * Everything below is plain data with no JSX in it, so `test/content.test.ts` can read every
- * sentence this site publishes without rendering anything. That test is what enforces the numbers
- * register in `./claims.ts` and the ban on hard-coded hostnames. Copy that lives inside a
- * component is copy no test can see.
+ * Everything here is plain data with no JSX in it, so `test/content.test.ts` can read every sentence
+ * this site publishes without rendering anything. Copy that lives inside a component is copy no test
+ * can see.
  */
 import { PRODUCTS, surface, type SurfaceKey } from '@cloudsforge/ui'
 import { claim } from './claims.ts'
@@ -106,52 +63,57 @@ export interface ProductPage {
 /**
  * The pages, in the order the story is told. One per product, plus Hub.
  *
- * This is NOT the registry’s order. The registry’s products are ordered to maximise the colour
- * separation of neighbouring switcher entries and its header says so in capitals; reordering it
- * for narrative reasons would throw that guarantee away. So the site keeps its own order for
- * reading, and derives everything else from the registry. `test/content.test.ts` asserts that the
- * set of product pages and the set of registry products are the same set, which is the property
- * that actually matters — a product with no page, or a page with no product, both fail.
+ * This is NOT the registry's order, which is tuned so that no two neighbouring switcher accents can
+ * be confused with each other. `test/content.test.ts` asserts that the set of product pages and the
+ * set of registry products are the same set, which is the property that matters — a product with no
+ * page, or a page with no product, both fail.
  */
 export const PRODUCT_PAGES: readonly ProductPage[] = [
   {
     key: 'hub',
     slug: 'hub',
-    eyebrow: 'The control centre',
+    eyebrow: 'Your account',
     headline: 'Everything you own, on one screen',
     standfirst: [
-      'Forge Hub is where a CloudsForge account actually lives: the portfolio, the wallets, the deposits and withdrawals, the activity history, the sessions and the keys. It is not a product you choose between. It is the container the products sit inside, which is why it is not in the switcher — you are already in it.',
+      'Forge Hub is your CloudsForge account: balances across every chain, deposits and withdrawals, the full history of what has happened to your money, and the keys and sessions that protect it.',
+      'It is not one of the products you choose between. It is the account the products run on, which is why it is not in the switcher — you are already inside it.',
     ],
     blurb:
-      'Forge Hub is where a CloudsForge account lives: portfolio, wallets, deposits, withdrawals, activity and security on one screen. Not a product you choose — the container the others sit inside.',
+      'Forge Hub is your CloudsForge account: balances on every supported chain, deposits, withdrawals, history and security, on one screen and under one sign-in.',
     stage: 'open',
     stageNote:
-      'Deployed with the service behind it, opened in a real browser through the gateway with a sign-in that completes, and now reachable on the public internet. It went public today, so nobody outside the project has used it yet — reachable is what is being claimed, not proven under strangers.',
+      'Open to the public. The account, the sign-in and the portfolio work end to end through a real browser, and the surface answers on the public internet. Nobody outside the project has used it yet.',
     sections: [
       {
-        title: 'One screen instead of six',
+        title: 'One balance instead of six',
         body: [
-          'Before Hub there were three separate ideas of what a wallet was, one per application, and no screen anywhere that added up what an account held. A balance meant something slightly different depending on which product you had opened, and the only way to see all of it was to visit all of it.',
-          'Hub replaces that with one composition: balances across every chain, valuation, the deposits still waiting on confirmations, the withdrawals in flight, and a single timeline of everything that has happened to the account.',
+          'Hub adds up what you hold across every chain the platform supports and shows it as one figure, with each holding underneath it. Deposits still waiting on confirmations, withdrawals in flight and every past movement sit on a single timeline.',
+          'You do not visit a different screen per product to find out what you own. There is one account, so there is one answer.',
         ],
       },
       {
-        title: 'A missing number stays missing',
+        title: 'A missing price is shown as missing',
         body: [
-          'When valuation is unavailable, Hub does not print a total. Zero is the correct sum of an empty set and the wrong thing to show a person whose holdings are intact — a portfolio worth nothing and a portfolio that cannot be priced right now are not the same sentence, and only one of them is frightening.',
-          'So the total is suppressed, each unpriced holding shows its amount with the reason its value is missing, and every quote carries the time it was observed. The amount is exactly as true as it ever was; only the valuation is absent, and the screen says which.',
+          'If a valuation cannot be fetched, Hub does not print a total. A portfolio worth nothing and a portfolio that cannot be priced right now are not the same thing, and only one of them should alarm you.',
+          'Each unpriced holding shows its amount and the reason its value is absent, and every quote carries the time it was taken. Your balance is exactly as true as it ever was.',
         ],
       },
       {
-        title: 'One failure costs one tile',
+        title: 'One thing failing costs one panel',
         body: [
-          'The service behind Hub answers with holes rather than with an error. If pricing is unreachable the balances still arrive; if the activity feed is down the wallets still render. Each panel carries its own status and its own freshness, so a single unhealthy dependency costs one panel rather than the page.',
-          'The rule underneath it: a panel reported unavailable never draws an empty list as though it were an answer. An empty array with no status beside it reads as "you have no wallets", and that is a worse lie than an error message.',
+          'If pricing is unreachable your balances still load. If the activity feed is down your wallets still render. Each panel carries its own status, so a single unhealthy dependency costs that panel rather than the page.',
+          'A panel that cannot load says so. It never draws an empty list, because "you have no wallets" is a worse answer than "this did not load".',
+        ],
+      },
+      {
+        title: 'Getting your money out is free',
+        body: [
+          'Deposits, transfers between CloudsForge accounts, withdrawals to your own address and exporting your private key or recovery phrase are all free, and always will be. The platform charges for work it does for you, never for reaching your own money.',
         ],
       },
     ],
     linkTo: 'hub',
-    linkLabel: 'Forge Hub',
+    linkLabel: 'Open Forge Hub',
     ogImage: '/og/hub.png',
   },
 
@@ -159,39 +121,56 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     key: 'network',
     slug: 'network',
     eyebrow: 'Mine',
-    headline: 'Money you can produce on the machine you already own',
+    headline: 'Mine EMBER in a browser tab, or on any spare processor',
     standfirst: [
-      'EMBER is mined by proof of work on ordinary processors. Homefire, the algorithm behind it, is memory-hard and CPU-friendly, so a warehouse of hardware earns little more per dollar than a laptop does. There is no rig to buy and no pool to join.',
+      'EMBER is proof-of-work money. Homefire, the algorithm behind it, is memory-hard and runs well on ordinary processors, so there is no rig to buy and no pool to join.',
+      'You can start straight away, in this browser, on the machine you are reading this on. The block reward is paid to an address only you hold the key to.',
     ],
     blurb:
-      'EMBER is proof-of-work money mined on ordinary processors. Memory-hard, ASIC-resistant, and an account-model chain that speaks Ethereum. No rig to buy and no pool to join.',
+      'Mine EMBER in your browser or on any spare processor — no rig, no pool, no install. Hearth, the chain underneath it, is a full Ethereum virtual machine.',
     stage: 'open',
     stageNote:
-      'The main network is running and mining, with a public node answering JSON-RPC and a public block explorer beside it. It is hours old and only a few hundred blocks deep, so it is reachable rather than established, and EMBER has no market, no listing and no price. The faucet serves the test network, which has no publicly reachable endpoint yet.',
+      'Open to the public. The main network mines, a public node answers Ethereum JSON-RPC and a public block explorer runs beside it. The chain is new, and EMBER has no market, no listing and no price.',
     sections: [
       {
-        title: 'Proof of work, without the industry',
+        title: 'Mining starts in a browser tab',
         body: [
-          'Proof of work was meant to be one processor, one vote. What it became was a business with a hardware supply chain attached, which is a strange foundation for money that is supposed to be open to anyone.',
-          'Homefire is the attempt to hold the original shape: memory-hard, so specialised silicon buys far less advantage than it does elsewhere, and bound so that a winning proof must be signed by the key its reward pays — work handed to you cannot be quietly redirected to somebody else. What that does and does not buy is written down in the chain\'s own mining documentation rather than summarised into a promise here.',
+          'Open the mining page, create an address, and press start. Your browser runs the same proof-of-work the node runs, and when it finds a block the reward goes to that address. There is nothing to install and no account to create.',
+          'The key is generated in the tab, stays in the tab, and is never sent to us. That also means we cannot recover it: save it before you start, or the address and everything paid to it are gone when you close the page.',
+          'It is polite by default. On a laptop running on battery the miner holds at zero rather than draining it, tells you that is why the rate is zero, and gives you a switch to override it.',
         ],
       },
       {
-        title: 'It speaks Ethereum',
+        title: 'Ordinary processors, on purpose',
         body: [
-          'Hearth is an account-model chain with an Ethereum JSON-RPC, so the tools, the libraries and the wallets a developer already has work against it without a translation layer. That is also why an EMBER balance carries eighteen decimal places rather than a bespoke unit nobody has a formatter for.',
+          'Proof of work was meant to be one processor, one vote. What it became was a hardware industry, which is a strange foundation for money that is supposed to be open to anyone.',
+          'Homefire is memory-hard, so purpose-built silicon buys far less advantage than it does elsewhere. A winning proof must also be signed by the key it pays, so work you do cannot be quietly redirected to somebody else.',
         ],
       },
       {
-        title: 'A deposit waits, and the wait is published',
+        title: 'A real Ethereum machine, not a lookalike',
         body: [
-          `An EMBER deposit is visible as pending the moment the network sees it and spendable only ${claim('emberConfirmations')} blocks later — about ${claim('emberConfirmationMinutes')} minutes. That is the same depth the chain publishes to exchanges, and it is deep because a young chain mined on ordinary processors has no finality gadget and depth is the defence that is actually available.`,
-          `Below that depth nothing is credited. A reorganisation ${claim('emberReorgAlarmDepth')} blocks deep or more stops crediting for the chain outright and pages an operator, because a reorg shallower than the credit depth cannot have produced a wrong credit, and one at or past it means the assumption the depth encodes has failed.`,
+          `Hearth is a full EVM chain with an account model and Ethereum JSON-RPC. Add it to MetaMask, point ethers, viem, Hardhat or Foundry at it, and deploy — nothing needs a translation layer, and no library needs patching.`,
+          `The main network is chain ${claim('emberChainId')} and the test network is chain ${claim('emberTestnetChainId')}; the two are deliberately separate so a test transaction can never be replayed for real money. EMBER carries ${claim('emberDecimals')} decimals, like every native asset Ethereum tooling expects, and fees follow EIP-1559.`,
+          'Contract calls, logs, event filters, receipts, gas estimation and the transaction pool are all served, so the tools you already know work without being told they are talking to something unusual.',
+        ],
+      },
+      {
+        title: 'Deposits wait, and the wait is published',
+        body: [
+          `An EMBER deposit shows as pending the moment the network sees it and becomes spendable ${claim('emberConfirmations')} blocks later, which is about ${claim('emberConfirmationMinutes')} minutes. That is the same depth the chain publishes to exchanges.`,
+          `Nothing is credited before that depth. A reorganisation ${claim('emberReorgAlarmDepth')} blocks deep or more stops crediting for the chain entirely and wakes an operator.`,
+        ],
+      },
+      {
+        title: 'Free coins for building against',
+        body: [
+          'The test network has a faucet. It hands out worthless EMBER so you can deploy a contract, break it, and deploy it again without mining first or spending anything.',
         ],
       },
     ],
     linkTo: 'network',
-    linkLabel: 'Forge Network',
+    linkLabel: 'Start mining',
     ogImage: '/og/network.png',
   },
 
@@ -199,38 +178,53 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     key: 'create',
     slug: 'create',
     eyebrow: 'Make',
-    headline: 'Launch a token, and own it outright',
+    headline: 'Launch a token you own outright',
     standfirst: [
-      'Forge Create deploys a real contract to a real chain, from a template that has been written, compiled and committed rather than assembled at request time. Your wallet is the owner from the first block. The platform\'s key pays the gas and holds nothing.',
+      'Forge Create deploys a real ERC-20 contract to a real chain, from bytecode that was written, compiled and committed in advance rather than assembled when you ask for it.',
+      'Your wallet is named as owner in the constructor, from the first block. The platform pays the gas and keeps no authority over what it deployed.',
     ],
     blurb:
-      'Deploy a real token contract from committed, compiled bytecode. Your wallet is the owner from the first block; the platform pays the gas and holds no authority over it.',
+      'Deploy a real ERC-20 token from committed, pre-compiled bytecode. Your wallet owns it from the first block; the platform pays the gas and holds no authority over it.',
     stage: 'open',
     stageNote:
-      'The deployment service, the brand-generation service and the application a creator uses are all deployed, walked in a browser, and reachable on the public internet. Every contract any of them has deployed so far went to a test network, and no stranger has ordered one.',
+      'Open to the public. The deployment service, the brand-generation engine and the application you use are all running and reachable. Every contract deployed so far went to a test network.',
     sections: [
       {
-        title: 'The deploy leaves the request',
+        title: 'A real contract on a real chain',
         body: [
-          'Deploying a contract takes as long as a chain takes to include it, which is not a length of time an HTTP request should be asked to survive. The old implementation held the connection open for up to three minutes and then reported whatever had happened by the time it gave up.',
-          'The rebuilt one accepts the order, answers immediately with somewhere to watch, and records the broadcast and its outcome as they happen. A deploy that succeeds after your browser has been closed is still a deploy that succeeded, and there is a record of it either way.',
+          'The token is a standard ERC-20 on Hearth, which is a full Ethereum virtual machine. It shows up in any wallet, any explorer and any library that has ever handled an ERC-20, because that is exactly what it is.',
+          'The bytecode is compiled from source that is committed and reviewed, not generated per request. That is the difference between a contract you can read before you order it and one you find out about afterwards.',
         ],
       },
       {
         title: 'You are the owner, not the tenant',
         body: [
-          'The address named as owner in the constructor is yours. The platform cannot mint, pause, or transfer ownership of a token it deployed for you, because it never held the authority to — that is a property of the bytecode rather than a policy that could be revised later.',
+          'The address named as owner is yours. The platform cannot mint, pause or transfer ownership of your token, because it never held the authority to. That is a property of the deployed bytecode rather than a policy that could be revised later.',
         ],
       },
       {
-        title: 'What is not sold here',
+        title: 'The deploy does not hang on your browser',
         body: [
-          'An earlier version of this product listed a liquidity-lock helper and a metadata-verification service that existed in no code path anywhere. Both were removed from the catalogue rather than quietly left to be built, and the principle that removed them is written into the vision: do not sell what cannot be delivered — including through the API, not only the interface.',
+          'Deploying takes as long as the chain takes to include the transaction, which is not something an HTTP request should be asked to survive. Forge Create accepts the order, gives you somewhere to watch it, and records the broadcast and its outcome as they happen.',
+          'A deploy that succeeds after you have closed the tab is still a deploy that succeeded, and there is a record of it either way.',
+        ],
+      },
+      {
+        title: 'A name, a mark and a palette to go with it',
+        body: [
+          'The same product generates the brand: a name, a logo mark, a colour set and the asset sizes you need for a listing or a social profile, produced as a kit rather than as one image you then have to crop eight times.',
+        ],
+      },
+      {
+        title: 'What is deliberately not sold here',
+        body: [
+          'There is no liquidity-lock helper and no metadata-verification badge. Both were listed by an earlier version of this product and neither existed in any code path, so they were removed rather than left to be built.',
+          'The rule they were removed under applies to the API as well as the interface: nothing is on sale unless something delivers it.',
         ],
       },
     ],
     linkTo: 'create',
-    linkLabel: 'Forge Create',
+    linkLabel: 'Open Forge Create',
     ogImage: '/og/create.png',
   },
 
@@ -238,80 +232,98 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     key: 'trade',
     slug: 'trade',
     eyebrow: 'Trade',
-    headline: 'Test the idea before you fund it',
+    headline: 'Backtest a strategy before you put money behind it',
     standfirst: [
-      'A catalogue of strategies, backtested against real market history with fees and slippage charged — because a strategy that only works for free does not work. What survives can be promoted to a paper bot, and only then to one holding real money.',
+      'A catalogue of trading strategies you can run against real market history for Bitcoin, Ethereum, Solana and XRP — with fees and slippage charged, because a strategy that only works for free does not work.',
+      'What survives the backtest can be promoted to a paper bot that trades on live prices with no money at risk, and only after that to one holding real funds.',
     ],
     blurb:
-      'Backtest a strategy against real market history with fees and slippage charged, promote what survives to paper, and only then to money. Modelled, never promised. Not an exchange.',
+      'Backtest trading strategies on real market history with fees and slippage charged, promote what survives to paper trading, and only then to money. Not an exchange.',
     stage: 'open',
     stageNote:
-      'The engine — backtesting, fills, fees and the performance accounting — is deployed behind an application that is now reachable on the public internet. Live trading is switched off in the running service rather than missing from it, and stays off until a complete cycle has run on testnet. Reaching the page and being able to trade on it are different things, and only the first is true.',
+      'Open to the public. Backtesting, fills, fees and the performance accounting run behind an application anyone can reach. Live trading is switched off in the running service and stays off until a full cycle has completed on testnet.',
     sections: [
       {
         title: 'The backtest charges you',
         body: [
-          'A backtest that ignores fees and assumes a fill at the price you asked for is a generator of strategies that work in a spreadsheet. This one models the fill and takes the fee, which makes its results worse and makes them mean something.',
-          'The results are labelled as what they are: modelled, not a promise. A past curve is a description of a market that has already happened.',
+          'A backtest that ignores fees and assumes you got the price you asked for is a machine for producing strategies that work in a spreadsheet. This one models the fill and takes the fee, which makes the results worse and makes them mean something.',
+          'Every result is labelled for what it is: modelled, not promised. A past equity curve describes a market that has already happened.',
         ],
       },
       {
-        title: 'A high-water mark, so the same gain is billed once',
+        title: 'Three steps, in order',
         body: [
-          'Where a live bot is charged, it is charged on gains above its own previous best, never on recovery from a drawdown. A bot that falls and climbs back to where it was has produced nothing, and billing it for the climb is billing twice for one gain.',
-          'The fee is not published on this page, because it is per-bot in the code that computes it rather than a single platform number. Every assessment shows the equity, the mark, the gain and the rate that was applied — the number a reader needs is the one attached to their own bot.',
+          'Backtest against history. Then run the same strategy as a paper bot against live prices, where it can be wrong for free. Only then fund it.',
+          'Backtesting, the full strategy catalogue and paper trading are free and unlimited. You are never charged to find out that an idea does not work.',
+        ],
+      },
+      {
+        title: 'You are billed on new gains only',
+        body: [
+          'Where a funded bot is charged, it is charged on gains above its own previous best, never on recovery from a loss. A bot that falls and climbs back to where it was has produced nothing, and billing it for the climb is billing twice for one gain.',
+          'Every assessment shows the equity, the high-water mark, the gain and the rate applied, so the number you are charged is one you can check.',
         ],
       },
       {
         title: 'This is not an exchange',
         body: [
-          'There is no order book, no market making, and no custody of anyone else\'s trading pairs. A bot settles against a price oracle on coins the platform already holds. That boundary is a deliberate refusal rather than a stage on a roadmap: the other side of it is a different company with a different regulatory posture.',
+          'There is no order book, no market making, and no custody of anybody else\'s trading pairs. A bot settles against a price oracle on coins the platform already holds.',
+          'That is a permanent boundary rather than a stage on a roadmap. The other side of it is a different company with a different regulator.',
         ],
       },
     ],
     linkTo: 'trade',
-    linkLabel: 'Forge Trade',
+    linkLabel: 'Open Forge Trade',
     ogImage: '/og/trade.png',
   },
 
   {
     key: 'foresight',
     slug: 'foresight',
-    eyebrow: 'Foresight',
-    headline: 'Stake on what happens next, settled on chain',
+    eyebrow: 'Predict',
+    headline: 'Back what happens next, in the coin you already hold',
     standfirst: [
-      'Markets on future events, staked in EMBER and settled by the contract that holds the pool. The platform proposes questions and a person opens them, because a resolution criterion is a contract with strangers and someone has to be accountable for its wording.',
+      `Markets on future events, settled by the contract that holds the money. You can stake in any of the ${claim('chains')} chains the platform supports — ${claim('chainNames')} — or in an ERC-20 token, and every stake joins one EMBER pool.`,
+      'If a market is voided you are refunded in the asset you staked, in the amount you staked. Not its value at some later rate.',
     ],
     blurb:
-      'Parimutuel markets on future events. Stakes go to the contract, not to us; payouts come from the pool, not from our balance sheet. Odds are the pool ratio, and they move until it closes.',
+      'Prediction markets you can enter with Bitcoin, Ethereum, Litecoin, Solana, XRP, EMBER or an ERC-20 token. The contract holds the stakes and pays the winners — not us.',
     stage: 'open',
     stageNote:
-      'The service, the contract, the application a person stakes in and the console an operator opens questions from are all deployed, walked, and now reachable on the public internet. The only chain any of it has settled on so far is an EMBER test network, and no stranger has taken a position.',
+      'Open to the public. The service, the contract, the staking application and the console operators open questions from are all running and reachable. Every market so far has settled on an EMBER test network.',
     sections: [
       {
-        title: 'The contract holds the money, not the platform',
+        title: 'Stake in what you already own',
         body: [
-          'A stake goes from a wallet to the market contract and never passes through our service. What we keep is a mirror of the chain, used to browse and to notify — so if that mirror is wrong, or gone, the stakes are still in the contract and every winner can still claim from it directly.',
-          'That is the difference between a prediction market and a bookmaker. There is no house balance to pay you from, and no way for us to be the reason a settled market does not pay.',
+          `Most prediction markets make you acquire their unit before you can have an opinion. This one does not: bring ${claim('chainNames')}, or any ERC-20 token the platform has enabled, and stake it directly.`,
+          'Whatever you bring is converted at the rate recorded when you stake and joins a single pool denominated in EMBER, so everyone in a market is in the same pool no matter what they arrived with.',
+          'A token is identified by its chain, its network and its contract address, so two deployments of the same brand are two different assets and are never confused for each other.',
         ],
       },
       {
-        title: 'Odds are the pool, and the pool is the odds',
+        title: 'The contract holds the money, not us',
         body: [
-          'This is parimutuel: your return depends on the size of the pool when the market closes, not on a price quoted when you staked. The interface shows the pools that produce the odds and says plainly that they will move, because an odds figure presented as a guaranteed return is the one number a market like this can most easily lie with.',
-          'A stake you are about to place is added to the pool it would be paid from before the projection is drawn — otherwise the number shown is roughly a third too generous.',
+          'Your stake goes from your wallet to the market contract and never passes through our service. What we keep is a mirror of the chain, used for browsing and notifications.',
+          'If that mirror is wrong, or gone, the stakes are still in the contract and every winner can still claim directly from it. There is no house balance to pay you out of, and no way for us to be the reason a settled market does not pay.',
         ],
       },
       {
-        title: 'A model proposes; a person opens',
+        title: 'The odds are the pool',
         body: [
-          'Candidate questions are drafted by searching the web and asking a model, and every draft carries the query, the sources and the model that produced it. None of that can open a market. An operator reads the sources and approves, edits or discards it.',
-          'The resolution source is named when the market opens, not chosen when it resolves. If that source is gone at resolution the market is void and refunds whole — no fee — rather than being settled on someone\'s judgement of what probably happened.',
+          'This is parimutuel. Your return depends on how big the pool is when the market closes, not on a price quoted at the moment you staked, and the interface says so rather than showing a figure that looks like a guarantee.',
+          'A stake you are about to place is added to the pool it would be paid from before the projection is drawn. Leaving it out makes the number roughly a third too flattering.',
+        ],
+      },
+      {
+        title: 'A model proposes, a person opens',
+        body: [
+          'Candidate questions are drafted by searching the web and asking a model, and every draft carries the query, the sources and the model that produced it. None of that can open a market on its own — an operator reads the sources and approves, edits or discards it.',
+          'The resolution source is named when the market opens, not chosen when it resolves. If that source no longer exists at resolution the market is void and refunds in full, with no fee, rather than being settled on somebody\'s judgement of what probably happened.',
         ],
       },
     ],
     linkTo: 'foresight',
-    linkLabel: 'Forge Foresight',
+    linkLabel: 'Open Forge Foresight',
     ogImage: '/og/foresight.png',
   },
 
@@ -319,39 +331,41 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     key: 'market',
     slug: 'market',
     eyebrow: 'Sell',
-    headline: 'Somewhere for the things people make to go',
+    headline: 'Buy and sell what people make here',
     standfirst: [
-      'Listings, offers, escrow and settlement, for assets created on the platform and brought to it. Forge Market exists because "make" has no destination without "sell" — it is the missing verb rather than a new product for its own sake.',
+      'Listings, offers, escrow and settlement for tokens, game items and assets created on the platform or brought to it.',
+      'Forge Market exists because making something has no point without somewhere to sell it. The seller sets a royalty, the platform takes a fee, and the arithmetic is enforced by the database rather than by the code that writes it.',
     ],
     blurb:
-      'Listings, offers, escrow and settlement for what people make. The fee, the royalty and the seller\'s proceeds are constrained to add up by the database, not by the code that writes them.',
+      'Listings, offers, escrow and settlement for what people make. The platform fee, the creator royalty and the seller\'s proceeds are constrained to add up by the database.',
     stage: 'open',
     stageNote:
-      'Listings, bids, escrow, the order split and the risk indicators run behind an application that is now reachable on the public internet. Nothing is listed on it yet — it opened today, and an empty market is what an empty market looks like.',
+      'Open to the public. Listings, bids, escrow, the order split and the risk indicators run behind an application anyone can reach. Nothing is listed on it yet, and an empty marketplace is what an empty marketplace looks like.',
     sections: [
       {
-        title: 'The split is checked by the database',
+        title: 'The split has to add up',
         body: [
-          'Every sale divides into a platform fee, whatever royalty the creator set, and the seller\'s proceeds. Those three are constrained to add up to the sale price by the database itself, not by the code that writes them — an order whose parts do not reconcile cannot be recorded, including by something that has bypassed the service entirely.',
-          'The royalty is revenue for the creator. The platform takes no share of it.',
+          'Every sale divides into a platform fee, whatever royalty the creator set, and the seller\'s proceeds. Those three are constrained to add up to the sale price by the database itself, so an order whose parts do not reconcile cannot be recorded — not even by something that has bypassed the service entirely.',
+          'The royalty is the creator\'s revenue. The platform takes no share of it.',
         ],
       },
       {
-        title: 'The terms of a sale in flight never move',
+        title: 'Terms cannot change mid-sale',
         body: [
-          'A royalty split is copied onto a listing when the listing is created, rather than looked up when the sale completes. Editing a collection\'s default afterwards changes what future listings will say and changes nothing about a sale already underway. A term that can be revised after a buyer has agreed to it is not a term.',
+          'The royalty split is copied onto a listing when the listing is created, not looked up when the sale completes. Editing a collection\'s default afterwards changes future listings and changes nothing about a sale already underway.',
+          'A term that can be revised after a buyer has agreed to it is not a term.',
         ],
       },
       {
-        title: 'Risk indicators are computed, never granted',
+        title: 'Risk indicators are calculated, never bought',
         body: [
-          'What a listing shows about a token — whether a mint authority still exists, whether ownership has been renounced, how concentrated the supply is, how old it is — is derived from chain data. It is not editable by the seller and it is not editable by anyone the seller has paid.',
-          'A badge that reads as an endorsement is how a marketplace becomes complicit in its worst listing. Any check the platform sells is a statement about identity and disclosure, and it says so in the words next to it, or it is not offered.',
+          'What a listing tells you about a token — whether a mint authority still exists, whether ownership has been renounced, how concentrated the supply is, how old it is — is derived from chain data. The seller cannot edit it and nobody can pay to have it changed.',
+          'There is no badge that reads as an endorsement. Any check the platform sells is a statement about identity and disclosure, and it says exactly that in the words beside it.',
         ],
       },
     ],
     linkTo: 'market',
-    linkLabel: 'Forge Market',
+    linkLabel: 'Open Forge Market',
     ogImage: '/og/market.png',
   },
 
@@ -359,39 +373,48 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     key: 'worlds',
     slug: 'worlds',
     eyebrow: 'Play',
-    headline: 'Worlds that end, and are kept',
+    headline: 'Games where the season ends and the world is kept',
     standfirst: [
-      'A shared map, resources that genuinely run out, and a season that stops. When it stops the world is not deleted — it is sealed into a history you can walk back through, and a new one opens where everybody is poor again.',
+      'Three titles on one shared platform: a sky-island strategy game, a monster-collecting role-playing game, and a persistent world you build in a browser tab and get paid in EMBER for.',
+      'Resources genuinely run out and seasons genuinely stop. When one stops the world is not deleted — it is sealed into a history you can walk back through, and a new one opens where everybody starts poor again.',
     ],
     blurb:
-      'A shared map, resources that genuinely run out, and a season that ends and is kept rather than deleted. Nothing purchasable is powerful — scarcity is the game.',
+      'Three games on one account: sky-island strategy, monster collecting, and a browser world you build and earn EMBER in. Nothing purchasable is powerful.',
     stage: 'open',
     stageNote:
-      'The platform is deployed, including the private worlds that used to be sold and never provisioned, and so are both titles that run on it, and all of it is now reachable on the public internet. Nobody outside the project has ever played one, and no season has ended with a stranger in it.',
+      'Open to the public. The platform is running, including the private worlds that were once sold and never provisioned, and so are all three titles. Nobody outside the project has played a season through.',
     sections: [
+      {
+        title: 'Three games, one account and one wallet',
+        body: [
+          'Aetherholm is a sky-island strategy game at the scale of a browser empire builder: seasons, archipelagos, cities, build queues and a directed wind that decides who can reach whom.',
+          'Emberkin is a monster-collecting role-playing game built around a bond system between you and the creature you raise.',
+          'Tessera is a world you build in a browser tab — claim ground, make objects from a prompt, open a place people visit, and get paid in EMBER when they buy what you made.',
+          'One sign-in covers all three, and what you earn lands in the same wallet as everything else on the platform.',
+        ],
+      },
       {
         title: 'Scarcity is the game',
         body: [
-          'A world holds a fixed amount of fuel, medicine and seed. That is not a difficulty setting; it is the entire subject. What is burned today is gone from the map, and the last of something is a thing people negotiate over rather than a thing they farm.',
+          'A world holds a fixed amount of fuel, medicine and seed. That is not a difficulty setting, it is the whole subject. What is burned today is gone from the map, and the last of something is a thing people negotiate over rather than a thing they farm.',
         ],
       },
       {
-        title: 'Nothing purchasable is powerful',
+        title: 'Nothing you can buy is powerful',
         body: [
-          'What can be bought is cosmetic, convenience, or access to reserved capacity. No resources, no extra turns, no combat advantage, and no edge over another player of any kind. The rule holds in the database rather than in a policy document: items are marked in a way that makes the powerful kind unrepresentable.',
-          'This is not restraint for its own sake. A world whose scarcity can be bought out of is a world with no story in it, and the story is the product.',
+          'What is purchasable is cosmetic, convenience, or access to reserved capacity. No resources, no extra turns, no combat advantage, no edge over another player of any kind.',
+          'The rule is enforced in the database rather than in a policy document: an item of the powerful kind cannot be represented. A world whose scarcity can be bought out of has no story left in it, and the story is the product.',
         ],
       },
       {
-        title: 'A private world is now actually raised',
+        title: 'A private world is actually built',
         body: [
-          'Renting a world for a group of friends was on sale in the previous estate, took the money, wrote the entitlement, and provisioned nothing — a feature that was inert from the day it was listed. The rebuilt platform creates the world: its own simulation, its own stock, its own seed.',
-          'It is named here rather than quietly fixed because the pattern matters more than the instance. Something was sold that no code path delivered, and nothing in the system was capable of noticing.',
+          'Renting a world for a group of friends was on sale in the previous version of this platform. It took the money, wrote the entitlement, and created nothing. Now it creates the world: its own simulation, its own stock, its own seed.',
         ],
       },
     ],
     linkTo: 'worlds',
-    linkLabel: 'Forge Worlds',
+    linkLabel: 'Open Forge Worlds',
     ogImage: '/og/worlds.png',
   },
 ]
@@ -404,22 +427,11 @@ export function productPage(slug: string): ProductPage | undefined {
 /**
  * Counts, spelled.
  *
- * ── Why this exists, which is a defect this site actually shipped ─────────────────────────────
- *
- * `claims.ts` says of the product count: "Never written as a digit in copy — it is counted from
- * PRODUCTS at runtime and SPELLED AS A WORD, so a sixth product is a registry entry rather than a
- * copy-editing pass." The registry half of that was true. The spelling half was not: the words
- * "Five products on one account", "The five products", "Six surfaces, one account" and "the other
- * five are standing on" were TYPED, in JSX, in three files.
- *
- * Forge Foresight was then added to the registry. `test/content.test.ts` stayed green throughout,
- * for two compounding reasons — the digit scan only reads `src/content` and these strings lived in
- * `src/pages`, and it only matches DIGITS, so "five" is invisible to it in any file. The site went
- * on telling readers there were five products while its own grid rendered six.
- *
- * A word is a number. So the counts are computed here, the sentences that carry them live in
- * `./pages.ts` where the copy walk can see them, and the next product to be added changes nothing
- * that a person has to remember.
+ * A word is a number. "Five products on one account" was typed into JSX in three files and went on
+ * being rendered after a sixth product was added, because the digit scan only reads `src/content`
+ * and only matches digits. So the counts are computed here, the sentences that carry them live in
+ * `./pages.ts` where the copy walk can see them, and adding a product changes nothing anybody has
+ * to remember.
  */
 const CARDINALS = [
   'zero', 'one', 'two', 'three', 'four', 'five', 'six',
@@ -435,9 +447,8 @@ const ORDINALS = [
  * A count as an English word.
  *
  * Throws rather than falling back to digits past the table. A silent fallback would put an
- * unregistered digit into copy, which the content scan would then fail on with a confusing
- * message — and the honest fix at that point is to extend the table, not to discover it at
- * runtime.
+ * unregistered digit into copy, which the content scan would then fail on with a confusing message
+ * — and the honest fix at that point is to extend the table.
  */
 export function spell(n: number): string {
   const word = CARDINALS[n]
@@ -466,7 +477,7 @@ export function productCount(): string {
  * Pages under /products, spelled. Seven today: the products plus Hub.
  *
  * Counted from PRODUCT_PAGES rather than from `PRODUCTS.length + 1`, so that a second non-product
- * surface page would be counted rather than assumed away.
+ * page would be counted rather than assumed away.
  */
 export function surfaceCount(): string {
   return spell(PRODUCT_PAGES.length)
@@ -481,9 +492,7 @@ export function nextProductOrdinal(): string {
  * The products, in the registry's own order, joined to their pages.
  *
  * Used by the products index and the home grid. Hub is deliberately absent: it is a `surface`
- * rather than a `product` in the registry, and `01-product-vision.md` §3 is explicit that the
- * container must never appear in a product grid as a peer — "an account is not something a person
- * chooses, it is something they are given".
+ * rather than a `product` in the registry, and an account is not something a person chooses between.
  */
 export function productCards(): ReadonlyArray<{ surface: ReturnType<typeof surface>; page: ProductPage }> {
   return PRODUCTS.map((s) => {

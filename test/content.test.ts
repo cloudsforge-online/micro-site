@@ -138,10 +138,22 @@ describe('the copy walk', () => {
 describe('numbers', () => {
   const DIGITS = /\d+(?:[.,]\d+)*/g
 
+  /**
+   * The name of a published standard is a name, not a claim.
+   *
+   * "ERC-20" and "EIP-1559" are how a reader recognises the thing being described; there is no
+   * version of either that could go stale, and registering them in `claims.ts` would put two
+   * meaningless rows in a file whose entire value is that every row is checkable. They are removed
+   * before the scan rather than allowlisted, so a genuine number that happens to follow one of
+   * these words is still caught.
+   */
+  const STANDARD_NAMES = /\b(?:ERC|EIP|BIP|SLIP|secp)-?\d+\b/gi
+
   it('registers every number that appears in copy', () => {
     const allowed = allowedNumbers()
     const offences: string[] = []
-    for (const { path, text } of COPY) {
+    for (const { path, text: raw } of COPY) {
+      const text = raw.replace(STANDARD_NAMES, '')
       for (const match of text.match(DIGITS) ?? []) {
         if (!allowed.has(match)) offences.push(`${path}: "${match}" in — ${text.slice(0, 90)}…`)
       }

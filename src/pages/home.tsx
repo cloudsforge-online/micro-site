@@ -21,6 +21,7 @@ export function HomePage() {
       <Hero />
       <Ridge />
       <Ember />
+      <Capabilities />
       <Products />
       <Spans />
       <Ridge />
@@ -93,6 +94,39 @@ function Ember() {
           </li>
         ))}
       </ol>
+    </Section>
+  )
+}
+
+/**
+ * The three capabilities a reader will not have assumed are here.
+ *
+ * This block exists because all three were shipped and unadvertised. Browser mining was removed
+ * from this site in a commit and never came back; the chain's Ethereum compatibility was one
+ * clause that named no tool a developer would recognise; and the coins a person can actually
+ * stake and trade were named nowhere on the site at all.
+ *
+ * Each item links to the product page that explains it. A capability announced with nowhere to
+ * read more is a claim, and this site's whole posture is that a claim needs somewhere to go.
+ */
+function Capabilities() {
+  return (
+    <Section
+      title={HOME.capabilities.title}
+      lede={HOME.capabilities.lede}
+      id="what-you-can-do"
+    >
+      <ul className="si-points">
+        {HOME.capabilities.items.map((item) => (
+          <li key={item.title} {...accentProps(item.accentKey)}>
+            <h3 className="si-points__title">{item.title}</h3>
+            <p className="si-points__body">{item.body}</p>
+            <p className="si-points__more">
+              <Link to={`/products/${item.linkTo}`}>{item.linkLabel}</Link>
+            </p>
+          </li>
+        ))}
+      </ul>
     </Section>
   )
 }

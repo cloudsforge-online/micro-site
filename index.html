@@ -30,6 +30,21 @@
     -->
     <meta name="cf-release" content="dev" />
 
+    <!--
+      The analytics property, as DATA rather than as a script tag.
+
+      There is deliberately no gtag snippet in this file. A tag pasted into the document head loads
+      and starts reporting before a reader has been asked anything, which makes the consent banner
+      further down the page a decoration. Instead `initAnalytics()` in src/main.tsx reads this
+      value, sets Google Consent Mode to denied for everything, and only injects the loader once a
+      reader has actually accepted — and removes it again if they change their mind.
+
+      It is a meta tag rather than a build-time constant so that one built image can be served with
+      a different property, or with none, without rebuilding. @cloudsforge/ui also suppresses it on
+      localhost and on the development domains, so a developer never pollutes the real property.
+    -->
+    <meta name="cf-analytics" content="G-ZFBLKK519K" />
+
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
     <link rel="apple-touch-icon" sizes="192x192" href="/favicon-192x192.png" />
@@ -53,7 +68,7 @@
     <title>CloudsForge — EMBER, and everything built on it.</title>
     <meta
       name="description"
-      content="EMBER is proof-of-work money you can mine on an ordinary processor, and an ecosystem of places to spend it — one account, one wallet, one ledger. Mine it, hold it, make it, trade it, sell it, play in it."
+      content="Mine EMBER in a browser tab on the computer you already own. Hold it in one wallet, launch tokens on a full Ethereum-compatible chain, backtest strategies, trade, sell what you make, and play."
     />
 
     <!--
@@ -74,7 +89,7 @@
     <meta property="og:title" content="CloudsForge — EMBER, and everything built on it." />
     <meta
       property="og:description"
-      content="EMBER is proof-of-work money you can mine on an ordinary processor, and an ecosystem of places to spend it — one account, one wallet, one ledger. Mine it, hold it, make it, trade it, sell it, play in it."
+      content="Mine EMBER in a browser tab on the computer you already own. Hold it in one wallet, launch tokens on a full Ethereum-compatible chain, backtest strategies, trade, sell what you make, and play."
     />
     <meta property="og:image" content="/og-1200x630.png" />
     <meta name="twitter:card" content="summary_large_image" />

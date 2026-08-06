@@ -285,3 +285,75 @@ describe('nginx', () => {
     }
   })
 })
+
+/**
+ * The sitemap, against the routes it is supposed to list.
+ *
+ * A sitemap is the one artefact on this site whose errors are invisible from the site: a missing
+ * entry is a page a crawler is never told about, and a stale entry points a crawler at an address
+ * this server answers 404 for — which is worse than the omission, because it is the site publishing
+ * a link to its own missing page.
+ *
+ * Both directions, therefore, and against the same two declarations every other check here uses.
+ */
+describe('the sitemap', () => {
+  /** Every `<loc>` in the nginx sitemap block, with the host variable stripped. */
+  const locs = (): string[] => {
+    const block = /location = \/sitemap\.xml \{[\s\S]*?\n    \}/.exec(directives)?.[0] ?? ''
+    return [...block.matchAll(/<loc>\$scheme:\/\/\$host(\/[^<]*)<\/loc>/g)].map((m) => m[1] ?? '')
+  }
+
+  it('names no hostname, and derives one from the request instead', () => {
+    // The reason this site shipped without a sitemap at all. The rule has not been relaxed — the
+    // artefact still names no host — so this is what keeps a literal from creeping back in.
+    const block = /location = \/sitemap\.xml \{[\s\S]*?\n    \}/.exec(directives)?.[0] ?? ''
+    assert.ok(block.length > 0, 'nginx.conf no longer serves a sitemap')
+    assert.ok(!block.includes('cloudsforge.online'), 'the sitemap names a hostname')
+    assert.ok(block.includes('$scheme://$host'), 'the sitemap does not derive its host from the request')
+  })
+
+  it('lists every page this site serves', () => {
+    const listed = new Set(locs())
+    assert.ok(listed.has('/'), 'the home page is not in the sitemap')
+    assert.ok(listed.has('/products'), 'the products index is not in the sitemap')
+    for (const path of NON_INDEX_PATHS) {
+      assert.ok(listed.has(`/${path}`), `/${path} is served but is not in the sitemap`)
+    }
+    for (const page of PRODUCT_PAGES) {
+      assert.ok(listed.has(`/products/${page.slug}`), `/products/${page.slug} is not in the sitemap`)
+    }
+  })
+
+  it('lists nothing this site would answer 404 for', () => {
+    const known = new Set(['/', '/products', ...NON_INDEX_PATHS.map((p) => `/${p}`), ...PRODUCT_PAGES.map((p) => `/products/${p.slug}`)])
+    for (const loc of locs()) {
+      assert.ok(known.has(loc), `the sitemap points a crawler at ${loc}, which this site does not serve`)
+    }
+  })
+
+  it('lists each address exactly once', () => {
+    // A duplicate is not fatal to a crawler and it is a reliable sign the block was edited by hand
+    // rather than against the declarations, which is the state this test exists to catch.
+    const all = locs()
+    assert.equal(new Set(all).size, all.length, 'the sitemap lists an address twice')
+  })
+
+  it('serves robots.txt from the server, with the same rules as the static file', () => {
+    // The static `public/robots.txt` is what `pnpm dev` and `vite preview` serve; nginx serves its
+    // own copy in production because only the server knows the host the Sitemap line needs. Two
+    // copies is exactly the shape this repository distrusts, so they are compared rather than
+    // trusted: the rules must match, and only the Sitemap line may differ.
+    const block = /location = \/robots\.txt \{[\s\S]*?\n    \}/.exec(directives)?.[0] ?? ''
+    assert.ok(block.includes('Sitemap: $scheme://$host/sitemap.xml'), 'robots.txt does not point at the sitemap')
+    // The nginx copy is inside a `return 200 '…'`, so the first rule shares a line with the
+    // directive that emits it. Stripping the directive is what makes the two comparable at all.
+    const rules = (text: string): string[] =>
+      text
+        .replace(/return 200 '/, '')
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => /^(User-agent|Allow|Disallow):/i.test(line))
+    const statik = readFileSync(new URL('../public/robots.txt', import.meta.url), 'utf8')
+    assert.deepEqual(rules(block), rules(statik), 'public/robots.txt and the served robots.txt disagree')
+  })
+})

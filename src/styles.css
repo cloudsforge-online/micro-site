@@ -845,6 +845,42 @@ a:hover {
 }
 
 /*
+ * The "read more" line under a point.
+ *
+ * Accent-coloured because the list item scopes an accent, so a point about mining takes the
+ * network colour and one about staking takes Foresight's — which is the only way the three read as
+ * three different places rather than three paragraphs. Colour is never the only signal: it is a
+ * link, underlined by the base rules, and it says where it goes in words.
+ */
+.si-points__more {
+  margin: var(--cf-space-md) 0 0;
+  font-size: var(--cf-text-md);
+}
+
+/*
+ * `--si-accent`, and neither `--cf-accent` nor `--cf-accent-text`.
+ *
+ * Both design-system tokens fail here, and measuring rather than reasoning is what found it. The
+ * raw accent is a FILL — the colour of a button with `--cf-accent-ink` on top — and fails as type
+ * on either ground. `--cf-accent-text` is the type-safe fork, but it is only safe on the ground it
+ * was derived against: this site runs its own light scope, and the design system's light mapping
+ * for a product-scoped ELEMENT is keyed on a `data-cf-scheme` attribute this site does not set. So
+ * a `data-cf-product` list item on a light page keeps its DARK accent-text — network's #ff5b43 on
+ * #f4f0e8 — which is what axe reported, for all three links at once.
+ *
+ * `--si-accent` is this site's own per-element adjustment, declared on `*` in both schemes exactly
+ * so it follows a product scope, and it is the token every other accent-coloured piece of type on
+ * this page already uses.
+ */
+.si-points__more a {
+  color: var(--si-accent);
+}
+
+.si-points__more a:hover {
+  color: var(--si-accent-hover);
+}
+
+/*
  * The principles, numbered.
  *
  * `counter-reset`/`counter-increment` rather than typed numbers, so a principle inserted in the

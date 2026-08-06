@@ -104,7 +104,6 @@ function envDefault(text: string, name: string): string {
 const SUPERSCRIPT = '⁰¹²³⁴⁵⁶⁷⁸⁹'
 
 const CHAIN_SPEC = 'contracts/packages/chain/src/index.ts'
-const TOKENS = 'ui/packages/ui/src/tokens.css'
 
 const DERIVATIONS: Readonly<Record<string, Derivation>> = {
   emberConfirmations: {
@@ -167,6 +166,32 @@ const DERIVATIONS: Readonly<Record<string, Derivation>> = {
     reads: CHAIN_SPEC,
     witness: /ON_CHAIN_ASSETS/,
     derive: (text) => String(onChainAssets(text).length),
+  },
+
+  /**
+   * The three figures the site publishes so a developer can point a wallet at Hearth.
+   *
+   * `emberBlock` ends at the first `}),`, which is the end of the frozen `chainId` literal — so
+   * both ids are inside the slice and `field` reads them by name. Recomputed rather than typed
+   * because a chain id printed on a marketing page is an instruction: a reader who adds the
+   * network with the wrong one gets `binding_mismatch` from a signer and no way to tell why.
+   */
+  emberChainId: {
+    reads: CHAIN_SPEC,
+    witness: /chainId:\s*Object\.freeze/,
+    derive: (text) => String(field(emberBlock(text), 'mainnet')),
+  },
+
+  emberTestnetChainId: {
+    reads: CHAIN_SPEC,
+    witness: /chainId:\s*Object\.freeze/,
+    derive: (text) => String(field(emberBlock(text), 'testnet')),
+  },
+
+  emberDecimals: {
+    reads: CHAIN_SPEC,
+    witness: /decimals:\s*\d+/,
+    derive: (text) => String(field(emberBlock(text), 'decimals')),
   },
 
   /**
@@ -300,26 +325,6 @@ const DERIVATIONS: Readonly<Record<string, Derivation>> = {
     },
   },
 
-  accentSeparation: {
-    reads: TOKENS,
-    witness: /worst ADJACENT/,
-    derive: (text) => {
-      const match = /worst ADJACENT\s+dE\s+([\d.]+)/.exec(text)
-      if (!match?.[1]) throw new Error('tokens.css no longer records a worst-adjacent measurement')
-      return match[1]
-    },
-  },
-
-  accentSeparationAllPairs: {
-    reads: TOKENS,
-    witness: /worst ALL-PAIRS/,
-    derive: (text) => {
-      const match = /worst ALL-PAIRS\s+dE\s+([\d.]+)/.exec(text)
-      if (!match?.[1]) throw new Error('tokens.css no longer records a worst-all-pairs measurement')
-      return match[1]
-    },
-  },
-
   /** This site's own 404, read out of the server config that produces it. */
   httpNotFound: {
     reads: 'nginx.conf',
@@ -333,22 +338,10 @@ const DERIVATIONS: Readonly<Record<string, Derivation>> = {
 }
 
 /**
- * The two numbers that cannot be recomputed — named individually, with the reason each is
- * irreducible. Not a category, not a pattern, not a comment saying "the colour ones".
+ * The numbers that cannot be recomputed — named individually, with the reason each is
+ * irreducible. Not a category, not a pattern, not a blanket exemption.
  */
 const EXEMPTIONS: Readonly<Record<string, Exemption>> = {
-  accentSeparationBefore: {
-    kind: 'recorded',
-    reason:
-      'A measurement of a palette that no longer exists. The six accents it describes were replaced, ' +
-      'and the only surviving record of what they measured is the sentence cited in tokens.css. ' +
-      'Re-running the validator would measure the CURRENT set and silently answer a different ' +
-      'question, so this is checked as a quotation: the value must still appear in the sentence.',
-    // The sentence itself, found by searching for its opening. Lower-case `all-pairs distance was`
-    // is the retracted paragraph; upper-case `ALL-PAIRS` further down is the CURRENT figure, which
-    // is a different claim with its own derivation — so this pattern must not match that one.
-    witness: /worst all-pairs distance was[^\n]*/,
-  },
   httpOk: {
     kind: 'underivable',
     reason:
@@ -438,21 +431,6 @@ describe('the numbers register agrees with the estate', () => {
             `lines you can see locally may not be the lines CI or a reader on GitHub will see. ` +
             `Re-pinning against a dirty tree is how this check was last made green and wrong.`,
     )
-  })
-
-  it('names the script it says a colour figure is reproducible with', () => {
-    // The citation this replaces pointed at `ui scripts/validate_palette.js`, which has never
-    // existed in that repository. tokens.css says so itself, immediately above the figures the
-    // site had copied — so the retraction and the retracted numbers were both on screen, and the
-    // site took the numbers. A named tool that is not there is a citation nobody can follow.
-    for (const key of ['accentSeparation', 'accentSeparationAllPairs'] as const) {
-      const named = /(ui\/scripts\/[\w.-]+)/.exec(CLAIMS[key].source)
-      assert.ok(named?.[1], `${key} no longer names the tool its figure is reproducible with`)
-      assert.ok(
-        existsSync(`${ESTATE}${named[1]}`),
-        `${key} cites ${named[1]}, which does not exist`,
-      )
-    }
   })
 
   it('keeps the registered product count equal to the registry at runtime', () => {

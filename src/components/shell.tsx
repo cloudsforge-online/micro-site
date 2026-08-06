@@ -11,7 +11,7 @@
  * Everything this app adds goes below the bar.
  */
 import { useEffect } from 'react'
-import { CloudsForgeBar, PRODUCTS as REGISTRY_PRODUCTS, surface } from '@cloudsforge/ui'
+import { CloudsForgeBar, CookieBanner, PRODUCTS as REGISTRY_PRODUCTS, surface } from '@cloudsforge/ui'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { hosts, PRODUCT } from '../lib/hosts.ts'
 import { NAV, ROUTES } from '../lib/routes.ts'
@@ -45,6 +45,21 @@ export function AppShell() {
       </main>
 
       <SiteFooter />
+
+      {/*
+        The consent banner is LAST in the document, which is last in the tab order, and it is not
+        modal. A reader who came here to read something can read it and answer later; trapping
+        focus until they answer is the coercion the regulation exists about.
+
+        It renders nothing at all unless there is a measurement ID in the shell AND this reader has
+        never answered — so it does not flash at a returning reader, and it never appears in local
+        development, where there is nothing to consent to.
+
+        `privacyHref` is the in-app route rather than the component's cross-surface default: on
+        every other surface the privacy notice lives on another host, but on this one it is a page
+        of this application and an absolute URL would leave the app to come back to it.
+      */}
+      <CookieBanner privacyHref="/privacy" />
     </>
   )
 }

@@ -219,9 +219,13 @@ export const CATALOGUE: readonly Scenario[] = [
         // in two product stage notes further down — a literal anchor in the wrong scope is just a
         // self-referential assertion with extra steps. Proven by softening the title and watching
         // this go red.
+        //
+        // The heading literal moved once more when "one day old" stopped being literally true.
+        // What is anchored is the SHAPE — it still says open, and it still says how new — and the
+        // four limits below are what actually carry the disclosure.
         const callout = await session.page.locator('.si-callout').first().innerText()
         assert.ok(
-          callout.includes('Open to the public, and one day old'),
+          callout.includes('Open to the public, and days old'),
           `the honesty block no longer carries its heading. It says: ${callout.slice(0, 200)}`,
         )
         // The limits, in the rendered body rather than the heading — a heading that survives while
@@ -329,7 +333,7 @@ export const CATALOGUE: readonly Scenario[] = [
           'the first "one platform" statement has been reworded',
         )
         assert.ok(
-          items.some((i) => i.trim() === 'A third party can build on all of it.'),
+          items.some((i) => i.trim() === 'Anyone outside can build on all of it.'),
           'the statement about third parties is gone — it is the one that is not true yet',
         )
       } finally {
