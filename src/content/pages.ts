@@ -9,7 +9,7 @@
  * elsewhere. They are for the person editing this file; none of them is rendered.
  */
 import { claim } from './claims.ts'
-import { nextProductOrdinal, productCount, sentenceCase, surfaceCount } from './products.ts'
+import { nextProductOrdinal, productCount, sentenceCase } from './products.ts'
 import type { SurfaceKey } from '@cloudsforge/ui'
 
 /* ─────────────────────────────── home ─────────────────────────────── */
@@ -113,8 +113,8 @@ export const HOME = {
    * so that neither can be wrong again.
    */
   products: {
-    title: 'Seven places worth spending it',
-    lede: `${sentenceCase(productCount())} places to spend it, on one account. Each is somewhere to do something, not a feature of the last one.`,
+    title: `${sentenceCase(productCount())} places worth spending it`,
+    lede: 'One account and one wallet across all of them. Each is somewhere to do something in its own right, not a feature bolted onto the last one.',
     hubAside: `It is not a ${nextProductOrdinal()} destination. It is the thing the other ${productCount()} are standing on.`,
   },
   /** The one-account promise, in the terms a reader can check. */
@@ -139,6 +139,26 @@ export const HOME = {
       },
     ],
   },
+  /**
+   * The two capabilities that are hard to find elsewhere, on the page a visitor lands on.
+   *
+   * Both were live in the product and absent from the front page: a reader had to open a product
+   * page to learn that the chain runs a real EVM, or that a position can be taken in six
+   * currencies. That is the wrong way round — these are the reasons to keep reading.
+   */
+  strengths: {
+    title: 'Two things you will not find together elsewhere',
+    points: [
+      {
+        title: 'Bet with the coin you already hold',
+        body: 'Take a position on a future event using Bitcoin, Ethereum, Litecoin, Solana, XRP, EMBER or any token launched here. Whatever you bring is converted at a rate quoted before you commit. The contract holds the pool and pays the winners — claiming reads nothing but the contract\'s own storage, so you would still be paid if every server we own were switched off.',
+      },
+      {
+        title: 'A real Ethereum machine, not a lookalike',
+        body: 'Hearth runs an EVM written from scratch and held to Ethereum\'s own published test vectors. Solidity compiles and deploys, and MetaMask, ethers, viem, Hardhat and Foundry all work against it with no translation layer and no bespoke SDK. A token launched here is an ordinary ERC-20, so your holders\' wallets simply show it.',
+      },
+    ],
+  },
   closing: {
     title: 'You can check every claim on this page',
     body: 'Some of this runs in production, some is still being built, and we publish which is which rather than blur the two. The build page lists every part, the state it is genuinely in, and how that state is verified.',
@@ -156,7 +176,7 @@ export const HOME = {
  */
 export const PRODUCTS_INDEX = {
   eyebrow: 'The ecosystem',
-  headline: `${sentenceCase(surfaceCount())} surfaces, one account`,
+  headline: 'Every product, one account',
   standfirst: [
     `${sentenceCase(productCount())} destinations a person chooses between, and the control centre they all sit on. Each carries the state it is actually in, derived from the estate rather than typed in here.`,
   ],
@@ -286,7 +306,7 @@ export const PLATFORM = {
  * "company" over a headline that says ecosystem just restores the demotion one line higher up.
  */
 export const ABOUT = {
-  eyebrow: 'The ecosystem',
+  eyebrow: 'About us',
   headline: 'An ecosystem, from the currency up',
   blurb:
     'CloudsForge makes the currency, the rails that move it, the tools that create with it and the worlds that spend it. The principles it decides by, and what it refuses to become.',

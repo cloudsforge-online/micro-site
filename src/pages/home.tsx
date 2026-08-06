@@ -22,6 +22,7 @@ export function HomePage() {
       <Ridge />
       <Ember />
       <Products />
+      <Strengths />
       <Spans />
       <Ridge />
       <Closing />
@@ -141,6 +142,27 @@ function Products() {
         Underneath all of them is <Link to="/products/hub">Forge Hub</Link> — the account, the
         wallet, the portfolio and the history. {HOME.products.hubAside}
       </p>
+    </Section>
+  )
+}
+
+/**
+ * The two capabilities a reader cannot get elsewhere, above the one-account section.
+ *
+ * Both were live in the product and reachable only by opening a product page, so the front page
+ * argued for the platform's structure while the reasons to care sat two clicks away.
+ */
+function Strengths() {
+  return (
+    <Section title={HOME.strengths.title} id="strengths">
+      <ul className="si-points">
+        {HOME.strengths.points.map((p) => (
+          <li key={p.title}>
+            <h3 className="si-points__title">{p.title}</h3>
+            <p className="si-points__body">{p.body}</p>
+          </li>
+        ))}
+      </ul>
     </Section>
   )
 }
