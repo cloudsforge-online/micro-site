@@ -138,11 +138,23 @@ describe('the copy walk', () => {
 describe('numbers', () => {
   const DIGITS = /\d+(?:[.,]\d+)*/g
 
+  /**
+   * Digits that are part of a NAME rather than a quantity.
+   *
+   * `ERC-20` is a standard, not a claim about this platform, and there is nothing to register in
+   * `claims.ts` because nothing about it could go out of date. Stripped before the scan rather than
+   * added to the register, so the register keeps meaning "numbers this copy asserts".
+   *
+   * Narrow on purpose: an identifier we actually cite, not a general escape hatch. "20 markets" is
+   * still a claim and still has to be registered.
+   */
+  const STANDARD_NAMES = /\b(?:ERC|EIP|BIP|SLIP|secp)-?\d+\b/gi
+
   it('registers every number that appears in copy', () => {
     const allowed = allowedNumbers()
     const offences: string[] = []
     for (const { path, text } of COPY) {
-      for (const match of text.match(DIGITS) ?? []) {
+      for (const match of text.replace(STANDARD_NAMES, '').match(DIGITS) ?? []) {
         if (!allowed.has(match)) offences.push(`${path}: "${match}" in — ${text.slice(0, 90)}…`)
       }
     }

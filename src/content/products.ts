@@ -161,13 +161,14 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     eyebrow: 'Mine',
     headline: 'Money you can produce on the machine you already own',
     standfirst: [
-      'EMBER is mined by proof of work on ordinary processors. Homefire, the algorithm behind it, is memory-hard and CPU-friendly, so a warehouse of hardware earns little more per dollar than a laptop does. There is no rig to buy and no pool to join.',
+      'You can start mining EMBER in this browser, on the computer you are reading this on. Open the mining page, create an address, and press start — there is no software to install, no rig to buy and no pool to join. The block reward goes to a key that never leaves your machine.',
+      'The work itself leans on memory speed rather than raw processing power, so a warehouse of specialist hardware earns barely more per pound than a laptop does.',
     ],
     blurb:
-      'EMBER is proof-of-work money mined on ordinary processors. Memory-hard, ASIC-resistant, and an account-model chain that speaks Ethereum. No rig to buy and no pool to join.',
+      'Mine EMBER straight from your browser, to an address only you hold the key to. Proof of work built for ordinary processors, on a chain that speaks Ethereum.',
     stage: 'open',
     stageNote:
-      'The main network is running and mining, with a public node answering JSON-RPC and a public block explorer beside it. It is hours old and only a few hundred blocks deep, so it is reachable rather than established, and EMBER has no market, no listing and no price. The faucet serves the test network, which has no publicly reachable endpoint yet.',
+      'Mainnet and testnet both run, each with a public node answering JSON-RPC and a block explorer beside it. EMBER carries no monetary value on either — there is no market, no listing and no price — and nothing here is an offer to buy or sell.',
     sections: [
       {
         title: 'Proof of work, without the industry',
@@ -177,9 +178,18 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
         ],
       },
       {
-        title: 'It speaks Ethereum',
+        title: 'Mining that starts in a browser tab',
         body: [
-          'Hearth is an account-model chain with an Ethereum JSON-RPC, so the tools, the libraries and the wallets a developer already has work against it without a translation layer. That is also why an EMBER balance carries eighteen decimal places rather than a bespoke unit nobody has a formatter for.',
+          'Most chains ask you to install a client, sync a database and read a manual before they will pay you anything. Here you open a page, create an address and press start. The tab does the same proof of work a full node does, and the reward is paid to a key that is generated on your machine and never sent to us.',
+          'Save that key. It is the only copy — we cannot recover it, and neither can anyone else. Everything after that is optional: run the full node if you want to validate as well as mine, or close the tab and come back later.',
+        ],
+      },
+      {
+        title: 'Solidity contracts, and the tools you already use',
+        body: [
+          'Hearth runs an Ethereum Virtual Machine, so a Solidity contract compiles and deploys here exactly as it would elsewhere. MetaMask, ethers, viem, Hardhat and Foundry all work against it without a translation layer or a bespoke SDK.',
+          'The EVM is written from scratch rather than imported, and it is held to Ethereum\'s own published test vectors — so "it behaves like Ethereum" is something you can check rather than something we assert. Every product on this platform that touches a contract, from token launches to prediction markets, runs on that same machine.',
+          'It is also why an EMBER balance carries eighteen decimal places: it is the unit every wallet and library already knows how to format.',
         ],
       },
       {
@@ -201,10 +211,11 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     eyebrow: 'Make',
     headline: 'Launch a token, and own it outright',
     standfirst: [
-      'Forge Create deploys a real contract to a real chain, from a template that has been written, compiled and committed rather than assembled at request time. Your wallet is the owner from the first block. The platform\'s key pays the gas and holds nothing.',
+      'Forge Create deploys a real Solidity contract to a real chain, from bytecode that was written, compiled and committed in advance rather than assembled when you press the button. Your wallet is the owner from the first block, and we pay the gas.',
+      'A token launched here is an ordinary ERC-20 on an Ethereum-compatible chain, so every wallet, explorer and library your holders already use works with it on day one.',
     ],
     blurb:
-      'Deploy a real token contract from committed, compiled bytecode. Your wallet is the owner from the first block; the platform pays the gas and holds no authority over it.',
+      'Deploy a real ERC-20 from committed, compiled bytecode. You own it from the first block, we pay the gas, and it works with every wallet and library that already speaks Ethereum.',
     stage: 'open',
     stageNote:
       'The deployment service, the brand-generation service and the application a creator uses are all deployed, walked in a browser, and reachable on the public internet. Every contract any of them has deployed so far went to a test network, and no stranger has ordered one.',
@@ -214,6 +225,13 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
         body: [
           'Deploying a contract takes as long as a chain takes to include it, which is not a length of time an HTTP request should be asked to survive. The old implementation held the connection open for up to three minutes and then reported whatever had happened by the time it gave up.',
           'The rebuilt one accepts the order, answers immediately with somewhere to watch, and records the broadcast and its outcome as they happen. A deploy that succeeds after your browser has been closed is still a deploy that succeeded, and there is a record of it either way.',
+        ],
+      },
+      {
+        title: 'A standard contract, on a standard machine',
+        body: [
+          'What gets deployed is Solidity compiled to EVM bytecode and committed to the repository, so the contract behind your token can be read before you order it and matched against what landed on chain afterwards. Nothing is generated from a template at request time.',
+          'Because the chain runs a real EVM, the result is not a token that only works inside this platform. MetaMask shows it, block explorers decode it, and ethers, viem, Hardhat and Foundry all handle it without special cases. If you later want to write your own contract instead of using ours, the same chain and the same tools are waiting.',
         ],
       },
       {
@@ -280,19 +298,28 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     eyebrow: 'Foresight',
     headline: 'Stake on what happens next, settled on chain',
     standfirst: [
-      'Markets on future events, staked in EMBER and settled by the contract that holds the pool. The platform proposes questions and a person opens them, because a resolution criterion is a contract with strangers and someone has to be accountable for its wording.',
+      'Take a position on what happens next using Bitcoin, Ethereum, Litecoin, Solana, XRP, EMBER, or any token launched here. Whatever you bring is converted at the rate shown and joins one pool, and the contract that holds that pool is what pays you.',
+      'Questions are proposed by a model and opened by a person, because a resolution criterion is an agreement with strangers and someone has to be accountable for how it is worded.',
     ],
     blurb:
-      'Parimutuel markets on future events. Stakes go to the contract, not to us; payouts come from the pool, not from our balance sheet. Odds are the pool ratio, and they move until it closes.',
+      'Stake in six currencies or any token launched here, on markets settled by contract rather than by us. Payouts come from the pool, and a winner can claim even if every server we own is switched off.',
     stage: 'open',
     stageNote:
-      'The service, the contract, the application a person stakes in and the console an operator opens questions from are all deployed, walked, and now reachable on the public internet. The only chain any of it has settled on so far is an EMBER test network, and no stranger has taken a position.',
+      'The service, the contract, the staking application and the operator console are deployed and reachable on the public internet. Settlement so far has been on an EMBER test network, and no stranger has taken a position.',
     sections: [
+      {
+        title: 'Bring the currency you already hold',
+        body: [
+          'You do not need EMBER to take a position. Stake in Bitcoin, Ethereum, Litecoin, Solana, XRP or a token launched on this platform, and it is converted at a rate quoted before you commit and shown alongside the amount you are staking.',
+          'One pool, not one per currency, and that is a deliberate trade. A separate pool for each would have to be a number we hold and promise to divide — Bitcoin and Litecoin have no contracts to hold it in. Pooling in a single unit is what keeps the payout on chain, which is the property worth protecting.',
+          'From the moment a stake is accepted, the position, the odds and the payout are all in EMBER, and the screen says so before you confirm. A refund is the exception and returns exactly what was taken — the same amount of the same currency, not its value on the day.',
+        ],
+      },
       {
         title: 'The contract holds the money, not the platform',
         body: [
-          'A stake goes from a wallet to the market contract and never passes through our service. What we keep is a mirror of the chain, used to browse and to notify — so if that mirror is wrong, or gone, the stakes are still in the contract and every winner can still claim from it directly.',
-          'That is the difference between a prediction market and a bookmaker. There is no house balance to pay you from, and no way for us to be the reason a settled market does not pay.',
+          'A stake goes to the market contract and never passes through our service. What we keep is a mirror of the chain, used for browsing and notifications — so if that mirror is wrong, or gone, the stakes are still in the contract and every winner can still claim directly from it.',
+          'Claiming reads nothing but the contract\'s own storage. If every server this company owns were switched off tomorrow, a winner with a wallet and a block explorer would still be paid. That is the difference between a prediction market and a bookmaker: there is no house balance to pay you from, and no way for us to be the reason a settled market does not pay.',
         ],
       },
       {
