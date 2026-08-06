@@ -201,10 +201,22 @@ jobs:
           # The favicons and the Open Graph cards are not imported by any module, so nothing in the
           # bundle references them: a missing `COPY public` in the Dockerfile, or a deleted file,
           # produces a site that builds and serves perfectly and has no icon and no link preview.
-          for asset in og-1200x630.png favicon-32x32.png favicon-192x192.png robots.txt; do
+          for asset in og-1200x630.png favicon-32x32.png favicon-192x192.png; do
             test -f "dist/$asset" || { echo "::error::dist/$asset is missing"; exit 1; }
           done
           test -d dist/og || { echo "::error::the per-product cards are missing"; exit 1; }
+          # robots.txt IS NOT IN THIS LIST, AND ITS CHECK MOVED UP A TIER RATHER THAN AWAY.
+          # It stopped being a static file when the shared layer took it over: an exact-match
+          # `location` for it would have shadowed the generated one, so nginx composes it from
+          # `$host` instead — which is the only way one image can answer correctly on both
+          # `cloudsforge.online` and `testnet.cloudsforge.online`, refusing every crawler on the
+          # second. A file that is no longer built cannot be asserted in `dist`, and asserting it
+          # here would only be satisfiable by putting the shadowing file back.
+          # What replaces it is stronger, not weaker: the `image` job below FETCHES /robots.txt
+          # from the running container, and test/sitemap.test.ts recomputes the body nginx emits
+          # against what the design system generates for this route table.
+          grep -q 'location = /robots.txt' nginx.conf \
+            || { echo "::error::nginx no longer generates robots.txt, and it is not a file either"; exit 1; }
           echo "ok: $(find dist -type f | wc -l | tr -d ' ') files in dist"
 
       # A marketing site is read on a phone on mobile data. This is a ceiling rather than a target:
