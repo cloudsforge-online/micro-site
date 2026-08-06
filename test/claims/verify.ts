@@ -89,27 +89,41 @@ export interface Derivation {
   /** Recompute the value, in its rendered form, from `text`. */
   readonly derive: (text: string) => string
   /**
-   * What must appear within the CITED LINES for the citation to be load-bearing.
+   * The shape the citation NAMES, found by searching the cited file. Mandatory.
    *
-   * Without this, a derivation that searches a whole file keeps agreeing with the registry while
-   * the line number beside it rots — which is precisely what happened: four citations had drifted
-   * one to three lines and each landed on a different real constant, so a reader who followed one
-   * was shown the wrong number with total confidence.
+   * This is what replaced the line number, and it is the stronger half of the trade. A citation
+   * used to name `chain/src/index.ts` and line 197 — `CHAINS.EMBER.confirmations` — and the
+   * check was that
+   * line 197 contained something confirmations-shaped. That check broke four times in one week
+   * without a single published number being wrong, because `micro-contracts` kept growing above
+   * line 197 and this repository does not run when `micro-contracts` is edited.
    *
-   * It is a pattern for the SHAPE of the source rather than for the value, because a witness that
-   * matched the value would be satisfied by any line that happened to contain the same digits —
-   * and `confirmations: 60` sitting one line from `reorgAlarmDepth: 5` is exactly that hazard.
+   * A witness asserts the same thing the line number was trying to — that the cited file really
+   * contains the constant, heading or sentence the source names — and it survives the file being
+   * edited anywhere else. It is a pattern for the SHAPE of the source rather than for the value,
+   * because a witness matching the value would be satisfied by any line carrying the same digits.
    *
-   * Optional only because a citation may legitimately name a file and no line, for a value derived
-   * from a whole declaration rather than from a constant.
+   * Required, where it used to be optional. Two derivations had none and were checked only by
+   * their own `derive`, so nothing said which part of the file the citation was pointing at.
    */
-  readonly witness?: RegExp
+  readonly witness: RegExp
 }
 
 /** A claim that cannot be recomputed, and the stated reason. Reasons are never optional. */
 export interface Exemption {
   readonly kind: 'recorded' | 'underivable'
   readonly reason: string
+  /**
+   * For a RECORDED measurement: the passage it was recorded in, found by searching the cited file.
+   *
+   * The rendered value must appear INSIDE the text this matches, which is the same guarantee the
+   * old line range gave — "the citation is load-bearing, not decorative" — without the part that
+   * kept going stale. A witness therefore has to be written wide enough to span its own value; one
+   * that has drifted off the sentence it names fails exactly as a stale line number used to.
+   *
+   * Absent for an UNDERIVABLE claim, where only the citation's existence is checkable by anything.
+   */
+  readonly witness?: RegExp
 }
 
 export interface RegistryCheck {
@@ -134,17 +148,23 @@ export interface Failure {
   readonly detail: string
 }
 
-/** A cited location: an estate-relative path, and the line range if one was given. */
+/**
+ * A cited location: an estate-relative path, and nothing else.
+ *
+ * `line` exists only so a source that still carries one can be REJECTED by name. It is never used
+ * to read a file. A line number names a position in a file another repository owns and edits
+ * without ever running this suite, so it is a promise this registry cannot keep — see the header
+ * of `src/content/claims.ts`, which is the record of it being broken four times running.
+ */
 export interface Citation {
   readonly path: string
-  readonly from?: number
-  readonly to?: number
+  readonly line?: number
 }
 
 /**
  * Pull a citation out of a `source` string.
  *
- * Sources are prose with a path in them — `"contracts/…/index.ts:55 — CHAINS.EMBER.confirmations"`,
+ * Sources are prose with a path in them — `"contracts/…/index.ts — CHAINS.EMBER.confirmations"`,
  * or `"@cloudsforge/ui — PRODUCTS, derived from SURFACES in ui/packages/ui/src/surfaces.ts"`. The
  * first path-shaped token wins, which is why a citation is written first wherever there is one.
  *
@@ -152,16 +172,16 @@ export interface Citation {
  * "no source" is the state this whole mechanism exists to make impossible.
  */
 export function parseCitation(source: string): Citation | null {
-  const match = /([A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*\.(?:ts|tsx|js|mjs|css|md|conf|json|py|sql|yml))(?::(\d+)(?:-(\d+))?)?/.exec(
+  const match = /([A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*\.(?:ts|tsx|js|mjs|css|md|conf|json|py|sql|yml))(?::(\d+)(?:-\d+)?)?/.exec(
     source,
   )
   if (match === null) return null
   const path = match[1]
   if (path === undefined) return null
-  const from = match[2]
-  const to = match[3]
-  if (from === undefined) return { path }
-  return { path, from: Number(from), to: to === undefined ? Number(from) : Number(to) }
+  const line = match[2]
+  if (line === undefined) return { path }
+  // Parsed only so `checkRegistry` can refuse it. See {@link Citation}.
+  return { path, line: Number(line) }
 }
 
 /**
@@ -178,11 +198,20 @@ export function resolveCitation(path: string, roots: readonly string[]): string 
   return null
 }
 
-/** The cited lines, 1-based and inclusive. The whole file when no range was given. */
-export function citedText(file: string, citation: Citation): { text: string; lines: number } {
-  const all = readFileSync(file, 'utf8').split('\n')
-  if (citation.from === undefined) return { text: all.join('\n'), lines: all.length }
-  return { text: all.slice(citation.from - 1, citation.to).join('\n'), lines: all.length }
+/**
+ * The text a witness matched in the cited file, or `null` when it matched nothing.
+ *
+ * This is the search that replaced `citedText(file, from, to)`. What the old function returned was
+ * "whatever happens to be on lines 771 to 773 today", which is a fact about a file this repository
+ * neither owns nor watches. What this returns is the passage that actually says the thing the
+ * citation claims, wherever it has moved to.
+ *
+ * The match is returned rather than a boolean because a RECORDED value is then required to appear
+ * INSIDE it — so a witness has to be written wide enough to span its own value, and a witness that
+ * has drifted off the sentence it names fails exactly as the stale line number used to.
+ */
+export function witnessedText(file: string, witness: RegExp): string | null {
+  return witness.exec(readFileSync(file, 'utf8'))?.[0] ?? null
 }
 
 /**
@@ -247,9 +276,17 @@ export function checkRegistry(input: RegistryCheck): Failure[] {
       continue
     }
 
-    const { text, lines } = citedText(file, citation)
-    if (citation.from !== undefined && (citation.from > lines || (citation.to ?? 0) > lines)) {
-      fail(key, `cites ${citation.path}:${citation.from}-${citation.to}, but that file has ${lines} lines.`)
+    // A LINE NUMBER IS REFUSED, NOT FOLLOWED. This used to slice the file at the cited range and
+    // check the range was in bounds, which is the check that broke four times in one week while
+    // every published number stayed correct. A line names a position in a file another repository
+    // owns and edits without running this suite; the registry cites the file and the SYMBOL now,
+    // and this refusal is what stops the habit returning by copy-and-paste.
+    if (citation.line !== undefined) {
+      fail(
+        key,
+        `cites a line number (${citation.path}, line ${citation.line}). Cite the file and name the ` +
+          'constant, heading or sentence — a line in another repository cannot be kept true here.',
+      )
       continue
     }
 
@@ -282,22 +319,15 @@ export function checkRegistry(input: RegistryCheck): Failure[] {
         )
         continue
       }
-      // The value is right. Now: is the line beside it right? These are independent, and the
-      // second is the one that rots without anybody noticing.
-      if (derivation.witness !== undefined && citation.from !== undefined) {
-        if (!derivation.witness.test(text)) {
-          fail(
-            key,
-            `derives correctly, but ${citation.path}:${citation.from}` +
-              `${citation.to === citation.from ? '' : `-${citation.to}`} does not contain ` +
-              `${derivation.witness} — the citation has drifted off the value it names. Those ` +
-              `lines read: ${JSON.stringify(text.trim().slice(0, 120))}`,
-          )
-        }
-      } else if (derivation.witness === undefined && citation.from !== undefined) {
+      // The value is right. Now: is the cited file really the file that says so? These are
+      // independent, and the second is the one that rots without anybody noticing — a derivation
+      // that searches a whole file goes on agreeing with the registry long after the thing the
+      // citation NAMES has been renamed or deleted out from under it.
+      if (witnessedText(file, derivation.witness) === null) {
         fail(
           key,
-          'cites a line but declares no witness, so nothing checks that the line is the right one.',
+          `derives correctly, but nothing in ${citation.path} matches ${derivation.witness} — the ` +
+            'citation names something that file no longer contains.',
         )
       }
       continue
@@ -314,14 +344,27 @@ export function checkRegistry(input: RegistryCheck): Failure[] {
     }
 
     if (exemption.kind === 'recorded') {
-      if (citation.from === undefined) {
-        fail(key, 'is a recorded measurement, so its citation must name the line it was recorded on.')
-      } else if (!text.includes(claim.rendered)) {
+      if (exemption.witness === undefined) {
         fail(
           key,
-          `is published as ${JSON.stringify(claim.rendered)}, which does not appear at ` +
-            `${citation.path}:${citation.from}-${citation.to}. The cited lines read: ` +
-            JSON.stringify(text.trim().slice(0, 160)),
+          'is a recorded measurement, so it must declare the witness that finds the passage it was ' +
+            'recorded in. It used to name a line, and a line in another repository goes stale.',
+        )
+        continue
+      }
+      const passage = witnessedText(file, exemption.witness)
+      if (passage === null) {
+        fail(
+          key,
+          `is recorded in ${citation.path}, but nothing there matches ${exemption.witness} — the ` +
+            'passage it was quoted from is gone.',
+        )
+      } else if (!passage.includes(claim.rendered)) {
+        fail(
+          key,
+          `is published as ${JSON.stringify(claim.rendered)}, which does not appear in the passage ` +
+            `${exemption.witness} finds in ${citation.path}. That passage reads: ` +
+            JSON.stringify(passage.trim().slice(0, 160)),
         )
       }
     }
@@ -358,6 +401,19 @@ export function selfTest(fixtureRoot: string): string[] {
   })
   const roots = [fixtureRoot]
 
+  /** Matches the fixture file, for the cases where the witness itself is not what is under test. */
+  const ANY = /error_page/
+
+  /**
+   * A source carrying a line number, BUILT rather than written out.
+   *
+   * The literal is assembled from its parts because this repository sweeps its own source for
+   * `path:line` and a fixture spelling one out would be indistinguishable from the defect. What is
+   * under test is that such a source is REFUSED, so the fixture has to produce one somehow, and
+   * producing it this way says plainly that it is a specimen rather than a citation.
+   */
+  const withLine = (path: string, line: number): string => `${path}:${line}`
+
   // A claim classified nowhere.
   expect(
     only({ claims: { a: claim('1', 'nginx.conf') }, derivations: {}, exemptions: {}, roots }).includes(
@@ -370,7 +426,7 @@ export function selfTest(fixtureRoot: string): string[] {
   expect(
     only({
       claims: { a: claim('1', 'nginx.conf') },
-      derivations: { a: { reads: 'nginx.conf', derive: () => '1' } },
+      derivations: { a: { reads: 'nginx.conf', witness: ANY, derive: () => '1' } },
       exemptions: { a: { kind: 'underivable', reason: 'x'.repeat(50) } },
       roots,
     }).includes('both derived and exempt'),
@@ -381,7 +437,7 @@ export function selfTest(fixtureRoot: string): string[] {
   expect(
     only({
       claims: {},
-      derivations: { gone: { reads: 'nginx.conf', derive: () => '1' } },
+      derivations: { gone: { reads: 'nginx.conf', witness: ANY, derive: () => '1' } },
       exemptions: {},
       roots,
     }).includes('not in the registry'),
@@ -391,8 +447,8 @@ export function selfTest(fixtureRoot: string): string[] {
   // A citation naming a file that does not exist — the `validate_palette.js` failure.
   expect(
     only({
-      claims: { a: claim('1', 'nowhere/at/all.ts:1') },
-      derivations: { a: { reads: 'nowhere/at/all.ts', derive: () => '1' } },
+      claims: { a: claim('1', 'nowhere/at/all.ts') },
+      derivations: { a: { reads: 'nowhere/at/all.ts', witness: ANY, derive: () => '1' } },
       exemptions: {},
       roots,
     }).includes('in none of the roots'),
@@ -403,7 +459,7 @@ export function selfTest(fixtureRoot: string): string[] {
   expect(
     only({
       claims: { a: claim('1', 'nginx.conf') },
-      derivations: { a: { reads: 'nginx.conf', derive: () => '2' } },
+      derivations: { a: { reads: 'nginx.conf', witness: ANY, derive: () => '2' } },
       exemptions: {},
       roots,
     }).includes('published as "1"'),
@@ -414,7 +470,7 @@ export function selfTest(fixtureRoot: string): string[] {
   expect(
     only({
       claims: { a: claim('1', 'nginx.conf') },
-      derivations: { a: { reads: 'package.json', derive: () => '1' } },
+      derivations: { a: { reads: 'package.json', witness: ANY, derive: () => '1' } },
       exemptions: {},
       roots,
     }).includes('but cites'),
@@ -428,6 +484,7 @@ export function selfTest(fixtureRoot: string): string[] {
       derivations: {
         a: {
           reads: 'nginx.conf',
+          witness: ANY,
           derive: () => {
             throw new Error('no match')
           },
@@ -450,15 +507,64 @@ export function selfTest(fixtureRoot: string): string[] {
     'an empty exemption reason was not reported',
   )
 
-  // A RECORDED value that is not on the line it cites — the off-by-one failure.
+  // A SOURCE THAT NAMES A LINE. The rule this revision is about, and it is checked before
+  // anything is read out of the file, so a stale line cannot even be followed to a wrong answer.
   expect(
     only({
-      claims: { a: claim('99999', 'nginx.conf:1') },
+      claims: { a: claim('1', withLine('nginx.conf', 138)) },
+      derivations: { a: { reads: 'nginx.conf', witness: ANY, derive: () => '1' } },
+      exemptions: {},
+      roots,
+    }).includes('cites a line number'),
+    'a citation carrying a line number was not refused',
+  )
+
+  // A RECORDED claim with no witness — the state every recorded claim was in while the citation
+  // was a line range. It must fail rather than become a published number checked by nothing.
+  expect(
+    only({
+      claims: { a: claim('1', 'nginx.conf') },
       derivations: {},
       exemptions: { a: { kind: 'recorded', reason: 'y'.repeat(50) } },
       roots,
-    }).includes('does not appear at'),
-    'a recorded value absent from its cited line was not reported',
+    }).includes('must declare the witness'),
+    'a recorded claim with no witness was not reported',
+  )
+
+  // A RECORDED value that is not in the passage its witness finds — the off-by-one failure, in the
+  // form it takes now that the passage is searched for rather than sliced out by line number.
+  expect(
+    only({
+      claims: { a: claim('99999', 'nginx.conf') },
+      derivations: {},
+      exemptions: { a: { kind: 'recorded', reason: 'y'.repeat(50), witness: ANY } },
+      roots,
+    }).includes('does not appear in the passage'),
+    'a recorded value absent from the passage it cites was not reported',
+  )
+
+  // A witness that finds nothing at all. Without this the check above passes vacuously the day the
+  // sentence a measurement was quoted from is deleted.
+  expect(
+    only({
+      claims: { a: claim('1', 'nginx.conf') },
+      derivations: {},
+      exemptions: { a: { kind: 'recorded', reason: 'y'.repeat(50), witness: /no such text anywhere/ } },
+      roots,
+    }).includes('the passage it was quoted from is gone'),
+    'a recorded witness that matched nothing was not reported',
+  )
+
+  // The same for a DERIVED claim: the value still recomputes, but the file no longer contains the
+  // thing the citation names. This is the assertion that replaced "the cited line has drifted".
+  expect(
+    only({
+      claims: { a: claim('1', 'nginx.conf') },
+      derivations: { a: { reads: 'nginx.conf', witness: /no such text anywhere/, derive: () => '1' } },
+      exemptions: {},
+      roots,
+    }).includes('citation names something that file no longer contains'),
+    'a derivation whose witness finds nothing was not reported',
   )
 
   // And the control: a registry that is right produces nothing at all. Without this, every
@@ -466,7 +572,7 @@ export function selfTest(fixtureRoot: string): string[] {
   expect(
     only({
       claims: { a: claim('1', 'nginx.conf') },
-      derivations: { a: { reads: 'nginx.conf', derive: () => '1' } },
+      derivations: { a: { reads: 'nginx.conf', witness: ANY, derive: () => '1' } },
       exemptions: {},
       roots,
     }) === '',

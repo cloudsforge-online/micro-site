@@ -256,12 +256,13 @@ const DERIVATIONS: Readonly<Record<string, Derivation>> = {
    * added to `micro-ui` while this check was being written, which is a fair demonstration that a
    * derivation over a file somebody else is editing has to say WHERE it is counting.
    *
-   * The citation names no line for the same reason: the array runs to several hundred lines and
-   * every entry added to it would move the range. What pins this value instead is the runtime
-   * comparison against the imported `PRODUCTS.length`, in its own test below.
+   * The witness names the declaration the derivation counts inside, which is the same thing the
+   * comment above says in prose. What pins the value itself is the runtime comparison against the
+   * imported `PRODUCTS.length`, in its own test below.
    */
   products: {
     reads: 'ui/packages/ui/src/surfaces.ts',
+    witness: /export const SURFACES/,
     derive: (text) => {
       const start = text.indexOf('export const SURFACES')
       const end = text.indexOf('export const PRODUCTS')
@@ -322,6 +323,7 @@ const DERIVATIONS: Readonly<Record<string, Derivation>> = {
   /** This site's own 404, read out of the server config that produces it. */
   httpNotFound: {
     reads: 'nginx.conf',
+    witness: /error_page\s+\d+\s+\/index\.html/,
     derive: (text) => {
       const match = /error_page\s+(\d+)\s+\/index\.html/.exec(text)
       if (!match?.[1]) throw new Error('nginx.conf no longer serves the shell through error_page')
@@ -341,7 +343,11 @@ const EXEMPTIONS: Readonly<Record<string, Exemption>> = {
       'A measurement of a palette that no longer exists. The six accents it describes were replaced, ' +
       'and the only surviving record of what they measured is the sentence cited in tokens.css. ' +
       'Re-running the validator would measure the CURRENT set and silently answer a different ' +
-      'question, so this is checked as a quotation: the value must still appear on the line cited.',
+      'question, so this is checked as a quotation: the value must still appear in the sentence.',
+    // The sentence itself, found by searching for its opening. Lower-case `all-pairs distance was`
+    // is the retracted paragraph; upper-case `ALL-PAIRS` further down is the CURRENT figure, which
+    // is a different claim with its own derivation — so this pattern must not match that one.
+    witness: /worst all-pairs distance was[^\n]*/,
   },
   httpOk: {
     kind: 'underivable',

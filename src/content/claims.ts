@@ -26,7 +26,10 @@
  *
  * ── What a source is, and what now reads it ───────────────────────────────────────────────────
  *
- * `source` is a path into this estate, with a line number where the value is a constant.
+ * `source` is a path into this estate, and the NAME of the thing at that path — a constant, a
+ * heading, a sentence. **Never a line number.** A line number names a position in a file another
+ * repository owns and is free to edit, so it is a promise this repository has no way to keep;
+ * see the section below, which is the record of it being broken four separate times.
  *
  * **It used to be documentation rather than an assertion, and that is exactly how it rotted.**
  * The previous revision of this header said so in as many words — "the repositories it names are
@@ -43,49 +46,35 @@
  * **by name**, with the reason recorded beside them — never by category, because a blanket
  * exemption is how this drifted the first time.
  *
- * ── A CITATION POINTS AT A COMMIT, NOT AT A WORKING TREE. THIS WAS LEARNED THE HARD WAY ───────
+ * ── THE LINE NUMBERS ARE GONE, AND FOUR RED RUNS ARE WHY ──────────────────────────────────────
  *
- * During the rewrite that added the licensing section below, this check went red on four citations
- * into `contracts/packages/chain/src/index.ts`. Every VALUE still derived correctly; every LINE
- * NUMBER was reported as drifted by sixty-odd lines. The obvious reading was that `micro-contracts`
- * had moved, so the four line numbers were "corrected" to match, and the suite went green.
+ * Four of the citations below named a line in `contracts/packages/chain/src/index.ts`, and that
+ * one file broke this repository's build four separate times without a single value on this site
+ * ever being wrong.
  *
- * **It was green against a file nobody else could see.** `micro-contracts` was at the same commit
- * it had been at all along. What had changed was that another agent's Shard-to-Sparks migration was
- * sitting in that repository's working tree as a STAGED, UNCOMMITTED edit — so the sibling checkout
- * on this machine and the checkout CI makes from `main` were different files with the same name.
- * The "corrected" citations pointed at lines that exist only in an uncommitted diff. CI caught it
- * on the very next run, reporting the mirror image of the same four failures.
+ * The first time, the four lines were "corrected" against the sibling on this machine — which was
+ * carrying another agent's staged, uncommitted migration, so the suite went green against a file
+ * nobody else could see and CI reported the mirror image of the same four failures. The second
+ * time they were re-pinned to that repository's HEAD, and went stale thirty minutes later because
+ * the migration landed for real. The third time they were pinned to `micro-contracts@218300b`. The
+ * fourth, to `@326de9d`, after one commit inserting an explorer field moved them by 64 to 75 lines.
  *
- * They were then re-pinned to the lines true at `micro-contracts` HEAD, which is what CI reads and
- * what a reader following a citation on GitHub is shown — and this check went red AGAIN thirty
- * minutes later, because the migration had by then landed and HEAD had moved for real. The four
- * numbers were then re-pinned to `micro-contracts@218300b` — verified by resolving the registry
- * against the committed file rather than against the working tree — and stayed there until the
- * re-pin recorded in the next paragraph, which is where the numbers below now come from.
+ * At no point in any of that did a number on this site disagree with the estate. What was wrong
+ * was the position, every time, and the position is a fact about a file THIS REPOSITORY DOES NOT
+ * OWN AND DOES NOT WATCH — nothing runs this suite when `micro-contracts` is edited, so it always
+ * surfaced during somebody else's release.
  *
- * That second red run is the check doing its job, not failing at it: it is a coordination signal
- * between two repositories being changed at once, and the correct response is to look at what
- * moved rather than to silence it.
+ * So a `source` names a file and the SYMBOL or SENTENCE in it, and `test/claims/verify.ts` now
+ * REJECTS a source carrying a line number outright, so the habit cannot come back quietly. What
+ * replaces the line is stronger, not weaker: every derivation must declare a `witness` — the shape
+ * it expects to find in the cited file — and a recorded measurement must appear inside the text
+ * its witness matches. Both are searches. A search cannot drift when a file grows, and it still
+ * fails when the thing it names is deleted, which is the failure worth catching.
  *
- * ── RE-PINNED A THIRD TIME, TO `micro-contracts@326de9d`, BY THE RULE BELOW ────────────────────
- *
- * The same four citations went stale again — by 64 to 75 lines — and this check was red on `main`
- * for it. One commit moved them: `326de9d` ("a testnet explorer link no longer opens the mainnet
- * explorer"), which inserted an explorer field, its documentation and a guard above `CHAINS`.
- *
- * The rule stated below was applied BEFORE editing, because the trap it describes is the one that
- * makes these two cases indistinguishable: `micro-contracts` was confirmed clean
- * (`git status --short` empty, `git diff HEAD` on the cited file empty) and its HEAD confirmed
- * equal to `origin/main` at `326de9d`, so the numbers here are those of the committed file that CI
- * checks out — not of a working tree only this machine can see.
- *
- * **The rule that follows: never re-pin a citation without confirming the cited repository is
- * clean, and pin against `git show origin/main:<path>` rather than against what is on disk.** A red
- * claims check has two causes that look identical and want opposite responses — the citation is
- * stale, or the sibling tree is mid-edit — and only one of them is fixed by editing this file.
- * `test/estate-claims.test.ts` now names the dirty checkouts in its own failure message, so the
- * next person is told which case they are in rather than having to remember there are two.
+ * One thing the old scheme taught is kept: a citation is read against a COMMIT, not a working
+ * tree, and `test/estate-claims.test.ts` still names any dirty sibling checkout in its failure
+ * message — because "this citation is stale" and "that repository is mid-edit" look identical and
+ * want opposite responses.
  *
  * ── What is deliberately NOT here ─────────────────────────────────────────────────────────────
  *
@@ -95,13 +84,13 @@
  * and one of the citations stale:
  *
  *   - the model lists three token-deployment tiers at 1,500 / 4,000 / 9,000 Shards
- *     (`15-monetisation-model.md:103-105`, §3.2); `mint/src/env.ts:300` has ONE price,
- *     `MINT_DEPLOY_PRICE_SHARDS`, defaulting to 2,500. **This file previously cited
- *     `mint/src/env.ts:243`, which is not that line.**
- *   - the model lists a 200 bps conversion spread (`15-monetisation-model.md:85`, §3.7);
- *     `pricing/src/env.ts:148` defaults `PRICING_CONVERSION_SPREAD_BPS` to 100;
+ *     (`15-monetisation-model.md`, §3.2); `mint/src/env.ts` has ONE price,
+ *     `MINT_DEPLOY_PRICE_SHARDS`, defaulting to 2,500. **This file previously cited a LINE in
+ *     `mint/src/env.ts`, and it was not the line that declares it.**
+ *   - the model lists a 200 bps conversion spread (`15-monetisation-model.md`, §3.7);
+ *     `pricing/src/env.ts` defaults `PRICING_CONVERSION_SPREAD_BPS` to 100;
  *   - the model lists a 15% trading performance fee as a constant (§3.6); in `trade/src/fees.ts`
- *     the rate is per-bot (`bot.feeBps:430`), not a published platform number.
+ *     the rate is per-bot (`bot.feeBps`), not a published platform number.
  *
  * A price that is wrong on the marketing site is quoted back at support by the customer who read
  * it, and they are right to. None of the fourteen is stable enough to publish, so the site says
@@ -139,7 +128,7 @@ export interface Claim {
   readonly rendered: string
   /** What it means, for a reader of this file rather than of the site. */
   readonly meaning: string
-  /** Where the value comes from: a path in this estate, with a line where there is one. */
+  /** Where the value comes from: a path in this estate, and the NAME of the thing at it. */
   readonly source: string
 }
 
@@ -155,25 +144,25 @@ export const CLAIMS = {
     meaning:
       'Sparks in one EMBER. A Spark is a millionth of an EMBER — a DISPLAY DENOMINATION and never a second asset code, so that one balance is never two numbers that can drift. It replaces the Shard, which was a US cent with no chain behind it.',
     source:
-      'docs/ecosystem/23-tessera.md:747 — "A Spark is 10⁻⁶ EMBER — one micro-EMBER, exactly 10¹² wei", and the sentence §8.1 calls the most important in the section, at :750: "Sparks is a display denomination of EMBER. It is not a second assetCode, and it must never become one."',
+      'docs/ecosystem/23-tessera.md — "A Spark is 10⁻⁶ EMBER — one micro-EMBER, exactly 10¹² wei", and the sentence §8.1 calls the most important in the section: "Sparks is a display denomination of EMBER. It is not a second assetCode, and it must never become one."',
   },
   emberConfirmations: {
     rendered: '60',
     meaning: 'Blocks an EMBER deposit waits before it is spendable.',
-    source: 'contracts/packages/chain/src/index.ts:197 — CHAINS.EMBER.confirmations',
+    source: 'contracts/packages/chain/src/index.ts — CHAINS.EMBER.confirmations',
   },
   emberConfirmationMinutes: {
     rendered: '15',
     meaning:
       'The same depth said as a wait, and the block time it is computed from — 60 blocks at 15 seconds is 15 minutes, which is the one coincidence in this register and is why the derivation recomputes it rather than reading it back. "60 blocks" tells a reader nothing.',
     source:
-      'contracts/packages/chain/src/index.ts:187 — "~15 minutes at a 15-second block time", the depth Hearth publishes to exchanges in its docs/exchange-integration.md §4',
+      'contracts/packages/chain/src/index.ts — "~15 minutes at a 15-second block time", the depth Hearth publishes to exchanges in its docs/exchange-integration.md §4',
   },
   emberReorgAlarmDepth: {
     rendered: '5',
     meaning:
       'A reorg this deep halts crediting for the chain and pages an operator. Deliberately below the credit depth: a shallower reorg cannot have produced a wrong credit.',
-    source: 'contracts/packages/chain/src/index.ts:198 — CHAINS.EMBER.reorgAlarmDepth',
+    source: 'contracts/packages/chain/src/index.ts — CHAINS.EMBER.reorgAlarmDepth',
   },
   /**
    * The two retention periods the privacy notice publishes.
@@ -192,18 +181,18 @@ export const CLAIMS = {
     rendered: '30',
     meaning:
       'Days a browser error or performance report is kept in Lantern before a scheduled job deletes it. The default of LANTERN_RUM_RETENTION_DAYS.',
-    source: 'lantern/src/env.ts:337 — LANTERN_RUM_RETENTION_DAYS',
+    source: 'lantern/src/env.ts — LANTERN_RUM_RETENTION_DAYS',
   },
   analyticsRetentionDays: {
     rendered: '400',
     meaning:
       'Days a pseudonymised product-analytics event is kept. The default of ANALYTICS_EVENT_RETENTION_DAYS. Chosen to exceed a year so a year-on-year comparison is possible at all.',
-    source: 'analytics/src/env.ts:373 — ANALYTICS_EVENT_RETENTION_DAYS',
+    source: 'analytics/src/env.ts — ANALYTICS_EVENT_RETENTION_DAYS',
   },
   chains: {
     rendered: '6',
     meaning: 'On-chain assets the platform custodies: EMBER, BTC, ETH, LTC, SOL and XRP.',
-    source: 'contracts/packages/chain/src/index.ts:371-378 — ON_CHAIN_ASSETS',
+    source: 'contracts/packages/chain/src/index.ts — ON_CHAIN_ASSETS',
   },
 
   /**
@@ -230,7 +219,7 @@ export const CLAIMS = {
     rendered: 'EMBER, Bitcoin, Ethereum, Litecoin, Solana, XRP Ledger',
     meaning:
       'The on-chain assets written as prose, in ON_CHAIN_ASSETS order, using each chain\'s own `name` from the CHAINS table — "Hearth" being the exception, since the asset a reader holds is EMBER and the network it settles on is Hearth. A plain comma list: whether a name takes an article ("the XRP Ledger") is an English fact that is not in the data, so the copy sets the list off with dashes rather than the derivation guessing. Derived so that the sentence and the count beside it cannot disagree.',
-    source: 'contracts/packages/chain/src/index.ts:371-378 — ON_CHAIN_ASSETS',
+    source: 'contracts/packages/chain/src/index.ts — ON_CHAIN_ASSETS',
   },
   products: {
     rendered: '6',
@@ -242,14 +231,14 @@ export const CLAIMS = {
     rendered: '11',
     meaning:
       'The statements that define "one platform". Not a score and not a boast: the count of rows in the table this site reproduces.',
-    source: 'docs/ecosystem/01-product-vision.md:49-59 — the numbered rows of the table in §2',
+    source: 'docs/ecosystem/01-product-vision.md — the numbered rows of the table in §2',
   },
   accentSeparationBefore: {
     rendered: '4.1',
     meaning:
       'Worst all-pairs separation of the accent set this one replaced, as ΔE under normal vision. Below about 10 two colours are not reliably distinguishable, so the switcher was telling six products apart by a channel that told two apart.',
     source:
-      'ui/packages/ui/src/tokens.css:771-773 — the "WHY THESE FIVE" paragraph of the "Per-product accents" block: "the worst all-pairs distance was #ff5a1e to #e8622c at dE 4.1 under normal vision and dE 1.3 under protanopia"',
+      'ui/packages/ui/src/tokens.css — the "WHY THESE FIVE" paragraph of the "Per-product accents" block: "the worst all-pairs distance was #ff5a1e to #e8622c at dE 4.1 under normal vision and dE 1.3 under protanopia"',
   },
   httpNotFound: {
     rendered: '404',
@@ -277,21 +266,21 @@ export const CLAIMS = {
     meaning:
       'The version of the Creative Commons Attribution licence the estate\'s generated artwork is published under, as distinct from the MIT licence on the code. MIT speaks of "the Software" throughout, and an image is not software.',
     source:
-      'brand/TRADEMARKS.md:8 — "not covered by the MIT licence in `LICENSE` or by the CC BY 4.0 licence in `LICENSE-ASSETS`", the sentence that separates the two grants and reserves the marks from both',
+      'brand/TRADEMARKS.md — "not covered by the MIT licence in `LICENSE` or by the CC BY 4.0 licence in `LICENSE-ASSETS`", the sentence that separates the two grants and reserves the marks from both',
   },
   accentSeparation: {
     rendered: '36.1',
     meaning:
       'Worst ADJACENT separation across the six product accents under normal vision, as ΔE. Adjacent is the honest gate because the product switcher is a vertical list, so only neighbours ever touch.',
     source:
-      'ui/packages/ui/src/tokens.css:790 — "worst ADJACENT dE 36.1 (#2a9e93|#b28e1e, normal vision)", reproducible with ui/scripts/validate_palette.mjs',
+      'ui/packages/ui/src/tokens.css — "worst ADJACENT dE 36.1 (#2a9e93|#b28e1e, normal vision)", reproducible with ui/scripts/validate_palette.mjs',
   },
   accentSeparationAllPairs: {
     rendered: '5.6',
     meaning:
       'Worst ALL-PAIRS separation of the same six accents, as ΔE under deuteranopia — the figure that is WORSE than the set it replaced, and is published beside the flattering one for that reason. Network\'s red and Create\'s gold are near-identical to a deuteranopic reader; they are never adjacent in the switcher, and colour is never the only channel.',
     source:
-      'ui/packages/ui/src/tokens.css:791 — "worst ALL-PAIRS dE 5.6 (#d6412f|#b28e1e, deuteranopia)", reproducible with ui/scripts/validate_palette.mjs',
+      'ui/packages/ui/src/tokens.css — "worst ALL-PAIRS dE 5.6 (#d6412f|#b28e1e, deuteranopia)", reproducible with ui/scripts/validate_palette.mjs',
   },
 } as const satisfies Record<string, Claim>
 
