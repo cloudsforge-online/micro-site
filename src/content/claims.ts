@@ -192,13 +192,13 @@ export const CLAIMS = {
     rendered: '30',
     meaning:
       'Days a browser error or performance report is kept in Lantern before a scheduled job deletes it. The default of LANTERN_RUM_RETENTION_DAYS.',
-    source: 'lantern/src/env.ts:289 — LANTERN_RUM_RETENTION_DAYS',
+    source: 'lantern/src/env.ts:337 — LANTERN_RUM_RETENTION_DAYS',
   },
   analyticsRetentionDays: {
     rendered: '400',
     meaning:
       'Days a pseudonymised product-analytics event is kept. The default of ANALYTICS_EVENT_RETENTION_DAYS. Chosen to exceed a year so a year-on-year comparison is possible at all.',
-    source: 'analytics/src/env.ts:208 — ANALYTICS_EVENT_RETENTION_DAYS',
+    source: 'analytics/src/env.ts:373 — ANALYTICS_EVENT_RETENTION_DAYS',
   },
   chains: {
     rendered: '6',
@@ -249,7 +249,7 @@ export const CLAIMS = {
     meaning:
       'Worst all-pairs separation of the accent set this one replaced, as ΔE under normal vision. Below about 10 two colours are not reliably distinguishable, so the switcher was telling six products apart by a channel that told two apart.',
     source:
-      'ui/packages/ui/src/tokens.css:454 — "Per-product accents": "the worst all-pairs distance was #ff5a1e to #e8622c at dE 4.1 under normal vision and dE 1.3 under protanopia"',
+      'ui/packages/ui/src/tokens.css:771-773 — the "WHY THESE FIVE" paragraph of the "Per-product accents" block: "the worst all-pairs distance was #ff5a1e to #e8622c at dE 4.1 under normal vision and dE 1.3 under protanopia"',
   },
   httpNotFound: {
     rendered: '404',
@@ -284,14 +284,14 @@ export const CLAIMS = {
     meaning:
       'Worst ADJACENT separation across the six product accents under normal vision, as ΔE. Adjacent is the honest gate because the product switcher is a vertical list, so only neighbours ever touch.',
     source:
-      'ui/packages/ui/src/tokens.css:472 — "worst ADJACENT dE 36.1 (#2a9e93|#b28e1e, normal vision)", reproducible with ui/scripts/validate_palette.mjs',
+      'ui/packages/ui/src/tokens.css:790 — "worst ADJACENT dE 36.1 (#2a9e93|#b28e1e, normal vision)", reproducible with ui/scripts/validate_palette.mjs',
   },
   accentSeparationAllPairs: {
     rendered: '5.6',
     meaning:
       'Worst ALL-PAIRS separation of the same six accents, as ΔE under deuteranopia — the figure that is WORSE than the set it replaced, and is published beside the flattering one for that reason. Network\'s red and Create\'s gold are near-identical to a deuteranopic reader; they are never adjacent in the switcher, and colour is never the only channel.',
     source:
-      'ui/packages/ui/src/tokens.css:473 — "worst ALL-PAIRS dE 5.6 (#d6412f|#b28e1e, deuteranopia)", reproducible with ui/scripts/validate_palette.mjs',
+      'ui/packages/ui/src/tokens.css:791 — "worst ALL-PAIRS dE 5.6 (#d6412f|#b28e1e, deuteranopia)", reproducible with ui/scripts/validate_palette.mjs',
   },
 } as const satisfies Record<string, Claim>
 

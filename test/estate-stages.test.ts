@@ -64,7 +64,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, it } from 'node:test'
 import { PRODUCT_PAGES } from '../src/content/products.ts'
 import { BUILD } from '../src/content/pages.ts'
-import { ENV_LABELS, splitEnvLabel, surface, type SurfaceKey } from '@cloudsforge/ui'
+import { ENV_LABELS, SURFACES, splitEnvLabel, surface, type SurfaceKey } from '@cloudsforge/ui'
 import {
   PUBLIC_SURFACES,
   RUNS_ON,
@@ -388,9 +388,30 @@ describe('the readers themselves', () => {
     assert.equal(namesAnEnvironment('hub-testnet.cloudsforge.online'), true)
     assert.equal(namesAnEnvironment('testnet.cloudsforge.online'), true)
     assert.equal(namesAnEnvironment('market-staging.cloudsforge.online'), true)
-    // The one registry subdomain with a hyphen of its own, which is what decides that the split is
-    // on the LAST hyphen rather than the first.
-    assert.equal(namesAnEnvironment('worlds-api-testnet.cloudsforge.online'), true)
+    // ── THE HYPHENATED CASE IS INVERTED, AND micro-ui INVERTED ITS OWN FOR THE SAME REASON ────
+    //
+    // This line used to assert `namesAnEnvironment('worlds-api-testnet.…') === true` — the one
+    // live case for splitting the environment off the LAST hyphen rather than the first. That
+    // surface was retired when the game API was folded into `api.` (see the `api` row's comment
+    // in the registry, which records the hostname measured dead on 2026-08-05). `worlds-api` is
+    // therefore no longer a known subdomain, the HEAD check in `splitEnvLabel` fails, and the
+    // name is left alone as its own apex — correctly. Asserting `true` there asserted that a
+    // retired surface still existed, which is how a dead name keeps looking alive.
+    //
+    // The rule is unchanged and still `lastIndexOf`; it simply has no case left to exercise. So
+    // the fact that MAKES it unexercisable is pinned instead, derived from the registry rather
+    // than typed here. The day anyone adds a hyphenated subdomain this fails and says so, which
+    // is the only moment the last-hyphen case can be written against something real.
+    assert.deepEqual(
+      SURFACES.filter((s) => s.subdomain.includes('-')).map((s) => s.key),
+      [],
+      'a registry subdomain now contains a hyphen — restore the last-hyphen assertion beside this.',
+    )
+    // And the retired name reads as no environment at all, which is the same refusal-to-guess
+    // that stops `marketing-testnet.cloudsforge.online` — a name this estate does not own — from
+    // resolving every sibling link on it into this estate.
+    assert.equal(namesAnEnvironment('worlds-api-testnet.cloudsforge.online'), false)
+    assert.equal(namesAnEnvironment('marketing-testnet.cloudsforge.online'), false)
     // The old two-label shape, which still resolves and would be just as wrong on this page.
     assert.equal(namesAnEnvironment('hub.testnet.cloudsforge.online'), true)
     // And mainnet, including the three names most easily mistaken for an environment: the apex
