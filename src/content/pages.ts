@@ -42,7 +42,7 @@ export const HOME = {
    * holds every blurb on this site to that budget.
    */
   blurb:
-    'EMBER is proof-of-work money you can mine on an ordinary processor, and an ecosystem of places to spend it — one account, one wallet, one ledger. Mine it, hold it, make it, trade it, sell it, play in it.',
+    'Mine EMBER in your browser, then spend it across seven products on one account and one wallet. Stake in six currencies, launch a token, trade, sell, and play.',
   /**
    * The verbs, in the order the story is told. NOT the registry's order, which is tuned for the
    * colour separation of neighbouring switcher entries and says so in capitals.
@@ -50,7 +50,7 @@ export const HOME = {
    */
   verbLine: 'Mine it, hold it, make it, trade it, sell it, play in it.',
   standfirst:
-    'Almost every consumer crypto platform is an exchange with features bolted on. This is the inverse: it starts with EMBER — a currency you can produce yourself on the machine you already own — and builds an ecosystem of places worth spending it, over one account, one wallet and one ledger.',
+    'Open the mining page and press start: your browser earns EMBER on the computer you are reading this on, paid to a key that never leaves your machine. Then spend it across seven products that share one account, one wallet and one ledger — take a position on a future event using Bitcoin or five other currencies, launch a token, backtest a strategy, sell what you make, play a world that keeps what you built. The chain underneath runs a real Ethereum machine, so the wallets and tools you already have work here on day one.',
   /**
    * What EMBER does, in the four steps of its life. Source: the diagram in
    * docs/ecosystem/01-product-vision.md §1, flattened into four steps because the branch in the
@@ -76,7 +76,7 @@ export const HOME = {
     // number threes, and it is the sort of thing that survives review because nothing is wrong
     // with either line on its own.
     title: 'It starts with the currency',
-    lede: 'EMBER is not a token bolted onto an ecosystem. The ecosystem is what makes EMBER worth mining, and every step below is something that has to actually work for that to be true.',
+    lede: 'You can produce EMBER yourself rather than buy it, and there are places to spend it that do not exist to trade it. Each step below is something that has to genuinely work for that to be true.',
     steps: [
       {
         verb: 'Mine',
