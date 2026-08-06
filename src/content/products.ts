@@ -218,7 +218,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Deploy a real ERC-20 from committed, compiled bytecode. You own it from the first block, we pay the gas, and it works with every wallet and library that already speaks Ethereum.',
     stage: 'open',
     stageNote:
-      'The deployment service, the brand-generation service and the application a creator uses are all deployed, walked in a browser, and reachable on the public internet. Every contract any of them has deployed so far went to a test network, and no stranger has ordered one.',
+      'The deployment service, the brand-generation service and the application a creator uses are all deployed, walked in a browser, and reachable on the public internet. Every contract deployed by any of them has gone to a test network, and no stranger has ordered one.',
     sections: [
       {
         title: 'The deploy leaves the request',
@@ -305,7 +305,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Stake in six currencies or any token launched here, on markets settled by contract rather than by us. Payouts come from the pool, and a winner can claim even if every server we own is switched off.',
     stage: 'open',
     stageNote:
-      'The service, the contract, the staking application and the operator console are deployed and reachable on the public internet. Settlement so far has been on an EMBER test network, and no stranger has taken a position.',
+      'The service, the contract, the staking application and the operator console are deployed and reachable on the public internet. Settlement has been on an EMBER test network, and no stranger has taken a position.',
     sections: [
       {
         title: 'Bring the currency you already hold',

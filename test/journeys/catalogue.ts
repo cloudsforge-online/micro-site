@@ -221,7 +221,7 @@ export const CATALOGUE: readonly Scenario[] = [
         // this go red.
         const callout = await session.page.locator('.si-callout').first().innerText()
         assert.ok(
-          callout.includes('Open to the public, and one day old'),
+          callout.includes('Open to the public, and here are the limits'),
           `the honesty block no longer carries its heading. It says: ${callout.slice(0, 200)}`,
         )
         // The limits, in the rendered body rather than the heading — a heading that survives while

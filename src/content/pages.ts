@@ -82,25 +82,25 @@ export const HOME = {
         verb: 'Mine',
         accentKey: 'network' as SurfaceKey,
         title: 'Produce the currency yourself',
-        body: 'EMBER is proof-of-work money mined on ordinary processors. The machine you are reading this on is the whole setup — there is nothing to buy first.',
+        body: 'Open the mining page and press start. The computer you are reading this on is the whole setup: no rig, no pool, no software to install, and the reward goes to a key generated in your browser that we never see.',
       },
       {
         verb: 'Hold',
         accentKey: 'hub' as SurfaceKey,
-        title: 'Deposit it into an account that is yours',
+        title: 'Keep it in an account that answers to you',
         body: `Deposits are detected on chain and credited at a published depth — ${claim('emberConfirmations')} blocks for EMBER, and the depth every other chain warrants for its own reasons. One ledger, double-entry, one portfolio.`,
       },
       {
         verb: 'Spend',
         accentKey: 'site' as SurfaceKey,
-        title: 'Use it everywhere in the ecosystem',
+        title: 'Spend it on seven products, not seven balances',
         body: `The money is EMBER itself. What you see is the Spark — ${claim('sparksPerEmber')} Sparks to one EMBER — which is a shorter way of writing the same balance and never a second currency with its own rate. One asset, one ledger, and no balance anywhere that the chain does not back.`,
       },
       {
         verb: 'Leave',
         accentKey: 'network' as SurfaceKey,
         title: 'Take it back out whenever you want',
-        body: 'Withdraw on chain, to your own address, or export the key and stop asking. A user being able to leave with their assets is a product requirement here, not a concession.',
+        body: 'Withdraw on chain to an address you control, or export the key and deal with no one. Being able to walk away with everything you own is a requirement we build to, not a concession we grant.',
       },
     ],
   },
@@ -113,18 +113,18 @@ export const HOME = {
    * so that neither can be wrong again.
    */
   products: {
-    title: 'Where the EMBER goes',
+    title: 'Seven places worth spending it',
     lede: `${sentenceCase(productCount())} places to spend it, on one account. Each is somewhere to do something, not a feature of the last one.`,
     hubAside: `It is not a ${nextProductOrdinal()} destination. It is the thing the other ${productCount()} are standing on.`,
   },
   /** The one-account promise, in the terms a reader can check. */
   spans: {
     title: 'One account spans all of it',
-    lede: 'A single sign-in, a single wallet and a single history. Nothing about who you are or what you own is trapped inside one product.',
+    lede: 'Sign in once and everything follows you: the same wallet, the same history, the same balance. Nothing you own is stuck inside the product you happened to earn it in.',
     points: [
       {
         title: 'Sign in once',
-        body: 'One identity issues the tokens every surface verifies against one key set. There is no per-destination account, because there is only one account.',
+        body: 'One sign-in works everywhere. There is no separate account per product, no second password, and nothing to link up afterwards.',
       },
       {
         title: 'One wallet',
@@ -135,13 +135,13 @@ export const HOME = {
       },
       {
         title: 'One history',
-        body: 'Every account, money, asset and game event on one timeline, kept for as long as the account exists. Not one feed per destination, joined by hand.',
+        body: 'Every payment, trade, deposit, listing and in-game event on one timeline, kept for as long as your account exists. One place to look, not seven feeds to reconcile.',
       },
     ],
   },
   closing: {
-    title: 'Built in the open, with the state of it written down',
-    body: 'Most of this ecosystem is built and running, and none of it is open to the public. Rather than pick whichever half of that sentence flatters, there is a page that says exactly where each part stands and how each of those states is checked.',
+    title: 'You can check every claim on this page',
+    body: 'Some of this runs in production, some is still being built, and we publish which is which rather than blur the two. The build page lists every part, the state it is genuinely in, and how that state is verified.',
   },
 } as const
 
@@ -192,7 +192,7 @@ export const PRODUCTS_INDEX = {
 
 export const PLATFORM = {
   eyebrow: 'The platform',
-  headline: 'What "one platform" has to mean',
+  headline: 'What makes this one platform, not seven apps',
   blurb:
     'One account, one wallet, one portfolio, one history — the statements that define a platform rather than a set of apps sharing a logo, published in full including the ones not yet true.',
   standfirst: [
@@ -365,9 +365,9 @@ export const BUILD = {
   eyebrow: 'Build status',
   headline: 'Where each part actually is',
   blurb:
-    'An honest account of where this ecosystem stands: what is open to the public, what runs in-house, what is still being written, and how new all of it is. Every state on this page is derived from the estate.',
+    'An honest account of where this ecosystem stands: what is open to the public, what runs in-house, what is still being written, and how each state is checked. Every state on this page is derived from the estate.',
   standfirst: [
-    'This ecosystem has been rebuilt as a set of independent services and applications. They are built, they run together, and as of today they answer on the public internet — from one machine, with no failover and no backup anyone has ever restored.',
+    'This ecosystem has been rebuilt as a set of independent services and applications. They are built, they run together, and and they answer on the public internet — from one machine, with no failover and no backup anyone has ever restored.',
     'Both halves of that sentence are on this page because leaving the second one off is how a launch becomes a thing people trust with money, and leaving the FIRST one off is how this page spent weeks describing things as unbuilt while they were running.',
   ],
   /**
@@ -406,9 +406,9 @@ export const BUILD = {
    * place to pin one. See the "No estate census" note in ./claims.ts.
    */
   honesty: {
-    title: 'Open to the public, and one day old',
+    title: 'Open to the public, and here are the limits',
     body: [
-      'Every service and application described on this site is built, they run together against real databases and a real EMBER network, and as of today they answer on the public internet under a publicly trusted certificate. A browser-driven smoke suite walks the gateway the way a person would, faking nothing.',
+      'Every service and application described on this site is built, they run together against real databases and a real EMBER network, and and they answer on the public internet under a publicly trusted certificate. A browser-driven smoke suite walks the gateway the way a person would, faking nothing.',
       'What that does not mean: the main network is a few hundred blocks old and EMBER has no market, no listing and no price. Nobody outside the project has used any of this yet. There are no user numbers on this page for the same reason there is no uptime figure — both would be either zero or invented, and there is no third option.',
       'All of it sits on one machine behind a tunnel. There is no redundancy, no failover, and no backup that has ever been restored. Being able to reach something is the weakest claim a platform can make about itself, and today it is the only one this ecosystem has earned.',
     ],
