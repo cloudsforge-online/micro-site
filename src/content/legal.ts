@@ -128,8 +128,8 @@ export const TERMS: LegalPage = {
        *
        * It exists because the hole above, alone, tells a reader nothing. A person deciding whether
        * to send money here needs to know TODAY that the operator can move it, and that fact is not
-       * a legal opinion — it is a property of `custody/src/crypto.ts:139-144` and
-       * `custody/src/keys.ts:523`, and withholding it until counsel is engaged would be the worst
+       * a legal opinion — it is a property of `custody/src/crypto.ts` and
+       * `custody/src/keys.ts`, and withholding it until counsel is engaged would be the worst
        * available option for the reader.
        */
       title: 'What it means mechanically that we hold your keys',
@@ -245,30 +245,37 @@ export const TERMS: LegalPage = {
  * so the next person does not have to rediscover it.
  *
  *   no cookies              no `document.cookie` write and no `Set-Cookie` exists in any frontend
- *                           in the estate. `test/legal.test.ts:390` already asserted this for this
+ *                           in the estate. `test/legal.test.ts` already asserted this for this
  *                           repository before today. Sessions are `cf.accessToken` /
- *                           `cf.refreshToken` in `localStorage` — `hub-web/src/lib/api.ts:27-28`,
- *                           `market-web/src/lib/api.ts:27-28`, `worlds-web/src/lib/api.ts:27-28`.
+ *                           `cf.refreshToken` in `localStorage` — `hub-web/src/lib/api.ts`,
+ *                           `market-web/src/lib/api.ts`, `worlds-web/src/lib/api.ts`.
  *   telemetry session id    `sessionStorage` under `cf-obs-session`, random, dies with the tab:
- *                           `src/lib/obs.ts:188-197`.
- *   RUM retention           30 days, `lantern/src/env.ts:289`. Errors 7 days (`:250`), issues 90
- *                           (`:251`), rollups 400 (`:288`).
+ *                           `src/lib/obs.ts`.
+ *   RUM retention           30 days, `lantern/src/env.ts` — `LANTERN_RUM_RETENTION_DAYS`. Errors
+ *                           7 days, issue groupings 90 and rollups 400, each its own
+ *                           `*_RETENTION_DAYS` default in the same file.
  *   analytics pseudonym     salted per subject so erasure is possible at all; the salt is the only
  *                           thing destroyed. `analytics/src/pseudonym.ts` header, and the pepper is
  *                           never written to that service's database.
- *   analytics retention     events 400 days, rollups 1200: `analytics/src/env.ts:208-209`.
+ *   analytics retention     events 400 days, rollups 1200: `analytics/src/env.ts`.
  *   account deletion        a real three-state lifecycle, `identity/src/deletion.ts`, wired at
- *                           `identity/src/server.ts:1836` and `:1871`, grace default 7 days at
- *                           `identity/src/env.ts:296`.
+ *                           `identity/src/server.ts` — the delete route and its cancel — grace
+ *                           default 7 days at
+ *                           `identity/src/env.ts`.
  *
- * ── FOUR CITATIONS ABOVE WERE WRONG ON 2026-08-05 AND ARE CORRECTED IN PLACE ──────────────────
+ * ── THESE CITATIONS NAMED LINES, AND FOUR OF THEM WERE WRONG. THE LINES ARE GONE ──────────────
  *
- * `hub-web`'s tokens are at `:27-28` like the other two, not `:53-56` (that is the `store()`
- * fallback body). `obs.ts` is `:188-197`, not `:182-197`. The deletion route is
- * `identity/src/server.ts:1836` and cancel is `:1871`, not `:1669`/`:1692`, and the grace constant
- * is `identity/src/env.ts:296`, not `:270`. Every retention number above was re-measured and each
- * one was right. This is recorded rather than silently fixed because the previous pass asserted
- * these as checked, and a citation nobody re-reads is the same object as an uncited claim.
+ * On 2026-08-05 four of the citations above were re-read and each pointed at the wrong line — the
+ * `hub-web` token pair at the `store()` fallback body, `obs.ts` three lines early, the deletion
+ * route at neither of the two lines named, the grace constant off by twenty-six. They were
+ * re-pinned, and then they rotted again, because a line number names a position in a file that a
+ * DIFFERENT repository owns and edits without ever running this suite. Nothing here was wrong when
+ * it broke, which is the worst property a check can have.
+ *
+ * So the line numbers are removed rather than corrected once more. Each citation now names the
+ * FILE, and where a reader needs the exact place the sentence names the SYMBOL — `store()`,
+ * `LANTERN_RUM_RETENTION_DAYS`, the delete route — which moves with the code instead of away from
+ * it. Every retention number above was re-measured when the lines came off and each one was right.
  *
  * ── WHAT THIS PASS FOUND THAT THE NOTICE DID NOT DISCLOSE ─────────────────────────────────────
  *
@@ -276,19 +283,19 @@ export const TERMS: LegalPage = {
  * the same direction — towards the reader thinking less is kept than is kept:
  *
  *   ip addresses            `faucet` stores FULL client IPs as a primary key and never prunes them
- *                           (`faucet/src/server.ts:483-488`, `faucet/src/migrations.ts:205-211`).
+ *                           (`faucet/src/server.ts`, `faucet/src/migrations.ts`).
  *                           `hearth`'s node logs full IPs from `Cf-Connecting-Ip` with no rotation
- *                           limit (`hearth/node/src/ws.js:86-88`). `identity` keeps a truncated
- *                           /24-/48 prefix on every session (`identity/src/migrations.ts:216-219`)
- *                           and emails it (`notify/src/catalogue.ts:444`). The notice named none.
+ *                           limit (`hearth/node/src/ws.js`). `identity` keeps a truncated
+ *                           /24-/48 prefix on every session (`identity/src/migrations.ts`)
+ *                           and emails it (`notify/src/catalogue.ts`). The notice named none.
  *   user-agent + full url   `lantern` stores the user-agent string and the full page URL INCLUDING
- *                           its query string in `attributes` (`lantern-web/src/lib/obs.ts:217,219`).
+ *                           its query string in `attributes` (`lantern-web/src/lib/obs.ts`).
  *   activity for ever       raw `user_id`, free-text summary and the producer's ENTIRE domain
- *                           payload with no allowlist (`activity/src/migrations.ts:75,83,97`), and
- *                           no retention job of any kind (`activity/src/jobs.ts:80-88`).
+ *                           payload with no allowlist (`activity/src/migrations.ts`), and
+ *                           no retention job of any kind (`activity/src/jobs.ts`).
  *   erasure does not reach  fourteen services store a user reference and DO NOT subscribe to
  *                           `identity.user.deleted`; of the eight that have a handler, only two are
- *                           actually seeded at deploy (`deploy/scripts/estate-bootstrap.sh:567-568`).
+ *                           actually seeded at deploy (`deploy/scripts/estate-bootstrap.sh`).
  *   no identity check       there is no KYC, AML, sanctions or age check anywhere in the estate.
  *
  * These are now written out below as `stated` sections, because each is a description of code.
@@ -297,9 +304,9 @@ export const TERMS: LegalPage = {
  * ── ONE CLAIM WAS PUT TO ME AND IS NOT WRITTEN HERE, BECAUSE IT IS NOT TRUE YET ───────────────
  *
  * I was told Mailtrap is the SMTP relay for registration and reset mail. **The estate has no SMTP
- * configured at all** — `grep -cE '^SMTP_' .env` returns 0, and `notify/src/email.ts:81` returns a
+ * configured at all** — `grep -cE '^SMTP_' .env` returns 0, and `notify/src/email.ts` returns a
  * `no_transport` failure rather than sending when `SMTP_HOST` is unset, which the module documents
- * as a supported mode. Mailtrap appears once in `.env.example:64`, in a list beside Brevo, Resend,
+ * as a supported mode. Mailtrap appears once in `.env.example`, in a list beside Brevo, Resend,
  * SendGrid and postfix, as an *example* of what generic SMTP can point at. Naming a processor that
  * is not processing anything would be exactly the invented paragraph the header of this file
  * exists to forbid, so the notice says no mail provider is configured and what happens when one is.
