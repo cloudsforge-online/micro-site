@@ -5,17 +5,6 @@
   because a page that paints before the attributes land flashes the default and then changes
   colour.
 
-  data-cf-scheme is the third of the three, added with @cloudsforge/ui 1.1. `auto` follows the
-  reader's operating system; `light` and `dark` force one. It is set here, statically, for the same
-  reason the other two are — a page that paints before the attribute lands flashes the default and
-  then changes colour, and a theme flash is worse than a theme nobody asked for.
-
-  This surface carried its own light mode until 1.1: a `@media (prefers-color-scheme: light)` block
-  in src/styles.css, redeclaring eleven semantic tokens and a second hand-tuned accent mix. All of
-  it has moved into the design system, where the other sixteen surfaces can have it too, and where
-  the contrast of every pair is measured on every scheme rather than on the two this repository
-  happened to check.
-
   `site` is one of the two product keys that resolve to --cf-ember rather than to a product accent.
   Ember is company chrome, and the marketing site is the company — it is the one surface that must
   never wear a product's colour, because it is the page all five products are described on.
@@ -23,7 +12,7 @@
   `warm` is the house substrate. The cool one exists for products about measurement; a front door
   is not one.
 -->
-<html lang="en-GB" data-cf-product="site" data-cf-substrate="warm" data-cf-scheme="auto">
+<html lang="en-GB" data-cf-product="site" data-cf-substrate="warm">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,11 +22,6 @@
       alone. Declaring only `dark` here would make a reader in a light environment fight the page
       rather than be served by it.
     -->
-    <!--
-      Both schemes are declared, and the token layer is what actually switches them: `color-scheme`
-      here tells the browser which form controls and scrollbars to draw, and `data-cf-scheme` on
-      <html> tells @cloudsforge/ui which palette to resolve.
-    -->
     <meta name="color-scheme" content="dark light" />
     <!--
       The build that produced this bundle. Stamped by the Dockerfile, read by src/lib/obs.ts, and
@@ -45,25 +29,6 @@
       rather than a configuration: it names the artefact, it does not tell it where it is running.
     -->
     <meta name="cf-release" content="dev" />
-    <!--
-      THE GOOGLE ANALYTICS MEASUREMENT ID, AND NOT THE GOOGLE ANALYTICS TAG.
-      ────────────────────────────────────────────────────────────────────────────────────────
-      There is deliberately no `<script src="googletagmanager.com/gtag/js">` anywhere in this
-      file, and there must never be one. The stock snippet fetches a third-party script and sets
-      `_ga` on load — before any banner has been drawn, let alone answered — and under ePrivacy
-      Art. 5(3) an analytics cookie set before consent is a violation that a banner underneath it
-      does not cure. `@cloudsforge/ui/consent` injects the tag from exactly one place: the Accept
-      button. See the header of that module for the whole argument.
-
-      It is a meta tag rather than a build-time environment variable because
-      test/no-build-time-config.test.ts greps for those and fails the build — an artefact with an
-      environment frozen into it is not the artefact that passed CI. (That test greps this file
-      too, which is why the prefix is not spelled out here.) This is the same mechanism `cf-release` above already uses, and
-      the ID is an identity rather than a configuration: it names the property, it does not tell
-      the bundle where it is running. An absent or empty value means analytics is simply off,
-      which is what a local `pnpm dev` gets.
-    -->
-    <meta name="cf-analytics" content="G-NB8DNLTKZQ" />
 
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />

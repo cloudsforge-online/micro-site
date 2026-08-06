@@ -17,7 +17,7 @@
  * `presentation` or `navigation` over content this repository owns, plus one `client-request`.
  */
 import assert from 'node:assert/strict'
-import { PRODUCTS, SWITCHER_SURFACES, MAIN_ID } from '@cloudsforge/ui'
+import { PRODUCTS, SWITCHER_SURFACES } from '@cloudsforge/ui'
 import { assertMounted, renderOnlyWithStubbedNetwork, type Stubs } from './browser.ts'
 import { assertAxeClean, assertKnownStillBroken, textOrder, type KnownViolation } from './axe.ts'
 import type { Scenario } from './scenario.ts'
@@ -625,15 +625,7 @@ export const CATALOGUE: readonly Scenario[] = [
           const href = await session.page.evaluate(() =>
             (document.activeElement as HTMLAnchorElement | null)?.getAttribute('href'),
           )
-          // `MAIN_ID`, not a literal. The skip link is `<SkipLink>` from @cloudsforge/ui now — this
-          // surface's private one moved into the design system so the other sixteen get it too —
-          // and a test that pinned the id by hand would be a second opinion about a constant the
-          // component and the landmark already share.
-          assert.equal(
-            href,
-            `#${MAIN_ID}`,
-            `${path}: the first thing Tab reaches is not the skip link`,
-          )
+          assert.equal(href, '#main', `${path}: the first thing Tab reaches is not the skip link`)
           const moved = await session.page
             .waitForFunction(
               (top: number) => (document.activeElement?.getBoundingClientRect().top ?? top) > top + 1,
