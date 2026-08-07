@@ -51,7 +51,7 @@ on:
     # `design-system/**` builds too, because the shared-layer adoption lives on a branch until it
     # is reviewed and a branch that cannot publish an image cannot be deployed to testnet to BE
     # reviewed. Mainnet is unaffected: it pins a version tag, and only `main` cuts one it pins.
-    branches: [main, 'design-system/**']
+    branches: [main, 'design-system/**', 'release/**']
   pull_request:
 
 permissions:
