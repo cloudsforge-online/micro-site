@@ -232,17 +232,24 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     key: 'trade',
     slug: 'trade',
     eyebrow: 'Trade',
-    headline: 'Test a trading idea before you risk money',
+    headline: 'Trade crypto natively, with no exchange in the middle',
     standfirst: [
-      'A catalogue of trading strategies you can run against real market history for Bitcoin, Ethereum, Solana and XRP — with fees and slippage charged, because a strategy that only works for free does not work.',
-      'What survives the backtest can be promoted to a paper bot that trades on live prices with no money at risk, and only after that to one holding real funds.',
+      'Trade Bitcoin, Ethereum, Solana and XRP with the coins you already hold. It settles on chain against a price feed, so there is no order book, no exchange account to open, and nobody else is holding what you trade with while it happens.',
+      'Any strategy can be run against real market history first — with fees and slippage charged — then as a paper bot on live prices, and only then with money behind it.',
     ],
     blurb:
-      'Backtest trading strategies on real market history with fees and slippage charged, promote what survives to paper trading, then to money. Not an exchange.',
+      'Trade crypto natively: strategies settle on chain against a price feed, with no order book and no exchange account. Test on real history before you fund one.',
     stage: 'open',
     stageNote:
       'Open to the public. Backtesting, fills, fees and the performance accounting run behind an application anyone can reach. Live trading is switched off in the running service and stays off until a full cycle has completed on testnet.',
     sections: [
+      {
+        title: 'Nothing here is an exchange account',
+        body: [
+          'You are not depositing into an order book and you are not trusting a venue to hold a trading pair for you. A bot settles against a price oracle, on coins the platform already holds, and the record of what it did is on the chain rather than in somebody\'s internal ledger.',
+          'That is what "natively" means here, and it is also the limit of it: it is trading, not an exchange, and the section at the bottom of this page says where that boundary is and why it does not move.',
+        ],
+      },
       {
         title: 'The backtest charges you',
         body: [
@@ -280,22 +287,22 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
   {
     key: 'foresight',
     slug: 'foresight',
-    eyebrow: 'Predict',
-    headline: 'Back what happens next, in the coin you already hold',
+    eyebrow: 'Bet',
+    headline: 'Bet on what happens next, in coins you already hold',
     standfirst: [
       `Markets on future events, settled by the contract that holds the money. You can stake in any of the ${claim('chains')} chains the platform supports — ${claim('chainNames')} — or in an ERC-20 token, and every stake joins one EMBER pool.`,
       'If a market is voided you are refunded in the asset you staked, in the amount you staked. Not its value at some later rate.',
     ],
     blurb:
-      'Prediction markets you can enter with Bitcoin, Ethereum, Litecoin, Solana, XRP, EMBER or an ERC-20 token. The contract holds the stakes and pays out — not us.',
+      'Bet on what happens next with Bitcoin, Ethereum, Litecoin, Solana, XRP, EMBER or an ERC-20 token. The contract holds the money and pays the winners — not us.',
     stage: 'open',
     stageNote:
       'Open to the public. The service, the contract, the staking application and the console operators open questions from are all running and reachable. Every market so far has settled on an EMBER test network.',
     sections: [
       {
-        title: 'Stake in what you already own',
+        title: 'Bet with what you already own',
         body: [
-          `Most prediction markets make you acquire their unit before you can have an opinion. This one does not: bring ${claim('chainNames')}, or any ERC-20 token the platform has enabled, and stake it directly.`,
+          `Most prediction markets make you buy their own token before you can have an opinion. This one does not: bring ${claim('chainNames')}, or any ERC-20 token the platform has enabled, and stake it directly.`,
           'Whatever you bring is converted at the rate recorded when you stake and joins a single pool denominated in EMBER, so everyone in a market is in the same pool no matter what they arrived with.',
           'A token is identified by its chain, its network and its contract address, so two deployments of the same brand are two different assets and are never confused for each other.',
         ],

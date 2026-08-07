@@ -45,9 +45,9 @@ export const HOME = {
    * every blurb on this site to that budget.
    */
   blurb:
-    'Mine EMBER in a browser tab on the computer you already own. Hold it in one wallet, trade it, launch tokens with it, sell what you make, and play.',
+    'Mine EMBER in a browser tab on the computer you already own. Hold it in one wallet, bet with it, trade with it, launch tokens, sell what you make, and play.',
   /** The verbs, in the order the story is told. Source: docs/ecosystem/01-product-vision.md §1. */
-  verbLine: 'Then trade it, build with it, and play with it — without leaving your account.',
+  verbLine: 'Then bet with it, trade with it, build with it and play with it — without leaving your account.',
   /**
    * The standfirst opens on the reader, not on the competition.
    *
@@ -56,9 +56,13 @@ export const HOME = {
    * not yet been told what this one is. Nobody arrives here holding an opinion about consumer
    * crypto platforms. The instruction was to drop the comparison and say the three things a person
    * can do — mine, trade, play — and that they happen in one place, which is what this now does.
+   *
+   * The verbs are the reader's words rather than ours. "Back what you think will happen" is what a
+   * prediction market does and it is not what anybody calls it; the owner's instruction was to say
+   * BET, and to lead the list with it, so the verb line and this sentence both do.
    */
   standfirst:
-    'Press start on the mining page and this computer begins earning EMBER — no card to buy, nothing to install. What you mine lands in one wallet, and that wallet is what you trade crypto with, back predictions with, launch a token with, buy and sell with, and play games with — the same account and the same wallet throughout.',
+    'Press start on the mining page and this computer begins earning EMBER — no card to buy, nothing to install. What you mine lands in one wallet, and that wallet is what you bet with, trade crypto with, launch a token with, buy and sell with, and play games with — the same account and the same wallet throughout.',
   /**
    * What EMBER does, in the four steps of its life. Source: the diagram in
    * docs/ecosystem/01-product-vision.md §1, flattened into four steps because the branch in the
@@ -111,7 +115,7 @@ export const HOME = {
         verb: 'Spend',
         accentKey: 'site' as SurfaceKey,
         title: 'Spend it on anything here',
-        body: `The same balance pays for a trade, a prediction, a token launch, a listing and an item in a game. Small amounts are written in Sparks — ${claim('sparksPerEmber')} Sparks to one EMBER — which is the same money written shorter, not a second currency with its own rate.`,
+        body: `The same balance pays for a bet, a trade, a token launch, a listing and an item in a game. Small amounts are written in Sparks — ${claim('sparksPerEmber')} Sparks to one EMBER — which is the same money written shorter, not a second currency with its own rate.`,
       },
       {
         verb: 'Leave',
@@ -209,8 +213,8 @@ export const HOME = {
         title: 'Six coins, not just ours',
         accentKey: 'foresight' as SurfaceKey,
         linkTo: 'foresight',
-        linkLabel: 'What you can stake and trade',
-        body: `Your wallet holds ${claim('chainNames')}. Strategies are backtested against real Bitcoin, Ethereum, Solana and XRP price history, and predictions can be staked in whichever of those coins you already hold rather than one the platform prefers.`,
+        linkLabel: 'What you can bet and trade with',
+        body: `Your wallet holds ${claim('chainNames')}. Strategies are backtested against real Bitcoin, Ethereum, Solana and XRP price history, and you can place a bet with whichever of those coins you already hold rather than one the platform prefers.`,
       },
     ],
   },
