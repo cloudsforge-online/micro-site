@@ -218,7 +218,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       {
         title: 'What is deliberately not sold here',
         body: [
-          'There is no liquidity-lock helper and no metadata-verification badge. Both were listed by an earlier version of this product and neither existed in any code path, so they were removed rather than left to be built.',
+          'There is no liquidity-lock helper and no metadata-verification badge. Both were once advertised here, neither was ever built, and rather than leave the promise standing we took it down.',
           'The rule they were removed under applies to the API as well as the interface: nothing is on sale unless something delivers it.',
         ],
       },

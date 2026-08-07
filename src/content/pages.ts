@@ -202,7 +202,6 @@ export const PRODUCTS_INDEX = {
     title: 'What has no page here, and why',
     body: [
       'The developer platform — projects, API keys, webhooks, a software development kit and a sandbox — is built and running on its own surface. It has no page in this section because this section is about where a person spends EMBER, and a developer either already knows they want an API or does not. The documentation is more use to them than a page like this one.',
-      'This paragraph replaces one that said the developer platform did not exist. It said so for weeks after it did, which is the same failure the rest of this site is arranged against: understating is not the safe option, it is a different wrong answer, and nobody ever checks a sentence that promises less.',
     ],
   },
 } as const
@@ -269,8 +268,7 @@ export const PLATFORM = {
     title: 'Prices are not published here yet',
     body: [
       'There is a commercial model, it is written down, and it is specific. It is not on this page.',
-      'Three of its figures were checked against the services that actually charge them, and all three had drifted: a three-tier price that is now a single price, a spread whose default had halved, and a fee that turns out to be set per trading bot rather than platform-wide. A price that is wrong on a marketing page is a price a customer quotes back at support, and they are right to.',
-      'So this page publishes what is free, which is a decision rather than a configuration value, and will publish a price when the code that charges it and the page that quotes it can be shown to agree.',
+      'A price on a marketing page is a price you will quote back at support, and you will be right to. So this page publishes what is free — which is a decision rather than a number that can move — and will publish a price when the code that charges it and the page that quotes it can be shown to agree.',
     ],
   },
   spine: {
@@ -374,7 +372,7 @@ export const BUILD = {
     'Where every part of CloudsForge stands today: what is open to the public, what runs in-house, what is still being written, and how new all of it is.',
   standfirst: [
     'This ecosystem is built as a set of independent services. They run together, and they now answer on the public internet — from one machine, with no failover and no backup anyone has ever restored.',
-    'Both halves of that sentence are on this page. Leaving the second one off is how a launch turns into something people trust with money; leaving the first one off is how this page spent weeks calling things unbuilt while they were running.',
+    'Both halves of it are on this page. What is running is worth knowing before you spend an evening on it; what it is running on is worth knowing before you trust it with money.',
   ],
   /**
    * Source: docs/ecosystem/18-build-status.md §1.
