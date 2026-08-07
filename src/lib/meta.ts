@@ -48,7 +48,7 @@ export const DEFAULT_IMAGE = '/og-1200x630.png'
  * product pages — so its description lives here, beside the route that uses it.
  */
 export const PRODUCTS_INDEX_BLURB =
-  'The CloudsForge control centre and the products that sit on it: mine the currency, make things with it, trade it, sell what you made, and play in worlds that end.'
+  'The CloudsForge account and the products that run on it: mine the currency, make things with it, trade it, sell what you made, and play in worlds that end.'
 
 export interface PageMeta {
   /** The full contents of `<title>`. Already suffixed; never suffixed twice. */

@@ -184,7 +184,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Your wallet is named as owner in the constructor, from the first block. The platform pays the gas and keeps no authority over what it deployed.',
     ],
     blurb:
-      'Deploy a real ERC-20 token from committed, pre-compiled bytecode. Your wallet owns it from the first block; the platform pays the gas and holds no authority over it.',
+      'Deploy a real ERC-20 token from pre-compiled bytecode. Your wallet owns it from the first block; the platform pays the gas and holds no authority over it.',
     stage: 'open',
     stageNote:
       'Open to the public. The deployment service, the brand-generation engine and the application you use are all running and reachable. Every contract deployed so far went to a test network.',
@@ -238,7 +238,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'What survives the backtest can be promoted to a paper bot that trades on live prices with no money at risk, and only after that to one holding real funds.',
     ],
     blurb:
-      'Backtest trading strategies on real market history with fees and slippage charged, promote what survives to paper trading, and only then to money. Not an exchange.',
+      'Backtest trading strategies on real market history with fees and slippage charged, promote what survives to paper trading, then to money. Not an exchange.',
     stage: 'open',
     stageNote:
       'Open to the public. Backtesting, fills, fees and the performance accounting run behind an application anyone can reach. Live trading is switched off in the running service and stays off until a full cycle has completed on testnet.',
@@ -287,7 +287,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'If a market is voided you are refunded in the asset you staked, in the amount you staked. Not its value at some later rate.',
     ],
     blurb:
-      'Prediction markets you can enter with Bitcoin, Ethereum, Litecoin, Solana, XRP, EMBER or an ERC-20 token. The contract holds the stakes and pays the winners — not us.',
+      'Prediction markets you can enter with Bitcoin, Ethereum, Litecoin, Solana, XRP, EMBER or an ERC-20 token. The contract holds the stakes and pays out — not us.',
     stage: 'open',
     stageNote:
       'Open to the public. The service, the contract, the staking application and the console operators open questions from are all running and reachable. Every market so far has settled on an EMBER test network.',
@@ -337,7 +337,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Forge Market exists because making something has no point without somewhere to sell it. The seller sets a royalty, the platform takes a fee, and the arithmetic is enforced by the database rather than by the code that writes it.',
     ],
     blurb:
-      'Listings, offers, escrow and settlement for what people make. The platform fee, the creator royalty and the seller\'s proceeds are constrained to add up by the database.',
+      'Listings, offers, escrow and settlement for what people make. The database itself makes the platform fee, the creator royalty and the seller\'s proceeds add up.',
     stage: 'open',
     stageNote:
       'Open to the public. Listings, bids, escrow, the order split and the risk indicators run behind an application anyone can reach. Nothing is listed on it yet, and an empty marketplace is what an empty marketplace looks like.',

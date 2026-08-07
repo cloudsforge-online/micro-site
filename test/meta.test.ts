@@ -112,9 +112,13 @@ describe('descriptions', () => {
   it('keeps every description inside the budget a preview card gives it', () => {
     // The failure this catches is a standfirst pasted in as a description, which is the shape it
     // arrives in when somebody is being efficient.
+    //
+    // The ceiling was 210 and is now 160. 210 was loose enough to pass four descriptions that a
+    // search result cuts off mid-clause — which is the failure this test names, so the budget was
+    // set above the thing it was measuring.
     for (const address of ADDRESSES) {
       const { description } = metaFor(address)
-      assert.ok(description.length <= 210, `${address} description is ${description.length} characters`)
+      assert.ok(description.length <= 160, `${address} description is ${description.length} characters`)
       assert.ok(description.length >= 60, `${address} description is ${description.length} characters`)
     }
   })

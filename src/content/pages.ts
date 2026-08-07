@@ -39,7 +39,7 @@ export const HOME = {
    * every blurb on this site to that budget.
    */
   blurb:
-    'Mine EMBER in a browser tab on the computer you already own. Hold it in one wallet, launch tokens on a full Ethereum-compatible chain, backtest strategies, trade, sell what you make, and play.',
+    'Mine EMBER in a browser tab on the computer you already own. Hold it in one wallet, trade it, launch tokens with it, sell what you make, and play.',
   /** The verbs, in the order the story is told. Source: docs/ecosystem/01-product-vision.md §1. */
   verbLine: 'Mine it, hold it, make it, trade it, sell it, play in it.',
   standfirst:
@@ -158,7 +158,10 @@ export const HOME = {
   },
   closing: {
     title: 'Built in the open, with the state of it written down',
-    body: 'Most of this is built and running, and it went public this week with no track record behind it. Rather than pick whichever half of that flatters, there is a page saying exactly where every part stands and how each of those states is checked.',
+    // "It went public this week" was here, and a sentence carrying a week goes wrong on its own
+    // after seven days without anybody editing it. The claim underneath it — new, and no track
+    // record — is the one that is worth making and stays true for as long as it is true.
+    body: 'Most of this is built and running, and none of it has a track record behind it yet. Rather than pick whichever half of that flatters us, there is a page saying exactly where every part stands and how each of those states is checked.',
   },
 } as const
 
@@ -208,12 +211,12 @@ export const PRODUCTS_INDEX = {
 
 export const PLATFORM = {
   eyebrow: 'The platform',
-  headline: 'What "one platform" has to mean',
+  headline: 'What one platform actually means',
   blurb:
-    'One account, one wallet, one portfolio, one history. The statements that separate a platform from a set of apps sharing a logo, published in full — including the ones not yet true.',
+    'One account, one wallet, one portfolio, one history. What separates a platform from a set of apps sharing a logo — including the parts not true yet.',
   standfirst: [
-    'Sharing a logo does not make several products one platform. What makes them one platform is a specific list of statements about the account underneath them, and each statement is either true today or it is work on the schedule.',
-    'The whole list is below, including the parts not finished. A definition you only publish once you pass it is not a definition, it is an advertisement.',
+    'Sharing a logo does not make several products one platform. What does is a specific list of statements about the account underneath them, and every one of them is either true today or on the list of work still to do.',
+    'The whole list is below, unfinished parts included. A definition you only publish once you pass it is not a definition, it is an advertisement.',
   ],
   /**
    * Verbatim from docs/ecosystem/01-product-vision.md §2, minus the "Today" column.
@@ -236,7 +239,7 @@ export const PLATFORM = {
     'One financial record of truth, reconciled against the chain.',
     'Anyone outside can build on all of it.',
   ],
-  testsNote: `${claim('platformTests')} statements. A phase of work that moves none of them from false to true does not ship.`,
+  testsNote: `${claim('platformTests')} statements. No release ships unless it moves at least one of them from false to true.`,
   /** Source: docs/ecosystem/15-monetisation-model.md §1. */
   free: {
     title: 'The basics are free, permanently',
@@ -292,7 +295,7 @@ export const ABOUT = {
   eyebrow: 'The ecosystem',
   headline: 'An ecosystem, from the currency up',
   blurb:
-    'CloudsForge makes the currency, the rails that move it, the tools that create with it and the worlds that spend it. The principles behind the decisions, and what it refuses to become.',
+    'CloudsForge makes the currency, the rails that move it, the tools that create with it and the worlds that spend it. Why it is built that way.',
   standfirst: [
     'CloudsForge builds four things: the currency, the rails that move it, the tools people create with, and the worlds where it gets spent. Owning all four is the only reason we can promise a holder things that a company owning one of them cannot.',
     'That is what makes it an ecosystem rather than a stack. EMBER is worth mining because there is somewhere to spend it, and there is somewhere to spend it because EMBER pays for building it.',
@@ -368,7 +371,7 @@ export const BUILD = {
   eyebrow: 'Build status',
   headline: 'Where each part actually is',
   blurb:
-    'An honest account of where this ecosystem stands: what is open to the public, what runs in-house, what is still being written, and how new all of it is. Every state here is read from the running estate.',
+    'Where every part of CloudsForge stands today: what is open to the public, what runs in-house, what is still being written, and how new all of it is.',
   standfirst: [
     'This ecosystem is built as a set of independent services. They run together, and they now answer on the public internet — from one machine, with no failover and no backup anyone has ever restored.',
     'Both halves of that sentence are on this page. Leaving the second one off is how a launch turns into something people trust with money; leaving the first one off is how this page spent weeks calling things unbuilt while they were running.',

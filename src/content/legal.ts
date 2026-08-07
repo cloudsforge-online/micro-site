@@ -72,7 +72,7 @@ export const TERMS: LegalPage = {
   slug: 'terms',
   title: 'Terms of service',
   blurb:
-    'The structure these terms will take. Sections describing how the system is built are written out; sections that create or limit legal obligations are marked as undrafted rather than invented.',
+    'The structure these terms will take. Sections on how the system works are written out; those creating legal obligations are marked undrafted, not invented.',
   standfirst: [
     'These terms are not finished. What follows is the structure they will take, with the sections that describe how the system is built written out, and the sections that create or limit legal obligations left to be drafted.',
   ],
@@ -323,7 +323,7 @@ export const PRIVACY: LegalPage = {
   slug: 'privacy',
   title: 'Privacy notice',
   blurb:
-    'What this website and the platform behind it do with data, written from the code: no cookies anywhere, pseudonymised analytics, real retention periods. The legal sections are marked undrafted, not invented.',
+    'What this site and the platform do with your data, from the code: no cookies, pseudonymised analytics, real retention periods. The legal parts are undrafted.',
   standfirst: [
     'This notice is not finished. What the code does is written out and is checkable against public source; the parts that create legal rights and obligations — who the controller is, on what basis data is processed, and how you enforce your rights — are data-protection questions and are left to be drafted properly.',
     'Everything in the written sections is a description of software, not a promise about it. Where a thing is not implemented, this page says it is not implemented rather than stating a policy nobody enforces.',
@@ -538,7 +538,7 @@ export const RISK: LegalPage = {
   slug: 'risk',
   title: 'Risk disclosure',
   blurb:
-    'What can go wrong, written from the code: the operator can move the assets it holds, there are no backups, transfers cannot be reversed, and there is no insurance. The formal disclosure is marked undrafted.',
+    'What can go wrong: the operator can move the assets it holds, there are no backups, transfers cannot be reversed, and nothing is insured. Written from the code.',
   standfirst: [
     'This page collects, in one place, the things most likely to cost you money. It is written from the software rather than from a template, and it is deliberately blunt.',
     'It is not the formal risk disclosure a financial regulator would require. That has not been drafted, is marked as outstanding at the bottom, and is not something the people who built this are competent to write.',
