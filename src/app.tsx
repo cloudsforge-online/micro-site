@@ -17,6 +17,7 @@
  * returning reader's handle in the shared bar — it just does not gate anything.
  */
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { ScrollToTop } from './components/scroll-to-top.tsx'
 import { AppShell } from './components/shell.tsx'
 import { AuthProvider } from './lib/auth.tsx'
 import { AboutPage } from './pages/about.tsx'
@@ -30,6 +31,7 @@ import { ProductDetailPage, ProductsIndexPage } from './pages/products.tsx'
 export function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <Routes>
           <Route element={<AppShell />}>

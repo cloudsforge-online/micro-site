@@ -11,7 +11,7 @@
  */
 import { Link } from 'react-router-dom'
 import { HOME } from '../content/pages.ts'
-import { productCards } from '../content/products.ts'
+import { productCards, productCount } from '../content/products.ts'
 import { PLATFORM } from '../content/pages.ts'
 import { Ridge, Section, StageChip, SurfaceMark, accentProps } from '../components/parts.tsx'
 
@@ -50,11 +50,16 @@ function Hero() {
       </h1>
       <p className="si-hero__standfirst">{HOME.standfirst}</p>
       <div className="si-hero__actions">
+        {/*
+          Both buttons said "What is …", which is a category rather than a destination: a reader
+          cannot tell from "What is here" whether it leads to a product list, a manifesto or a
+          changelog. Each one now names what is on the other side of it.
+        */}
         <Link className="si-btn si-btn--accent" to="/products">
-          What is here
+          See the {productCount()} products
         </Link>
         <Link className="si-btn" to="/build">
-          What is built
+          See what already works
         </Link>
       </div>
     </section>
@@ -171,9 +176,16 @@ function Products() {
         ))}
       </ul>
 
+      {/*
+        This read "Underneath all of them is Forge Hub — the account, the wallet, the portfolio and
+        the history. Hub is not a seventh destination. It is the account, wallet and history the
+        other six run on." Three faults, all flagged by the owner: it lists the same four nouns
+        twice in consecutive sentences, the middle sentence denies something nobody proposed, and
+        "the other six run on" reads as though the products execute inside Hub. What is true and
+        useful is that Hub is where the six meet.
+      */}
       <p className="si-aside">
-        Underneath all of them is <Link to="/products/hub">Forge Hub</Link> — the account, the
-        wallet, the portfolio and the history. {HOME.products.hubAside}
+        All of them meet at <Link to="/products/hub">Forge Hub</Link>. {HOME.products.hubAside}
       </p>
     </Section>
   )
@@ -191,9 +203,16 @@ function Spans() {
           </li>
         ))}
       </ul>
+      {/*
+        "There is a longer version of that promise, written as 11 statements that are each either
+        true or work" — "either true or work" is a compression of "either already true, or on the
+        list of work still to do", and it does not survive being read once. "Read the definition"
+        then labels the destination with a category noun rather than with what is on it.
+      */}
       <p className="si-aside">
-        There is a longer version of that promise, written as {PLATFORM.tests.length} statements that
-        are each either true or work. <Link to="/platform">Read the definition</Link>.
+        We hold ourselves to {PLATFORM.tests.length} promises about that one account.{' '}
+        <Link to="/platform">See all {PLATFORM.tests.length}</Link>, including the ones we have not
+        finished yet.
       </p>
     </Section>
   )

@@ -232,7 +232,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     key: 'trade',
     slug: 'trade',
     eyebrow: 'Trade',
-    headline: 'Backtest a strategy before you put money behind it',
+    headline: 'Test a trading idea before you risk money',
     standfirst: [
       'A catalogue of trading strategies you can run against real market history for Bitcoin, Ethereum, Solana and XRP — with fees and slippage charged, because a strategy that only works for free does not work.',
       'What survives the backtest can be promoted to a paper bot that trades on live prices with no money at risk, and only after that to one holding real funds.',
@@ -331,7 +331,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     key: 'market',
     slug: 'market',
     eyebrow: 'Sell',
-    headline: 'Buy and sell what people make here',
+    headline: 'Buy and sell anything, on chain',
     standfirst: [
       'Listings, offers, escrow and settlement for tokens, game items and assets created on the platform or brought to it.',
       'Forge Market exists because making something has no point without somewhere to sell it. The seller sets a royalty, the platform takes a fee, and the arithmetic is enforced by the database rather than by the code that writes it.',
@@ -373,7 +373,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     key: 'worlds',
     slug: 'worlds',
     eyebrow: 'Play',
-    headline: 'Games where the season ends and the world is kept',
+    headline: 'Play in your browser, and really own what you win',
     standfirst: [
       'Three titles on one shared platform: a sky-island strategy game, a monster-collecting role-playing game, and a persistent world you build in a browser tab and get paid in EMBER for.',
       'Resources genuinely run out and seasons genuinely stop. When one stops the world is not deleted — it is sealed into a history you can walk back through, and a new one opens where everybody starts poor again.',

@@ -16,7 +16,7 @@
  * capability named before the philosophy behind it.
  */
 import { claim } from './claims.ts'
-import { nextProductOrdinal, productCount, sentenceCase, surfaceCount } from './products.ts'
+import { productCount, sentenceCase } from './products.ts'
 import type { SurfaceKey } from '@cloudsforge/ui'
 
 /* ─────────────────────────────── home ─────────────────────────────── */
@@ -28,8 +28,14 @@ export const HOME = {
    * It names the currency, because the currency is the one thing here that is nobody else's:
    * `test/content.test.ts` asserts EMBER appears in it, so a rewrite that drifts back to a category
    * noun — "one crypto world", which is what this replaced — fails rather than ships.
+   *
+   * It also has to say what the reader DOES. This read "EMBER, and everything built on it", which
+   * names the currency and then gestures at the rest with a pronoun; the owner's verdict was that
+   * it "doesn't say anything to anyone", and they were right — a stranger cannot tell from it
+   * whether EMBER is something you buy, something you win or something you make. The verb is now
+   * in the headline, and the second line says what the mined coin is then for.
    */
-  spine: 'EMBER, and everything built on it.',
+  spine: 'Mine EMBER on the computer you already own.',
   /**
    * The search-result and link-preview description.
    *
@@ -41,9 +47,18 @@ export const HOME = {
   blurb:
     'Mine EMBER in a browser tab on the computer you already own. Hold it in one wallet, trade it, launch tokens with it, sell what you make, and play.',
   /** The verbs, in the order the story is told. Source: docs/ecosystem/01-product-vision.md §1. */
-  verbLine: 'Mine it, hold it, make it, trade it, sell it, play in it.',
+  verbLine: 'Then trade it, build with it, and play with it — without leaving your account.',
+  /**
+   * The standfirst opens on the reader, not on the competition.
+   *
+   * It began "Most consumer crypto platforms are an exchange with features attached", which spends
+   * the most valuable sentence on the page describing somebody else's product to a reader who has
+   * not yet been told what this one is. Nobody arrives here holding an opinion about consumer
+   * crypto platforms. The instruction was to drop the comparison and say the three things a person
+   * can do — mine, trade, play — and that they happen in one place, which is what this now does.
+   */
   standfirst:
-    'Most consumer crypto platforms are an exchange with features attached. This one starts with a currency you can produce yourself — open a tab, press start, and your computer begins mining EMBER — and then gives you places worth spending it, all on one account and one wallet.',
+    'Press start on the mining page and this computer begins earning EMBER — no card to buy, nothing to install. What you mine lands in one wallet, and that wallet is what you trade crypto with, back predictions with, launch a token with, buy and sell with, and play games with — the same account and the same wallet throughout.',
   /**
    * What EMBER does, in the four steps of its life. Source: the diagram in
    * docs/ecosystem/01-product-vision.md §1, flattened into four steps because the branch in the
@@ -58,8 +73,16 @@ export const HOME = {
     // step inserted in the middle renumbers the rest — the failure mode of typed ordinals is two
     // number threes, and it is the sort of thing that survives review because nothing is wrong
     // with either line on its own.
-    title: 'It starts with the currency',
-    lede: 'EMBER is not a token attached to an ecosystem after the fact. The ecosystem is what makes EMBER worth mining, and each of the four steps below has to actually work for that to be true.',
+    /**
+     * The lede says what the four steps ARE. It used to argue about them instead: "EMBER is not a
+     * token attached to an ecosystem after the fact. The ecosystem is what makes EMBER worth
+     * mining, and each of the four steps below has to actually work for that to be true." The
+     * owner's verdict was "I don't understand what it speaks about", and the sentence is in fact
+     * addressed to somebody comparing token launch models, not to somebody deciding whether to
+     * open the mining page. It is replaced with the four verbs and nothing else.
+     */
+    title: 'What happens to the EMBER you mine',
+    lede: 'Four steps, and you can check every one of them: you make it, you keep it, you spend it, and you can take it away.',
     steps: [
       {
         verb: 'Mine',
@@ -70,14 +93,25 @@ export const HOME = {
       {
         verb: 'Hold',
         accentKey: 'hub' as SurfaceKey,
-        title: 'Keep it in an account that is yours',
-        body: `Send EMBER to your account and it is credited once the network has buried it under ${claim('emberConfirmations')} blocks — about ${claim('emberConfirmationMinutes')} minutes. Every other chain waits the depth it warrants. One ledger, one portfolio, one balance.`,
+        /**
+         * ── This step contradicted the one above it ────────────────────────────────────────────
+         *
+         * It opened "Send EMBER to your account and it is credited once the network has buried it
+         * under 60 blocks". Step one has just told the reader they PRODUCE EMBER in a browser tab;
+         * step two then described the only other way of getting some, as though the first had not
+         * happened, and left a reader wondering whether the coin they just mined is stuck for ten
+         * minutes. Mining is the path this page is selling, so mining is what this step now
+         * answers first, and the deposit wait is given as what it is — the case where the coin
+         * came from somewhere else and could still be undone.
+         */
+        title: 'Keep it in a wallet that is yours',
+        body: `What you mine is in your balance as soon as the block it paid you is part of the chain. EMBER sent in from outside is different: it waits until the network has buried it under ${claim('emberConfirmations')} blocks — about ${claim('emberConfirmationMinutes')} minutes — because until then somebody else's chain can still take it back. Either way it is one wallet and one balance.`,
       },
       {
         verb: 'Spend',
         accentKey: 'site' as SurfaceKey,
-        title: 'Use it across the whole ecosystem',
-        body: `The money is EMBER. Small amounts are shown in Sparks — ${claim('sparksPerEmber')} Sparks to one EMBER — which is a shorter way of writing the same balance, not a second currency with its own rate.`,
+        title: 'Spend it on anything here',
+        body: `The same balance pays for a trade, a prediction, a token launch, a listing and an item in a game. Small amounts are written in Sparks — ${claim('sparksPerEmber')} Sparks to one EMBER — which is the same money written shorter, not a second currency with its own rate.`,
       },
       {
         verb: 'Leave',
@@ -95,9 +129,15 @@ export const HOME = {
    * here, and derived, so that the copy walk in `test/content.test.ts` can read them.
    */
   products: {
-    title: 'Where the EMBER goes',
-    lede: `${sentenceCase(productCount())} places to spend it, all on the same account. Each one does something different — none of them is a tab inside another.`,
-    hubAside: `Hub is not a ${nextProductOrdinal()} destination. It is the account, wallet and history the other ${productCount()} run on.`,
+    /**
+     * "None of them is a tab inside another" was an answer to a question nobody asked. It is a
+     * denial of an architecture the reader was never told to suspect, and the owner's response was
+     * simply "what does that mean?". The useful fact in its place is the one thing a reader
+     * genuinely wonders when shown six products: do I have to sign up six times.
+     */
+    title: 'Where to spend it',
+    lede: `${sentenceCase(productCount())} places, and signing in to one signs you in to all of them.`,
+    hubAside: 'Your balance, your wallet, and a record of everything you have done, on one screen.',
   },
   /** The one-account promise, in terms a reader can check. */
   spans: {
@@ -130,8 +170,15 @@ export const HOME = {
    * about is, from the reader's side, a capability that does not exist.
    */
   capabilities: {
-    title: 'Three things people do not expect',
-    lede: 'These are built and running today. They are on the front page because a reader who never scrolls past it would otherwise never learn that any of them is here.',
+    /**
+     * The lede said why the SECTION exists: "They are on the front page because a reader who never
+     * scrolls past it would otherwise never learn that any of them is here." That is an editorial
+     * note about page layout, addressed to whoever maintains this file. A reader does not care
+     * where a block sits or why, and being told the reasoning is faintly insulting — it explains
+     * the shelf instead of the thing on it. What they need is that all three are real now.
+     */
+    title: 'Three things worth knowing',
+    lede: 'All three of these are running today, and all three are easy to miss.',
     items: [
       {
         title: 'Mining that runs in a browser tab',
@@ -141,11 +188,22 @@ export const HOME = {
         body: 'No installer, no graphics card, no pool account. Open the page, press start, and the tab begins hashing. Your mining key is generated in the browser and never leaves it, and mining pauses on battery unless you say otherwise.',
       },
       {
-        title: 'A chain Ethereum tools already work with',
+        /**
+         * ── This was factually wrong, and the owner caught it ─────────────────────────────────
+         *
+         * It said "Hearth runs the Ethereum virtual machine". Hearth does not run Ethereum's EVM;
+         * it is a Node implementation of one, written here. The distinction matters both ways
+         * round: it overstates the borrowed guarantee — a reader could take it to mean audited
+         * upstream code is executing their contract, which it is not — and it understates what
+         * was actually built, which is a compatible virtual machine from scratch. The compatible
+         * part is the reader's benefit, so it stays; the claim to be running somebody else's code
+         * goes.
+         */
+        title: 'A chain your Ethereum tools already work with',
         accentKey: 'network' as SurfaceKey,
         linkTo: 'network',
         linkLabel: 'Connect a wallet or a toolchain',
-        body: `Hearth runs the Ethereum virtual machine. MetaMask, ethers, viem, Hardhat and Foundry connect to it unchanged — chain ${claim('emberChainId')} for the main network, ${claim('emberTestnetChainId')} for the test network. Contracts that compile for Ethereum deploy here as they are.`,
+        body: `Hearth is our own chain, and its virtual machine is an Ethereum-compatible one we wrote in Node rather than Ethereum's own. In practice that means MetaMask, ethers, viem, Hardhat and Foundry connect to it with no changes — chain ${claim('emberChainId')} for the main network, ${claim('emberTestnetChainId')} for the test network — and a contract written for Ethereum deploys here as it is.`,
       },
       {
         title: 'Six coins, not just ours',
@@ -157,11 +215,15 @@ export const HOME = {
     ],
   },
   closing: {
-    title: 'Built in the open, with the state of it written down',
+    title: 'New, and honest about it',
     // "It went public this week" was here, and a sentence carrying a week goes wrong on its own
     // after seven days without anybody editing it. The claim underneath it — new, and no track
     // record — is the one that is worth making and stays true for as long as it is true.
-    body: 'Most of this is built and running, and none of it has a track record behind it yet. Rather than pick whichever half of that flatters us, there is a page saying exactly where every part stands and how each of those states is checked.',
+    //
+    // The rest of the paragraph then explained our editorial policy: "Rather than pick whichever
+    // half of that flatters us…". The reader has to hold two abstractions to parse that and gets
+    // nothing for it. What they need is the two plain facts and where to go for the detail.
+    body: 'Almost everything described here is built and running. None of it has been running for long, and nothing has a track record yet. The build page goes through it part by part: what works, what does not, and how we check.',
   },
 } as const
 
@@ -175,15 +237,32 @@ export const HOME = {
  * opposite directions, on the same screen.
  */
 export const PRODUCTS_INDEX = {
+  /**
+   * ── The headline and the standfirst disagreed on the screen ─────────────────────────────────
+   *
+   * "Seven places to go, one account" sat directly above "Six destinations you choose between,
+   * plus the account they all run on". Both counts are correct — seven surfaces, of which six are
+   * products and one is Hub — but a reader meeting them a line apart just sees a page that cannot
+   * count, and has to work out the reconciliation themselves to find out it was never wrong.
+   *
+   * Both numbers stay derived from the registry rather than typed. The fix is to say the whole
+   * arithmetic in the headline, so the standfirst never has to correct it.
+   */
   eyebrow: 'The ecosystem',
-  headline: `${sentenceCase(surfaceCount())} places to go, one account`,
+  headline: `${sentenceCase(productCount())} places to spend EMBER, and the account behind them`,
   standfirst: [
-    `${sentenceCase(productCount())} destinations you choose between, plus the account they all run on. Each one shows what state it is really in, taken from the running estate rather than typed in here.`,
+    'Each one does a different job, and one sign-in gets you into all of them. Every one of them says how far along it is, and that is read from the running system rather than typed in here.',
   ],
   controlCentreTitle: 'The account everything runs on',
-  productsTitle: `The ${productCount()} destinations`,
-  productsLede:
-    'Listed in the order the product switcher uses, which is arranged so no two neighbouring colours can be mistaken for each other.',
+  productsTitle: `The ${productCount()} places`,
+  /**
+   * This lede read: "Listed in the order the product switcher uses, which is arranged so no two
+   * neighbouring colours can be mistaken for each other." That is a note about the design system,
+   * on a page whose reader is deciding what to try first. The colour rule is real and worth having
+   * — it is enforced in `ui/packages/ui/src/surfaces.ts` and tested — but a customer does not need
+   * to be told the ordering algorithm behind a list of six things.
+   */
+  productsLede: 'Any of them will work with the account you already have.',
   /**
    * ── This block said the opposite, and had said it for weeks ─────────────────────────────────
    *
@@ -198,10 +277,18 @@ export const PRODUCTS_INDEX = {
    * then built the thing and nobody came back. **A cautious false statement is still a false
    * statement**, and nobody ever investigates a claim that something does not exist.
    */
+  /**
+   * The last sentence used to be "The documentation is more use to them than a page like this
+   * one." The owner's note: "this is not a documentation, is a page in a site." They are right —
+   * this is a marketing site, and a marketing page that shrugs a reader off towards docs has
+   * declined to do its own job. It also read as an apology for an omission. The developer platform
+   * is not missing from this list; it belongs to a different question, and saying which question
+   * is the whole content of the section.
+   */
   notHere: {
-    title: 'What has no page here, and why',
+    title: 'One thing that is not on this list',
     body: [
-      'The developer platform — projects, API keys, webhooks, a software development kit and a sandbox — is built and running on its own surface. It has no page in this section because this section is about where a person spends EMBER, and a developer either already knows they want an API or does not. The documentation is more use to them than a page like this one.',
+      'The developer platform — projects, API keys, webhooks, a software development kit and a sandbox — is built and running, on its own site. It is not listed here because this page answers "where can I spend EMBER", and the developer platform answers a different one: how to build something of your own on top of all this. There is a link to it at the bottom of every page.',
     ],
   },
 } as const
@@ -209,13 +296,26 @@ export const PRODUCTS_INDEX = {
 /* ───────────────────────────── platform ───────────────────────────── */
 
 export const PLATFORM = {
+  /**
+   * ── This page opened with an argument instead of an offer ───────────────────────────────────
+   *
+   * The headline was "What one platform actually means" and the first sentence was "Sharing a logo
+   * does not make several products one platform." That is a position in a debate about the word
+   * "platform", and the owner's verdict was that a reader "doesn't want an explanation of what an
+   * ecosystem might be, wants to know what we have and we offer". The debate is also one we are
+   * having with ourselves — the reader has not accused us of anything.
+   *
+   * What survives is the substance: the list of eleven, unfinished parts marked. That was always
+   * the good part of this page, and it is now what the page opens by offering rather than what it
+   * offers after winning an argument first.
+   */
   eyebrow: 'The platform',
-  headline: 'What one platform actually means',
+  headline: 'One account, one wallet, one history',
   blurb:
-    'One account, one wallet, one portfolio, one history. What separates a platform from a set of apps sharing a logo — including the parts not true yet.',
+    'Everything on CloudsForge runs on a single account: one wallet, one balance, one record of what you have done — with the parts still being built marked as such.',
   standfirst: [
-    'Sharing a logo does not make several products one platform. What does is a specific list of statements about the account underneath them, and every one of them is either true today or on the list of work still to do.',
-    'The whole list is below, unfinished parts included. A definition you only publish once you pass it is not a definition, it is an advertisement.',
+    'Everything on CloudsForge runs on one account. That means one wallet holding one balance, one record of everything you have ever done here, and whatever you make in one product working in the others.',
+    `Below is the full list of what that has to mean — all ${claim('platformTests')} of them, with the ones we have not finished yet marked. We publish the unfinished ones because a list you only show once you pass it tells the reader nothing about the ones you failed.`,
   ],
   /**
    * Verbatim from docs/ecosystem/01-product-vision.md §2, minus the "Today" column.
@@ -290,8 +390,16 @@ export const PLATFORM = {
  * at the bottom and the places to spend it at the top are the same project.
  */
 export const ABOUT = {
-  eyebrow: 'The ecosystem',
-  headline: 'An ecosystem, from the currency up',
+  /**
+   * The headline was "An ecosystem, from the currency up" under the eyebrow "The ecosystem", which
+   * is what the ECOSYSTEM page is called. The owner clicked About and reported landing on the
+   * ecosystem page. They had not — the scroll bug in `components/shell.tsx` was putting them
+   * part-way down other pages too — but on this one the top of the page genuinely reads as the
+   * wrong page, and two pages that announce themselves with the same noun are one page as far as
+   * anybody navigating is concerned. This page's actual subject is the reasoning, so it says so.
+   */
+  eyebrow: 'About us',
+  headline: 'Why we built it this way',
   blurb:
     'CloudsForge makes the currency, the rails that move it, the tools that create with it and the worlds that spend it. Why it is built that way.',
   standfirst: [
