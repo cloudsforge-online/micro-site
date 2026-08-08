@@ -260,9 +260,33 @@ function SiteFooter() {
         {/*
           The closing line is the build page's own honesty section rather than a second copy of it.
           When that sentence stops being true it stops being true here at the same instant.
+
+          ── IT IS `body[1]`, THE DENIAL, AND IT USED TO BE `body[0]`, THE REASSURANCE ───────────
+
+          `BUILD.honesty` is a two-part disclosure and the halves are not interchangeable. The
+          title is the flattering claim — "Open to the public, and days old". `body[0]` elaborates
+          it: everything is built, it runs against real databases and a real EMBER network, an
+          automated suite drives a real browser and fakes nothing. `body[1]` is what that does NOT
+          mean: the main network is a few hundred blocks old, EMBER has no market, no listing and
+          no price, nobody outside the project has used any of this, and there are no user numbers
+          here for the same reason there is no uptime figure.
+
+          The footer carried the title and then `body[0]` — the good news, twice, under a heading
+          about honesty — while the denial appeared on `/build` alone. That is the shape this whole
+          site is arranged against, and it was worst exactly where it mattered most: the home page
+          invites a reader to mine EMBER and never said the coin has no price. The estate's rule
+          (docs/ecosystem/18-build-status.md:38, restated for both networks at :118-122, and rule 4
+          of docs/ecosystem/32-roadmap-ui-and-content.md §1) is that the page inviting someone to
+          mine EMBER must also say what EMBER is not.
+
+          So the pair rendered here is the claim and its denial — the title, then `body[1]` — and
+          that pair is now in chrome, which means it is on every address this site serves rather
+          than on the one page a convinced reader has no reason to open. `body[0]` is not lost: it
+          is the first paragraph of the callout on `/build`, one click away, above the
+          surface-by-surface table.
         */}
         <p className="si-footer__note">
-          <strong>{BUILD.honesty.title}.</strong> {BUILD.honesty.body[0]}{' '}
+          <strong>{BUILD.honesty.title}.</strong> {BUILD.honesty.body[1]}{' '}
           <Link to="/build">Where each part stands</Link>
         </p>
       </div>

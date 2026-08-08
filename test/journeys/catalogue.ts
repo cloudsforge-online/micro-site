@@ -522,6 +522,60 @@ export const CATALOGUE: readonly Scenario[] = [
     },
   },
 
+  /* ---- doc 32 §2.1, the footer row ------------------------------------- */
+  {
+    id: 'BJ-SITE-09',
+    title: 'the footer says EMBER has no price, on every address this site serves',
+    tier: 1,
+    asserts: 'presentation',
+    gate: true,
+    async run(surface) {
+      /*
+       * THE DENIAL IS IN THE CHROME, WHICH IS THE ONLY PLACE IT IS WORTH ANYTHING.
+       *
+       * `BUILD.honesty` is a two-part disclosure. The footer rendered the reassuring half —
+       * everything is built, it runs against real databases, an automated suite fakes nothing —
+       * and the denial appeared on `/build` alone. The home page therefore invited a reader to
+       * mine EMBER, said "Open to the public" underneath it, and never once said the coin has no
+       * price. docs/ecosystem/32-roadmap-ui-and-content.md §2.1 is the record of that; rule 4 of
+       * its §1 and docs/ecosystem/18-build-status.md:38 are the estate rule it breaks.
+       *
+       * EVERY address, not the home page. A caveat that is one navigation away from the invitation
+       * is a caveat the invited reader never meets, and this site has eleven addresses.
+       *
+       * LITERALS, and scoped to the footer. Comparing the rendered page against `BUILD` — the
+       * module the footer renders from — proves only that it is still wired to it: rewriting
+       * pages.ts moves both sides and stays green. These two sentences are the product decision,
+       * so they are written out here, and they are read from `.si-footer__note` rather than from
+       * the body, because the same words appear in the callout on `/build` and a page-wide search
+       * would have passed with the footer put back the way it was.
+       */
+      for (const path of OWNED) {
+        const session = await renderOnlyWithStubbedNetwork(surface.origin, { path, stubs: ANONYMOUS })
+        try {
+          await assertMounted(session)
+          const note = await session.page.locator('.si-footer__note').first().innerText()
+          assert.ok(
+            note.includes('no market, no listing and no price'),
+            `${path}: the footer no longer says EMBER has no price. It says: ${note.slice(0, 200)}`,
+          )
+          assert.ok(
+            note.includes('Nobody outside the project has used any of this yet'),
+            `${path}: the footer no longer says nobody outside the project has used it. It says: ${note.slice(0, 200)}`,
+          )
+          // The claim is still made, and it is still made first. A denial with nothing to deny
+          // reads as an apology, and the heading is the half a reader is owed the limits on.
+          assert.ok(
+            note.includes(BUILD.honesty.title),
+            `${path}: the footer dropped the claim its denial qualifies`,
+          )
+        } finally {
+          await session.close()
+        }
+      }
+    },
+  },
+
   /* ---- estate-wide, on this surface ------------------------------------ */
   {
     id: 'BJ-ACC-06',
