@@ -51,7 +51,7 @@ on:
     # `design-system/**` builds too, because the shared-layer adoption lives on a branch until it
     # is reviewed and a branch that cannot publish an image cannot be deployed to testnet to BE
     # reviewed. Mainnet is unaffected: it pins a version tag, and only `main` cuts one it pins.
-    branches: [main, 'design-system/**']
+    branches: [main, 'design-system/**', 'release/**']
   pull_request:
 
 permissions:
@@ -527,8 +527,10 @@ jobs:
     needs: [check, rules, image, hygiene]
     # A green push to main or to a design-system branch, and nothing else. An image tag a release
     # manifest pins has to name something that passed, on the branch it will be deployed from.
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' ||
-      startsWith(github.ref, 'refs/heads/design-system/'))
+    if: >-
+      github.event_name == 'push' && (github.ref == 'refs/heads/main' ||
+      startsWith(github.ref, 'refs/heads/design-system/') ||
+      startsWith(github.ref, 'refs/heads/release/'))
     uses: cloudsforge-online/micro-org/.github/workflows/publish-image.yml@main
     with:
       # `web`, so the producer checks micro-ui out as the `uipkg` named build context this
