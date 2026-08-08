@@ -11,7 +11,13 @@
  * `src` for a literal hostname — a hard-coded `https://trade.cloudsforge.online` would be a second,
  * unversioned copy of the surface list, and the copy is always the one that ends up wrong.
  */
-import { cloudsforgeHosts, type CloudsForgeHosts, type SurfaceKey } from '@cloudsforge/ui'
+import {
+  cloudsforgeHosts,
+  envLabel,
+  splitEnvLabel,
+  type CloudsForgeHosts,
+  type SurfaceKey,
+} from '@cloudsforge/ui'
 
 /**
  * The surface this application IS.
@@ -71,4 +77,71 @@ export function apiBase(): string {
 /** The page origin, or a stable placeholder when there is no document (tests, prerender). */
 export function pageOrigin(): string {
   return typeof window === 'undefined' ? 'http://localhost' : window.location.origin
+}
+
+/**
+ * WHICH ESTATE THIS BUNDLE IS BEING READ ON: `''` for the live one, `'testnet'` for the rehearsal.
+ *
+ * ── Why this exists at all ────────────────────────────────────────────────────────────────────
+ *
+ * There was no environment awareness anywhere in `src`, and there are two estates serving this
+ * bundle. Measured 2026-08-07 and recorded in docs/ecosystem/32-roadmap-ui-and-content.md §2: both
+ * apexes answer 200 and serve the same asset. So a reader on the test network was told, by the
+ * footer, that the platform is open to the public — while being shown throwaway money on a chain
+ * that gets reset. `src/content/stages.ts` had already written the argument down, in the note
+ * explaining why no testnet name may appear in `PUBLIC_SURFACES`: a reader sent to a testnet
+ * address "is being shown a rehearsal … and nothing on the card that says so".
+ *
+ * ── It is derived exactly the way `cloudsforgeHosts()` derives its hosts, and by the same code ─
+ *
+ * The environment lives INSIDE the first hostname label, as a suffix — `hub-testnet.<apex>`, and
+ * the bare `testnet.<apex>` for the apex surface, which has no subdomain to suffix. That is the
+ * design system's model, not this site's, so `splitEnvLabel` is imported rather than reimplemented:
+ * a second opinion about what a testnet hostname looks like would be a second thing to get wrong,
+ * and it would be wrong silently — the banner would simply never appear.
+ *
+ * Local development is the LIVE label rather than an environment of its own. There is one dev
+ * estate, a reader of it is the person building it, and "this is a rehearsal, go to the live site"
+ * pointing at a localhost port would be noise. A hostname with two labels is an apex and has no
+ * first label to spend on an environment, which is the same rule `cloudsforgeHosts()` applies.
+ */
+export function environment(): string {
+  const host = typeof window === 'undefined' ? '' : window.location.hostname
+  if (!host || host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local')) return ''
+  const parts = host.split('.')
+  if (parts.length <= 2) return ''
+  return splitEnvLabel(parts[0] ?? '')?.env ?? ''
+}
+
+/** Is this the test network — the estate whose coins are not the real ones? */
+export function isTestnet(): boolean {
+  return environment() === 'testnet'
+}
+
+/**
+ * A surface's address on the UNADORNED estate: the same registry entry, with the environment
+ * label taken off the first hostname label.
+ *
+ * ── This is why the testnet banner's link is not a typed hostname ─────────────────────────────
+ *
+ * `src/content/pages.ts` forbids naming a hostname in copy and CI greps the whole of `src` for
+ * one, so "go to the live site" cannot ship as an `href` somebody typed. It is composed instead
+ * out of the two things that already know the answer: `cloudsforgeHosts()`, which resolves the
+ * surface for the estate this page is on, and `envLabel(subdomain, '')`, the design system's own
+ * inverse of the split above. Nothing here knows what the apex is called.
+ *
+ * On an estate with no environment label — the live one, a preview deployment, localhost — every
+ * hostname is already unadorned and this returns the registry's answer untouched.
+ */
+export function liveUrl(key: SurfaceKey): string {
+  const resolved = hosts()[key]
+  const url = new URL(resolved)
+  const parts = url.hostname.split('.')
+  const split = parts.length > 2 ? splitEnvLabel(parts[0] ?? '') : null
+  if (!split) return resolved
+  const first = envLabel(split.subdomain, '')
+  url.hostname = [first, ...parts.slice(1)].filter((label) => label.length > 0).join('.')
+  // A surface may be a path on another surface (the wallet inside Hub), so the path is kept and
+  // the bare `/` a URL adds to an origin is not — the registry's own entries carry neither.
+  return `${url.origin}${url.pathname === '/' ? '' : url.pathname}`
 }

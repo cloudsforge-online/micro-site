@@ -30,14 +30,22 @@
  * Every one of these can fail. Several of them did while this file was being written.
  */
 import assert from 'node:assert/strict'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, it } from 'node:test'
 import { PRODUCTS, SURFACES } from '@cloudsforge/ui'
 import { CLAIMS, allowedNumbers } from '../src/content/claims.ts'
 import { PRODUCT_PAGES, hubPage, productCards } from '../src/content/products.ts'
 import { STAGE_LABEL, STAGE_MEANING } from '../src/content/stages.ts'
-import { ABOUT, BUILD, HOME, NOT_FOUND, PLATFORM, PRODUCTS_INDEX } from '../src/content/pages.ts'
+import {
+  ABOUT,
+  BUILD,
+  HOME,
+  NOT_FOUND,
+  PLATFORM,
+  PRODUCTS_INDEX,
+  TESTNET_NOTICE,
+} from '../src/content/pages.ts'
 import { LEGAL_PAGES } from '../src/content/legal.ts'
 import { ROUTES } from '../src/lib/routes.ts'
 
@@ -101,6 +109,11 @@ function publishedCopy(): CopyString[] {
   // it is unscanned; that is the one manual step in this file and it is why the block above ends
   // with a floor on how many strings the walk must find.
   collect(PRODUCTS_INDEX, 'PRODUCTS_INDEX', out)
+  // The testnet notice is chrome rather than a page — it is rendered above the navigation on every
+  // address — and it is copy like everything else. Left out of this walk it would be the one
+  // sentence on the site holding no register, no hostname scan and no placeholder check, which is
+  // a poor thing for the sentence whose entire job is to be believed.
+  collect(TESTNET_NOTICE, 'TESTNET_NOTICE', out)
   collect(PRODUCT_PAGES, 'PRODUCT_PAGES', out)
   collect(LEGAL_PAGES, 'LEGAL_PAGES', out)
   // The route summaries are rendered in the footer and on the 404, so they are copy too.
@@ -423,6 +436,84 @@ describe('stages', () => {
     ] as const) {
       assert.ok(pattern.test(honesty), `the honesty block no longer says: ${what}`)
     }
+  })
+})
+
+/**
+ * The one sentence on this site that is addressed to a reader of the OTHER estate.
+ *
+ * Both apexes serve the same bundle — measured 2026-08-07 and recorded in
+ * docs/ecosystem/32-roadmap-ui-and-content.md §2 — so until this notice existed, the testnet apex
+ * told a reader the platform was "Open to the public" over throwaway money on a chain that gets
+ * reset. `src/content/stages.ts` had already written the argument down and could not act on it,
+ * because there was no environment awareness anywhere in `src`.
+ */
+describe('the testnet notice', () => {
+  it('names the network, and states the two things a reader cannot check for themselves', () => {
+    // Literals, not the constant: everything in this file that compares copy to the module the
+    // page renders from moves when the module moves. These three are the product decision.
+    assert.match(TESTNET_NOTICE.title, /test network/i, 'the notice no longer names the network')
+    assert.match(
+      TESTNET_NOTICE.body,
+      /the coins are not the real ones/i,
+      'the notice no longer denies that the money here is real, which is the whole of it',
+    )
+    assert.match(
+      TESTNET_NOTICE.body,
+      /reset without notice/i,
+      'the notice no longer says the chain is reset, so a reader may keep something here',
+    )
+  })
+
+  it('offers the way out, and names it as a destination rather than as a mechanism', () => {
+    assert.match(TESTNET_NOTICE.linkLabel, /live site/i)
+    // Rule 5 of the track this was written under: a claim that invites verification carries the
+    // link that permits it. The href itself cannot be here — nothing under `src` may spell a
+    // hostname — so what is pinned here is that the label exists and `test/hosts.test.ts` pins
+    // what `liveUrl()` composes.
+    assert.ok(TESTNET_NOTICE.linkLabel.trim().length > 8)
+  })
+
+  it('denies no capability the test network actually has', () => {
+    // The failure this forbids is a real one in this estate, recorded in §4.2 of the same
+    // document: `network-site` still tells a reader the testnet "is unreachable from outside"
+    // while `POST eth_chainId` to its public RPC answers. A caveat that overstates is retracted
+    // later at the cost of everything around it, so the words are scanned here.
+    const notice = Object.values(TESTNET_NOTICE).join(' ')
+    for (const forbidden of [/unreachable/i, /\bbroken\b/i, /\boffline\b/i, /temporar/i]) {
+      assert.ok(!forbidden.test(notice), `the notice claims more than a rehearsal: ${notice}`)
+    }
+  })
+
+  it('is rendered in the chrome, above the navigation, and only on the test network', () => {
+    /*
+     * READ OUT OF THE COMPONENT, because nothing else can see this one.
+     *
+     * The browser suite serves this bundle from localhost, where `environment()` is correctly
+     * empty and the notice correctly does not render — so a scenario in `test/journeys` cannot
+     * assert it exists, and a notice that was declared, tested as a string, and wired to nothing
+     * would pass every other check in this file.
+     *
+     * Comments are stripped first, for the reason the CI hostname grep strips them: the component
+     * explains itself by naming both `isTestnet` and `SiteNav` in prose, and a raw scan would pass
+     * against a version of it that renders nothing at all.
+     */
+    const source = readFileSync(new URL('../src/components/shell.tsx', import.meta.url), 'utf8')
+    const code = source
+      .split('\n')
+      .filter((line) => !/^\s*(?:\/\*|\*|\/\/)/.test(line))
+      .join('\n')
+
+    const notice = code.indexOf('<EnvironmentNotice />')
+    const nav = code.indexOf('<SiteNav />')
+    assert.ok(notice > -1, 'the shell no longer renders the environment notice')
+    assert.ok(nav > -1, 'the shell no longer renders its own navigation')
+    assert.ok(notice < nav, 'the environment notice is below the navigation rather than above it')
+    assert.match(
+      code,
+      /if \(!isTestnet\(\)\) return null/,
+      'the environment notice no longer checks the environment, so it renders on the live estate too',
+    )
   })
 })
 

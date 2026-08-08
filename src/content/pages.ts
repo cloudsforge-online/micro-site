@@ -19,6 +19,40 @@ import { claim } from './claims.ts'
 import { productCount, sentenceCase } from './products.ts'
 import type { SurfaceKey } from '@cloudsforge/ui'
 
+/* ────────────────────────────── chrome ────────────────────────────── */
+
+/**
+ * The strip a reader of the TEST NETWORK sees above the navigation, on every page.
+ *
+ * ── The defect it closes ──────────────────────────────────────────────────────────────────────
+ *
+ * Two estates serve this bundle and, until this existed, they served it identically: measured
+ * 2026-08-07 and recorded in docs/ecosystem/32-roadmap-ui-and-content.md §2, the live apex and the
+ * testnet apex both answered 200 with the same asset. So the footer's "Open to the public" was
+ * being read by people looking at a rehearsal. `./stages.ts` had already written the argument, in
+ * the note on why no testnet name may join `PUBLIC_SURFACES`: a reader sent to a testnet address
+ * is shown throwaway money and a chain that gets reset, "and nothing on the card that says so".
+ *
+ * ── What it may and may not say ───────────────────────────────────────────────────────────────
+ *
+ * It states the two facts a reader cannot check for themselves and would otherwise assume the
+ * opposite of — the coins are not the real ones, and the chain is reset without notice — and it
+ * offers the way out. It does NOT say the test network is broken, or unreachable, or temporary:
+ * none of those is true, and this site has already had to retract one caveat that denied a
+ * capability the same page rendered a control for.
+ *
+ * `linkLabel` names the destination rather than the mechanism ("Go to the live site", not "switch
+ * network"). The destination itself is `liveUrl()` in `src/lib/hosts.ts` and is composed from the
+ * registry, because the rule at the head of this file — what `test/content.test.ts` is for is
+ * partly "what stops a hostname being typed into a sentence" — and the CI grep behind it both
+ * forbid a hostname appearing anywhere under `src`.
+ */
+export const TESTNET_NOTICE = {
+  title: 'This is the test network',
+  body: 'Everything here is a rehearsal — the coins are not the real ones and the chain is reset without notice.',
+  linkLabel: 'Go to the live site',
+} as const
+
 /* ─────────────────────────────── home ─────────────────────────────── */
 
 export const HOME = {
