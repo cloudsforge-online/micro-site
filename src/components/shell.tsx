@@ -13,11 +13,11 @@
 import { useEffect } from 'react'
 import { CloudsForgeBar, CookieBanner, PRODUCTS as REGISTRY_PRODUCTS, surface } from '@cloudsforge/ui'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { hosts, PRODUCT } from '../lib/hosts.ts'
+import { hosts, isTestnet, liveUrl, PRODUCT } from '../lib/hosts.ts'
 import { NAV, ROUTES } from '../lib/routes.ts'
 import { applyMeta, metaFor } from '../lib/meta.ts'
 import { useSession } from '../lib/auth.tsx'
-import { BUILD } from '../content/pages.ts'
+import { BUILD, TESTNET_NOTICE } from '../content/pages.ts'
 import { Ridge } from './parts.tsx'
 
 export function AppShell() {
@@ -37,6 +37,7 @@ export function AppShell() {
 
       <CloudsForgeBar current={PRODUCT} account={account} onSignIn={() => signIn()} onSignOut={signOut} />
 
+      <EnvironmentNotice />
       <SiteNav />
       <DocumentMeta />
 
@@ -61,6 +62,55 @@ export function AppShell() {
       */}
       <CookieBanner privacyHref="/privacy" />
     </>
+  )
+}
+
+/**
+ * The strip that says which estate this is, on every page, above everything this site owns.
+ *
+ * ── It renders nothing on the live estate, and that is the whole design ───────────────────────
+ *
+ * There is exactly one environment a reader must be told about, because there is exactly one where
+ * the page would otherwise be misread: the test network, whose coins are not the real ones. The
+ * live estate needs no banner saying it is live — chrome that appears everywhere and says nothing
+ * is chrome people stop seeing, and the day it matters they will not see this one either.
+ *
+ * Testnet is the only label handled for the same reason. `staging`, `preview` and `dev` are legal
+ * environment labels in the design system's registry and none of them is served to the public;
+ * rendering this sentence over one of them would be a claim about a rehearsal that nobody is being
+ * shown. If one of them ever faces a reader it gets its own words rather than these.
+ *
+ * ── ABOVE the navigation, not inside it and not below it ──────────────────────────────────────
+ *
+ * The nav is `position: sticky` under the shared bar and the notice is not: this is a fact about
+ * the whole visit, said once, at the top, where it is read before anything it qualifies. A sticky
+ * banner would be a permanent bite out of a phone screen for a sentence that changes nothing after
+ * it has been read.
+ *
+ * `role="note"` rather than `alert` — the same choice, for the same reason, as the incompleteness
+ * notice on the legal pages. Being on the test network is a standing property of the page a reader
+ * has opened, not an event that has just happened, and an alert would interrupt a screen reader on
+ * every single navigation. It carries no heading, because the first heading in this document must
+ * remain the page's own `h1`.
+ */
+function EnvironmentNotice() {
+  if (!isTestnet()) return null
+  return (
+    <aside className="si-envnotice" role="note">
+      <p className="si-envnotice__inner">
+        <strong>{TESTNET_NOTICE.title}.</strong> {TESTNET_NOTICE.body}{' '}
+        {/*
+          A registry lookup, never a typed hostname — the rule this site holds every other outbound
+          link to, and the one most easily broken here, because "the live site" is the one address
+          on the estate that a person writing this sentence can spell from memory. `liveUrl` takes
+          the environment label off THIS surface's own resolved address, so a reader on the testnet
+          apex is offered the live apex and a reader anywhere else is offered nothing at all.
+        */}
+        <a className="si-envnotice__link" href={liveUrl(PRODUCT)}>
+          {TESTNET_NOTICE.linkLabel}
+        </a>
+      </p>
+    </aside>
   )
 }
 
@@ -210,9 +260,33 @@ function SiteFooter() {
         {/*
           The closing line is the build page's own honesty section rather than a second copy of it.
           When that sentence stops being true it stops being true here at the same instant.
+
+          ── IT IS `body[1]`, THE DENIAL, AND IT USED TO BE `body[0]`, THE REASSURANCE ───────────
+
+          `BUILD.honesty` is a two-part disclosure and the halves are not interchangeable. The
+          title is the flattering claim — "Open to the public, and days old". `body[0]` elaborates
+          it: everything is built, it runs against real databases and a real EMBER network, an
+          automated suite drives a real browser and fakes nothing. `body[1]` is what that does NOT
+          mean: the main network is a few hundred blocks old, EMBER has no market, no listing and
+          no price, nobody outside the project has used any of this, and there are no user numbers
+          here for the same reason there is no uptime figure.
+
+          The footer carried the title and then `body[0]` — the good news, twice, under a heading
+          about honesty — while the denial appeared on `/build` alone. That is the shape this whole
+          site is arranged against, and it was worst exactly where it mattered most: the home page
+          invites a reader to mine EMBER and never said the coin has no price. The estate's rule
+          (docs/ecosystem/18-build-status.md:38, restated for both networks at :118-122, and rule 4
+          of docs/ecosystem/32-roadmap-ui-and-content.md §1) is that the page inviting someone to
+          mine EMBER must also say what EMBER is not.
+
+          So the pair rendered here is the claim and its denial — the title, then `body[1]` — and
+          that pair is now in chrome, which means it is on every address this site serves rather
+          than on the one page a convinced reader has no reason to open. `body[0]` is not lost: it
+          is the first paragraph of the callout on `/build`, one click away, above the
+          surface-by-surface table.
         */}
         <p className="si-footer__note">
-          <strong>{BUILD.honesty.title}.</strong> {BUILD.honesty.body[0]}{' '}
+          <strong>{BUILD.honesty.title}.</strong> {BUILD.honesty.body[1]}{' '}
           <Link to="/build">Where each part stands</Link>
         </p>
       </div>

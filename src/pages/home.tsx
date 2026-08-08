@@ -10,19 +10,39 @@
  * products in this file.
  */
 import { Link } from 'react-router-dom'
+import { minePage } from '../lib/hosts.ts'
 import { HOME } from '../content/pages.ts'
 import { productCards, productCount } from '../content/products.ts'
 import { PLATFORM } from '../content/pages.ts'
 import { Ridge, Section, StageChip, SurfaceMark, accentProps } from '../components/parts.tsx'
 
+/*
+ * ── The order, and the fact that it is the only editorial change on this page ─────────────────
+ *
+ * Products moved UP, above Capabilities: Hero → Ember → Products → Capabilities → Spans → Closing.
+ * A reader who has just been told what an EMBER is for should meet the things it is for sale in
+ * before meeting three pieces of detail about how the platform is put together — the capabilities
+ * block is an argument, and an argument lands better after its subject has been shown than before.
+ *
+ * docs/ecosystem/32-roadmap-ui-and-content.md §2.2 proposes this and, unusually for that document,
+ * says so about itself: "This is the least evidence-backed proposal in this document — it is an
+ * editorial judgement, not a measurement." Everything else changed on this page is a defect with a
+ * citation. Nothing here is measured, nothing was moved to fix anything, and no assertion in the
+ * suite required it, which is why it arrived as its own commit and can be reverted on its own
+ * without taking a single fix with it.
+ *
+ * What the order still owes a reader is fixed and is tested: BJ-SITE-01 reads document order out of
+ * the rendered page and holds Hero before Ember before Spans, and Closing — the state this is
+ * actually in — stays last on the page rather than being buried on another one.
+ */
 export function HomePage() {
   return (
     <>
       <Hero />
       <Ridge />
       <Ember />
-      <Capabilities />
       <Products />
+      <Capabilities />
       <Spans />
       <Ridge />
       <Closing />
@@ -54,14 +74,33 @@ function Hero() {
           Both buttons said "What is …", which is a category rather than a destination: a reader
           cannot tell from "What is here" whether it leads to a product list, a manifesto or a
           changelog. Each one now names what is on the other side of it.
+
+          ── AND THE PRIMARY ONE IS NOW THE THING THE SENTENCE ABOVE IT INSTRUCTS ────────────────
+
+          The standfirst says "Press start on the mining page". It said so with no button: `grep`
+          for `href=` and `hosts()` in this file returned nothing, and the shortest route from that
+          promise to the product was `/products` → `/products/network` → an aside part way down it
+          — three clicks and two page loads (docs/ecosystem/32-roadmap-ui-and-content.md §2.1).
+
+          Mining is also the only complete journey this estate can currently offer a stranger,
+          because it is the only one that needs no account: registration cannot be completed today
+          (§6.3 of the same document, traced on the host). A front door whose loudest button ends
+          at an undeliverable verification email would be worse than this one.
+
+          The product list is kept and demoted to a plain link below. The count stays admissible
+          under the rule at the top of this file's content module because `productCount()` derives
+          it from the registry rather than stating it.
         */}
-        <Link className="si-btn si-btn--accent" to="/products">
-          See the {productCount()} products
-        </Link>
+        <a className="si-btn si-btn--accent" href={minePage()}>
+          Start mining
+        </a>
         <Link className="si-btn" to="/build">
           See what already works
         </Link>
       </div>
+      <p className="si-hero__more">
+        <Link to="/products">See the {productCount()} products</Link>
+      </p>
     </section>
   )
 }
@@ -128,6 +167,20 @@ function Capabilities() {
             <p className="si-points__body">{item.body}</p>
             <p className="si-points__more">
               <Link to={`/products/${item.linkTo}`}>{item.linkLabel}</Link>
+              {/*
+                A second link where the item has one, which today is mining and only mining. The
+                page about it is for the reader still deciding; this is for the reader who has, and
+                without it the most convincing item on the front page could only offer them another
+                page. `minePage()` is the same destination as the hero's primary button.
+              */}
+              {'startLabel' in item && (
+                <>
+                  <span className="si-points__sep" aria-hidden="true">
+                    ·
+                  </span>
+                  <a href={minePage()}>{item.startLabel}</a>
+                </>
+              )}
             </p>
           </li>
         ))}

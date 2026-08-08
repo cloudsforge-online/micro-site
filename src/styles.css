@@ -180,6 +180,41 @@ body {
   top: calc(var(--cf-bar-h) + var(--cf-space-sm));
 }
 
+/*
+ * The environment notice: full width, above the navigation, and only ever drawn on the testnet.
+ *
+ * It borrows the legal notice's colouring — the warn token as a hairline and a 7% wash of it as
+ * the ground — because it is the same kind of statement: a standing caveat about the document,
+ * not an alarm. The type stays `--cf-fg`, so the sentence is read at full contrast and the colour
+ * carries only the framing. Colour is never the only channel here either: the words say which
+ * network this is, and the link says where the other one is.
+ *
+ * Not sticky. It qualifies the whole visit, is read once, and a permanent strip on a phone is a
+ * cost paid on every scroll for a sentence that has already done its work.
+ */
+.si-envnotice {
+  border-bottom: 1px solid var(--si-warn);
+  background: color-mix(in srgb, var(--si-warn) 7%, transparent);
+}
+
+.si-envnotice__inner {
+  max-width: var(--cf-max-w);
+  margin: 0 auto;
+  padding: var(--cf-space-md) var(--cf-space-xl);
+  color: var(--cf-fg);
+  font-size: var(--cf-text-md);
+}
+
+.si-envnotice__inner strong {
+  color: var(--si-warn);
+}
+
+.si-envnotice__link {
+  color: var(--si-accent);
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
 /* The site's own navigation, docked at exactly the shared bar's height token. */
 .si-nav {
   position: sticky;
@@ -414,6 +449,27 @@ a:hover {
   flex-wrap: wrap;
   gap: var(--cf-space-lg);
   margin-top: var(--cf-space-3xl);
+}
+
+/*
+ * The hero's third action: a plain link under the two buttons.
+ *
+ * The product list used to be the primary button and it is kept rather than deleted — a reader who
+ * wants the catalogue before the coin still has it, one line lower. What moved is the emphasis:
+ * three equal-weight buttons is a page that has not decided what it wants a stranger to do, and
+ * this one has.
+ */
+.si-hero__more {
+  margin: var(--cf-space-lg) 0 0;
+  font-size: var(--cf-text-md);
+}
+
+.si-hero__more a {
+  color: var(--si-accent);
+}
+
+.si-hero__more a:hover {
+  color: var(--si-accent-hover);
 }
 
 /* ─────────────────────────────── buttons ───────────────────────────── */
@@ -878,6 +934,16 @@ a:hover {
 
 .si-points__more a:hover {
   color: var(--si-accent-hover);
+}
+
+/*
+ * The separator between an item's two links. Decoration, and `aria-hidden` in the markup: a screen
+ * reader gets two links in a row, which is what they are, rather than a middot read aloud between
+ * them.
+ */
+.si-points__sep {
+  margin: 0 var(--cf-space-sm);
+  color: var(--cf-fg-mute);
 }
 
 /*

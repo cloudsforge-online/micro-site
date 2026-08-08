@@ -6,7 +6,7 @@
 import assert from 'node:assert/strict'
 import { afterEach, describe, it } from 'node:test'
 import type { CloudsForgeHosts } from '@cloudsforge/ui'
-import { hosts, resolveApiBase } from '../src/lib/hosts.ts'
+import { environment, hosts, isTestnet, liveUrl, resolveApiBase } from '../src/lib/hosts.ts'
 import { installWindow, removeWindow } from './browser-stubs.ts'
 
 afterEach(removeWindow)
@@ -40,6 +40,89 @@ describe('hosts()', () => {
   it('resolves a surface that is a path on another surface', () => {
     installWindow('https://hub.cloudsforge.online/')
     assert.equal(hosts().wallet, 'https://hub.cloudsforge.online/wallet')
+  })
+})
+
+/**
+ * WHICH ESTATE IS THIS, AND WHERE IS THE OTHER ONE.
+ *
+ * Both apexes serve this same bundle — measured 2026-08-07, `https://cloudsforge.online/` and
+ * `https://testnet.cloudsforge.online/` returned the same asset — so the only thing that can tell
+ * a reader they are looking at a rehearsal is code that reads the hostname at runtime. These cases
+ * are the whole of that code, and the failure they guard is SILENT in both directions: a banner
+ * that never appears looks exactly like a page that does not need one, and a banner that appears
+ * on the live estate is this site calling its own production network a rehearsal.
+ */
+describe('environment()', () => {
+  it('is unlabelled on the live estate, on the apex and on a product subdomain', () => {
+    installWindow('https://cloudsforge.online/')
+    assert.equal(environment(), '')
+    assert.equal(isTestnet(), false)
+    removeWindow()
+
+    installWindow('https://trade.cloudsforge.online/settings')
+    assert.equal(environment(), '')
+    assert.equal(isTestnet(), false)
+  })
+
+  it('reads the environment out of the first label, which is where it lives', () => {
+    // The bare apex form: the site surface has no subdomain to suffix, so the label stands alone.
+    installWindow('https://testnet.cloudsforge.online/build')
+    assert.equal(environment(), 'testnet')
+    assert.equal(isTestnet(), true)
+    removeWindow()
+
+    // …and the suffixed form every other surface uses. This site is never served here, but the
+    // helper is the estate's rule rather than this page's, and a rule that only works on one
+    // hostname shape is the rule that broke when testnet moved from a prefix to a suffix.
+    installWindow('https://hub-testnet.cloudsforge.online/')
+    assert.equal(environment(), 'testnet')
+  })
+
+  it('is unlabelled in local development, where there is no other estate to be sent to', () => {
+    installWindow('http://localhost:5180/')
+    assert.equal(environment(), '')
+    assert.equal(isTestnet(), false)
+  })
+
+  it('reads no environment out of a hostname that merely contains a hyphen', () => {
+    // A preview deployment is not an environment of this estate. `pr-42` splits into `pr` and
+    // `42`, neither of which is a registry subdomain or an environment label, and a banner here
+    // would tell a reviewer their own deployment is the test network.
+    installWindow('https://pr-42.example.dev/')
+    assert.equal(environment(), '')
+  })
+})
+
+describe('liveUrl()', () => {
+  it('takes the environment label off this surface, so the way out is composed and never typed', () => {
+    installWindow('https://testnet.cloudsforge.online/')
+    // The registry resolves `site` to the estate the reader is ON…
+    assert.equal(hosts().site, 'https://testnet.cloudsforge.online')
+    // …and this is the same surface on the estate that is not a rehearsal. Nothing in `src` may
+    // spell that address, which is exactly why it is derived here.
+    assert.equal(liveUrl('site'), 'https://cloudsforge.online')
+  })
+
+  it('takes it off a suffixed subdomain too, and keeps a surface that is a path on another', () => {
+    installWindow('https://testnet.cloudsforge.online/')
+    assert.equal(liveUrl('hub'), 'https://hub.cloudsforge.online')
+    // The wallet is a path inside Hub. Dropping the path would send a reader to Hub's front door
+    // and call it the wallet.
+    assert.equal(hosts().wallet, 'https://hub-testnet.cloudsforge.online/wallet')
+    assert.equal(liveUrl('wallet'), 'https://hub.cloudsforge.online/wallet')
+  })
+
+  it('changes nothing on an estate that carries no environment label', () => {
+    installWindow('https://cloudsforge.online/')
+    assert.equal(liveUrl('site'), 'https://cloudsforge.online')
+    assert.equal(liveUrl('hub'), 'https://hub.cloudsforge.online')
+    removeWindow()
+
+    // Including localhost: there is one dev estate, and the live twin of it is itself.
+    installWindow('http://localhost:5180/')
+    assert.equal(liveUrl('site'), hosts().site)
+    assert.equal(liveUrl('trade'), 'http://localhost:4006')
   })
 })
 
