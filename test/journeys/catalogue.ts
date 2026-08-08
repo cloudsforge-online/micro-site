@@ -21,7 +21,7 @@ import { PRODUCTS, SWITCHER_SURFACES } from '@cloudsforge/ui'
 import { assertMounted, renderOnlyWithStubbedNetwork, type Stubs } from './browser.ts'
 import { assertAxeClean, assertKnownStillBroken, textOrder, type KnownViolation } from './axe.ts'
 import type { Scenario } from './scenario.ts'
-import { PRODUCT_PAGES } from '../../src/content/products.ts'
+import { PRODUCT_PAGES, productCount } from '../../src/content/products.ts'
 import { LEGAL_PAGES } from '../../src/content/legal.ts'
 import { ABOUT, BUILD, HOME, PLATFORM } from '../../src/content/pages.ts'
 
@@ -572,6 +572,78 @@ export const CATALOGUE: readonly Scenario[] = [
         } finally {
           await session.close()
         }
+      }
+    },
+  },
+
+  /* ---- doc 32 §2.1, the hero row --------------------------------------- */
+  {
+    id: 'BJ-SITE-10',
+    title: 'the loudest thing on the front page is the one journey a stranger can finish',
+    tier: 1,
+    // `presentation`, not `navigation`: this asserts what the page OFFERS, and it never follows the
+    // link. The miner is another repository's surface and its status is that repository's to keep.
+    asserts: 'presentation',
+    gate: true,
+    async run(surface) {
+      /*
+       * THE STANDFIRST IS AN INSTRUCTION AND THE PAGE HAD NO BUTTON FOR IT.
+       *
+       * "Press start on the mining page" was written above two buttons that went to `/products`
+       * and `/build`: the shortest route from the promise to the product was three clicks and two
+       * page loads (docs/ecosystem/32-roadmap-ui-and-content.md §2.1). Mining is also the only
+       * complete journey this estate can offer a stranger today, because it is the only one that
+       * needs no account, and registration cannot be completed (§6.3, traced on the host).
+       *
+       * The assertion is about EMPHASIS, not presence, so it is the FIRST action that is checked
+       * and the product list is checked to have survived as something quieter. Putting the old
+       * button back would leave both links on the page and would go red here.
+       *
+       * The href is read for two properties that together prove it is a registry lookup: it is
+       * absolute, so it is not an in-app route somebody typed as `/mine`, and it is on an origin
+       * this site is not served from, so it crossed to another surface the way `hosts()` resolves
+       * every other outbound link. The hostname itself is never named — this file may no more
+       * type one than `src` may.
+       */
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, { stubs: ANONYMOUS })
+      try {
+        await assertMounted(session)
+
+        const primary = session.page.locator('.si-hero__actions > *').first()
+        assert.equal((await primary.innerText()).trim(), 'Start mining')
+        const href = (await primary.getAttribute('href')) ?? ''
+        assert.ok(href.endsWith('/mine'), `the hero's first action does not end at the miner: ${href}`)
+        assert.ok(/^https?:\/\//.test(href), `the hero's first action is not a resolved address: ${href}`)
+        assert.notEqual(
+          new URL(href).origin,
+          surface.origin,
+          'the hero sends the reader to this site rather than to the network surface',
+        )
+
+        // The secondary action is kept and stays second: "what already works" is the answer to the
+        // objection the primary action raises, and it is worth nothing after the reader has left.
+        const secondary = session.page.locator('.si-hero__actions > *').nth(1)
+        assert.equal((await secondary.innerText()).trim(), 'See what already works')
+        assert.equal(await secondary.getAttribute('href'), '/build')
+
+        // The product list is demoted, not deleted, and the count still comes from the registry.
+        const more = session.page.locator('.si-hero__more a')
+        assert.equal(await more.getAttribute('href'), '/products')
+        // The count is SPELLED and derived — `productCount()` reads the registry — so the sentence
+        // stays admissible under rule 1 of §1 and this assertion moves with a seventh product.
+        assert.equal((await more.innerText()).trim(), `See the ${productCount()} products`)
+        assert.equal(
+          await textOrder(session.page, 'Start mining', `See the ${productCount()} products`),
+          'before',
+        )
+
+        // …and the capability that describes mining offers the same destination, because the item
+        // that convinces a reader could otherwise only offer them another page to read.
+        const capability = session.page.locator(`.si-points__more a[href="${href}"]`)
+        assert.ok((await capability.count()) > 0, 'the mining capability offers no way to start mining')
+        assert.equal((await capability.first().innerText()).trim(), 'Start mining')
+      } finally {
+        await session.close()
       }
     },
   },

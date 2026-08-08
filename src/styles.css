@@ -451,6 +451,27 @@ a:hover {
   margin-top: var(--cf-space-3xl);
 }
 
+/*
+ * The hero's third action: a plain link under the two buttons.
+ *
+ * The product list used to be the primary button and it is kept rather than deleted — a reader who
+ * wants the catalogue before the coin still has it, one line lower. What moved is the emphasis:
+ * three equal-weight buttons is a page that has not decided what it wants a stranger to do, and
+ * this one has.
+ */
+.si-hero__more {
+  margin: var(--cf-space-lg) 0 0;
+  font-size: var(--cf-text-md);
+}
+
+.si-hero__more a {
+  color: var(--si-accent);
+}
+
+.si-hero__more a:hover {
+  color: var(--si-accent-hover);
+}
+
 /* ─────────────────────────────── buttons ───────────────────────────── */
 
 .si-btn {
@@ -913,6 +934,16 @@ a:hover {
 
 .si-points__more a:hover {
   color: var(--si-accent-hover);
+}
+
+/*
+ * The separator between an item's two links. Decoration, and `aria-hidden` in the markup: a screen
+ * reader gets two links in a row, which is what they are, rather than a middot read aloud between
+ * them.
+ */
+.si-points__sep {
+  margin: 0 var(--cf-space-sm);
+  color: var(--cf-fg-mute);
 }
 
 /*

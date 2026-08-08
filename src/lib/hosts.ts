@@ -80,6 +80,26 @@ export function pageOrigin(): string {
 }
 
 /**
+ * The mining page: `hosts().network` + the path the miner is mounted at.
+ *
+ * ── One function, because two literals is how the front page loses its only button ────────────
+ *
+ * The home page's standfirst is an INSTRUCTION — "press start on the mining page" — and until this
+ * existed the page offered no way to obey it: `grep` for `href=` and `hosts()` in
+ * `src/pages/home.tsx` returned nothing (docs/ecosystem/32-roadmap-ui-and-content.md §6.2). Two
+ * places now send a reader here, the hero's primary action and the mining capability's second
+ * link, and both call this rather than composing their own — a destination written twice is a
+ * destination that gets corrected once.
+ *
+ * `hosts().network` is a registry lookup and resolves per environment, so a reader of the test
+ * network is sent to the test network's miner rather than across the boundary the banner above
+ * the navigation has just told them about.
+ */
+export function minePage(): string {
+  return `${hosts().network}/mine`
+}
+
+/**
  * WHICH ESTATE THIS BUNDLE IS BEING READ ON: `''` for the live one, `'testnet'` for the rehearsal.
  *
  * ── Why this exists at all ────────────────────────────────────────────────────────────────────

@@ -223,6 +223,23 @@ export const HOME = {
         accentKey: 'network' as SurfaceKey,
         linkTo: 'network',
         linkLabel: 'How mining works',
+        /**
+         * A SECOND link, and the only thing on this list that can end the journey.
+         *
+         * This is the item a reader who has been convinced clicks, and until now the only thing it
+         * could offer them was another page about mining: `/products/network`, then the aside part
+         * way down it, then the outbound link. Three clicks and two page loads between the promise
+         * and the product, for the one action in this estate that needs no account at all
+         * (docs/ecosystem/32-roadmap-ui-and-content.md §6.1, step 3).
+         *
+         * Both links stay, because they answer different questions. "How mining works" is for the
+         * reader still deciding; this one is for the reader who has decided.
+         *
+         * The destination is NOT here. It is `minePage()` in `src/lib/hosts.ts` — the same
+         * function the hero's primary button calls, so the two cannot drift and neither of them
+         * spells a hostname, which nothing under `src` may do.
+         */
+        startLabel: 'Start mining',
         body: 'No installer, no graphics card, no pool account. Open the page, press start, and the tab begins hashing. Your mining key is generated in the browser and never leaves it, and mining pauses on battery unless you say otherwise.',
       },
       {
