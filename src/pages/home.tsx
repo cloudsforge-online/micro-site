@@ -16,14 +16,33 @@ import { productCards, productCount } from '../content/products.ts'
 import { PLATFORM } from '../content/pages.ts'
 import { Ridge, Section, StageChip, SurfaceMark, accentProps } from '../components/parts.tsx'
 
+/*
+ * ── The order, and the fact that it is the only editorial change on this page ─────────────────
+ *
+ * Products moved UP, above Capabilities: Hero → Ember → Products → Capabilities → Spans → Closing.
+ * A reader who has just been told what an EMBER is for should meet the things it is for sale in
+ * before meeting three pieces of detail about how the platform is put together — the capabilities
+ * block is an argument, and an argument lands better after its subject has been shown than before.
+ *
+ * docs/ecosystem/32-roadmap-ui-and-content.md §2.2 proposes this and, unusually for that document,
+ * says so about itself: "This is the least evidence-backed proposal in this document — it is an
+ * editorial judgement, not a measurement." Everything else changed on this page is a defect with a
+ * citation. Nothing here is measured, nothing was moved to fix anything, and no assertion in the
+ * suite required it, which is why it arrived as its own commit and can be reverted on its own
+ * without taking a single fix with it.
+ *
+ * What the order still owes a reader is fixed and is tested: BJ-SITE-01 reads document order out of
+ * the rendered page and holds Hero before Ember before Spans, and Closing — the state this is
+ * actually in — stays last on the page rather than being buried on another one.
+ */
 export function HomePage() {
   return (
     <>
       <Hero />
       <Ridge />
       <Ember />
-      <Capabilities />
       <Products />
+      <Capabilities />
       <Spans />
       <Ridge />
       <Closing />
