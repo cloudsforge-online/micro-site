@@ -425,3 +425,150 @@ describe('what the privacy page claims about this site', () => {
     assert.ok((section?.body ?? []).join(' ').includes('user-agent'))
   })
 })
+
+/* ────────── the cookie claims, against the package that actually sets them ────────── */
+
+/**
+ * THE CHECK ABOVE READS THIS REPOSITORY'S SOURCE, AND THAT IS EXACTLY HOW THE NOTICE BECAME FALSE.
+ *
+ * `what the privacy page claims about this site` scans `src/**` and `index.html` for
+ * `document.cookie` and for an external URL. Both scans were green, and both were green correctly:
+ * nothing in this repository writes a cookie or names a third-party host. The cookie and the Google
+ * Analytics loader arrive from `@cloudsforge/ui`, a linked sibling package whose source this
+ * repository does not scan — and `src/components/shell.tsx` renders that package's `CookieBanner`
+ * on every page of this site.
+ *
+ * So the estate shipped a consent banner, a cookie on the registrable domain and a third-party tag,
+ * while the privacy notice went on saying in a `stated`, marker-free section that there were no
+ * cookies anywhere, no analytics and no third-party script — and no test in either repository
+ * compared the two. Measured on the deployed apex on 2026-08-09: `GET https://cloudsforge.online/`
+ * carries `<meta name="cf-analytics">` with a live GA4 property, and the one bundle it loads
+ * contains BOTH the string `cf_consent_analytics` and the sentence "There are no cookies, on any
+ * CloudsForge site". Same artefact, both claims. micro-org#313.
+ *
+ * The notice itself already named this gap — it says the source scan "would not see ... one made by
+ * a third-party dependency rather than by code written here" — which is a confession, not a
+ * control. This suite is the control: it reads what the design system DOES and holds the notice to
+ * it, so the next behaviour change in that package fails here rather than being discovered by a
+ * reader comparing a banner against a page that denies it exists.
+ *
+ * It does NOT skip when micro-ui is absent, for the reason `test/estate-claims.test.ts` gives at
+ * length: a check that turns itself off produces the same green tick as one that ran. CI checks
+ * micro-ui out at `ui/`, beside this repository's `site/`, because the package is a `link:`
+ * dependency and nothing here installs without it.
+ */
+describe('the cookie claims, against the package that sets them', () => {
+  const UI = fileURLToPath(new URL('../../ui/packages/ui/src/', import.meta.url))
+  const consentPath = join(UI, 'consent.ts')
+
+  it('can read the design system, which is not optional here', () => {
+    assert.ok(
+      existsSync(consentPath),
+      'micro-ui is not checked out beside this repository; this check will not skip',
+    )
+  })
+
+  const consent = existsSync(consentPath) ? readFileSync(consentPath, 'utf8') : ''
+  /** The package's source with its comments removed — it documents at length what it rejected. */
+  const code = consent.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+
+  /** Every string this notice publishes, as data. Never as this repository's source text. */
+  function privacyCopy(): string {
+    const out: string[] = [PRIVACY.blurb, PRIVACY.notice, ...PRIVACY.standfirst]
+    for (const section of PRIVACY.sections) out.push(section.title, ...section.body)
+    return out.join('\n')
+  }
+  const notice = privacyCopy()
+
+  it('is rendered by this site, so the notice is describing this page and not somebody else\'s', () => {
+    const shell = readFileSync(join(root, 'src/components/shell.tsx'), 'utf8')
+    assert.match(shell, /<CookieBanner\b/, 'this site no longer renders the consent banner')
+  })
+
+  it('writes a cookie, and the notice calls it by the name it is written under', () => {
+    assert.match(code, /document\.cookie\s*=/, 'the design system no longer writes a cookie')
+    const declared = /CONSENT_COOKIE_NAME\s*=\s*'([^']+)'/.exec(consent)?.[1]
+    assert.ok(declared, 'the design system no longer declares a consent cookie name')
+    // Named, not gestured at. A reader clearing one cookie needs the string the browser shows them,
+    // and a notice that says "a consent cookie" cannot be checked against anything.
+    assert.ok(
+      notice.includes(declared ?? ' '),
+      `the privacy notice never names the cookie the estate sets (${declared})`,
+    )
+  })
+
+  it('states the lifetime the package actually sets, in the same words', () => {
+    // Derived rather than typed. `CONSENT_MAX_AGE_SECONDS` is a product of literals; the notice
+    // says how long a reader's answer lasts, and the two may not drift apart silently.
+    const expr = /CONSENT_MAX_AGE_SECONDS\s*=\s*([\d\s*]+)/.exec(consent)?.[1]
+    assert.ok(expr, 'the design system no longer declares how long an answer lasts')
+    const seconds = (expr ?? '')
+      .split('*')
+      .map((part) => Number(part.trim()))
+      .reduce((a, b) => a * b, 1)
+    const months = Math.round(seconds / 60 / 60 / 24 / 30.44)
+    assert.equal(months, 6, `the consent record now lasts ${months} months, not six`)
+    assert.match(notice, /six months/i, 'the privacy notice no longer states how long an answer lasts')
+  })
+
+  it('loads Google Analytics on acceptance, and the notice says so by name', () => {
+    assert.match(code, /googletagmanager\.com/, 'the design system no longer loads a Google tag')
+    assert.match(notice, /Google Analytics/, 'the privacy notice never names Google Analytics')
+    // The banner is the mechanism. A notice describing the cookies without the thing that asks for
+    // them leaves a reader unable to connect the page they are on to the box at the foot of it.
+    assert.match(notice, /banner/i, 'the privacy notice never mentions the consent banner')
+  })
+
+  it('sets nothing before the answer, which is the fact worth publishing, and is published', () => {
+    // The one genuinely good property of this implementation, and the reason the fix here was to
+    // correct the notice rather than to remove the tag: `grantConsent` is the only caller that
+    // injects, and `initAnalytics` calls it only when a previous answer was already `granted`.
+    assert.match(code, /if \(readConsent\(\) === 'granted'\) grantConsent\(\)/)
+    assert.match(
+      notice,
+      /before you answer|until you answer|unless you accept|before you accept/i,
+      'the privacy notice does not say that nothing is set before the reader answers',
+    )
+  })
+
+  it('serves its typefaces from CloudsForge, which is what "no external font" means', () => {
+    // The same seam, one claim over: `loads no web font` above reads index.html and src/styles.css
+    // and would not see a face declared in the design system. Six are, and the privacy-relevant
+    // property is not that a face is downloaded — it is that no font host is told what you read.
+    const tokens = readFileSync(join(UI, 'tokens.css'), 'utf8')
+    const faces = [...tokens.matchAll(/@font-face\s*\{[\s\S]*?\}/g)].map((m) => m[0])
+    assert.ok(faces.length >= 1, 'the design system declares no typeface; this check reads nothing')
+    const hosted = faces.flatMap((face) =>
+      [...face.matchAll(/url\(\s*['"]?([^'")]+)/g)].map((m) => m[1] ?? ''),
+    ).filter((url) => /^(https?:)?\/\//.test(url))
+    assert.deepEqual(hosted, [], `a typeface is fetched from outside CloudsForge: ${hosted.join(', ')}`)
+    assert.match(notice, /no external font|font host|typefaces are served/i)
+  })
+
+  it('carries none of the denials that were true before the banner shipped', () => {
+    /*
+     * Named individually rather than matched by a pattern, for the reason the trademark suite above
+     * gives: these are the exact published sentences that became false, and a list is the only
+     * form in which "this specific claim may not come back" can be asserted. Each was `stated` —
+     * rendered with no outstanding marker — which is what made it worse than an undrafted section.
+     */
+    const denials: ReadonlyArray<readonly [RegExp, string]> = [
+      [/there are no cookies/i, `the estate writes a cookie on the registrable domain`],
+      [/no page in this estate writes a cookie/i, `the shared banner writes one on every surface`],
+      [/sets no cookies of its own/i, `this site renders the banner that writes it`],
+      [/there is no cookie banner/i, `this site renders one, last in the document`],
+      [/would be theatre/i, `the banner exists and gates a real third-party script`],
+      [/runs no analytics/i, `Google Analytics loads on acceptance`],
+      [/no third-party analytics/i, `Google Analytics is a third party`],
+      [/embeds no third-party script/i, `the tag is fetched from googletagmanager.com`],
+    ]
+    const revived = denials
+      .filter(([pattern]) => pattern.test(notice))
+      .map(([pattern, why]) => `${String(pattern)} — ${why}`)
+    assert.deepEqual(
+      revived,
+      [],
+      `the privacy notice denies what @cloudsforge/ui does:\n  ${revived.join('\n  ')}`,
+    )
+  })
+})

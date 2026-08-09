@@ -244,11 +244,14 @@ export const TERMS: LegalPage = {
  * every sentence describes something a reader could go and check in source, and each is cited here
  * so the next person does not have to rediscover it.
  *
- *   no cookies              no `document.cookie` write and no `Set-Cookie` exists in any frontend
- *                           in the estate. `test/legal.test.ts` already asserted this for this
- *                           repository before today. Sessions are `cf.accessToken` /
- *                           `cf.refreshToken` in `localStorage` — `hub-web/src/lib/api.ts`,
- *                           `market-web/src/lib/api.ts`, `worlds-web/src/lib/api.ts`.
+ *   no cookies              WAS TRUE ON 2026-08-05 AND IS NOT TRUE NOW — see the note on the
+ *                           cookies section below, and micro-org#313. Sessions are still
+ *                           `cf.accessToken` / `cf.refreshToken` in `localStorage`
+ *                           (`hub-web/src/lib/api.ts`, `market-web/src/lib/api.ts`,
+ *                           `worlds-web/src/lib/api.ts`) and no service sets `Set-Cookie` on a
+ *                           response; what changed is the browser side, where
+ *                           `@cloudsforge/ui`'s consent banner writes `cf_consent_analytics` and,
+ *                           on acceptance, loads a Google Analytics tag that sets its own.
  *   telemetry session id    `sessionStorage` under `cf-obs-session`, random, dies with the tab:
  *                           `src/lib/obs.ts`.
  *   RUM retention           30 days, `lantern/src/env.ts` — `LANTERN_RUM_RETENTION_DAYS`. Errors
@@ -323,7 +326,7 @@ export const PRIVACY: LegalPage = {
   slug: 'privacy',
   title: 'Privacy notice',
   blurb:
-    'What this site and the platform do with your data, from the code: no cookies, pseudonymised analytics, real retention periods. The legal parts are undrafted.',
+    'What this site and the platform do with your data, from the code: a consent cookie, analytics if you accept, real retention periods. Legal parts undrafted.',
   standfirst: [
     'This notice is not finished. What the code does is written out and is checkable against public source; the parts that create legal rights and obligations — who the controller is, on what basis data is processed, and how you enforce your rights — are data-protection questions and are left to be drafted properly.',
     'Everything in the written sections is a description of software, not a promise about it. Where a thing is not implemented, this page says it is not implemented rather than stating a policy nobody enforces.',
@@ -335,8 +338,9 @@ export const PRIVACY: LegalPage = {
       title: 'What this website does',
       status: 'stated',
       body: [
-        'This site sets no cookies of its own, runs no analytics, embeds no third-party script, loads no external font, and makes no request to any host outside CloudsForge. Everything the page needs is served from the address you fetched it from.',
-        'That is checked rather than asserted: a test in this site\'s own suite collects every web address written in its source and fails continuous integration if any of them points outside CloudsForge. To be exact about the strength of that check, because the difference is the sort of thing this page exists to be honest about — it reads this site\'s source text, so it would not see a request assembled at runtime from pieces, or one made by a third-party dependency rather than by code written here.',
+        'This site loads no external font and, unless you accept analytics in the banner at the foot of the page, requests nothing from any host outside CloudsForge. Everything a page needs in order to render is served from the address you fetched it from.',
+        'Cookies are where the exception lives, and there are two sorts: one that records your answer to that banner, and — only if the answer was yes — the ones the Google Analytics tag sets, which is the single third-party script this site can load. Both are written out by name further down rather than summarised here.',
+        'The first paragraph is checked rather than asserted, and the boundary of the check is the sort of thing this page exists to be exact about. A test in this site\'s own suite collects every web address written in its source and fails continuous integration if any of them points outside CloudsForge — but it reads this site\'s source, so it does not see a request assembled at runtime from pieces, nor one made by a shared package rather than by code written here. The analytics arrives through a shared package, which is exactly that gap: this notice went on denying cookies and analytics for as long as it took somebody to read the page against the banner underneath it. A second check now reads that package and fails when what it does and what this page says have come apart.',
       ],
     },
     {
@@ -371,12 +375,41 @@ export const PRIVACY: LegalPage = {
       ],
     },
     {
-      title: 'There are no cookies, on any CloudsForge site',
+      /**
+       * ── THIS SECTION SAID THE OPPOSITE UNTIL 2026-08-09, AND IT WAS `stated` WHILE IT DID ─────
+       *
+       * It was headed "There are no cookies, on any CloudsForge site" and read, in full: *"Not 'no
+       * advertising cookies' and not 'only essential cookies' — none. No page in this estate writes
+       * a cookie, and no service sets one on a response. That is why there is no cookie banner:
+       * there is nothing to consent to, and a banner that asked would be theatre."*
+       *
+       * Every clause of that was true when it was written and every clause was false by the time it
+       * was read. `@cloudsforge/ui` gained a consent banner, a `cf_consent_analytics` cookie on the
+       * registrable domain and a Google Analytics loader; eighteen surfaces render that banner,
+       * this site among them (`src/components/shell.tsx`). Measured on the deployed apex on
+       * 2026-08-09, the single bundle `https://cloudsforge.online/` loads contains BOTH the string
+       * `cf_consent_analytics` AND the sentence "There are no cookies, on any CloudsForge site".
+       *
+       * WHY THE NOTICE MOVED AND THE ANALYTICS DID NOT. The alternative was to delete the tag so
+       * the old text became true again. It was rejected on the facts: nothing loads and no cookie
+       * is set before the reader answers, Reject is one click and styled identically to Accept,
+       * Consent Mode is primed denied before anything runs, and a refusal deletes what a previous
+       * grant left. There was nothing happening that ought to be stopped — only a page describing
+       * an estate that had changed underneath it. Removing a working, consented mechanism to
+       * vindicate a stale sentence would also have meant editing eighteen repositories to correct
+       * one, which is the larger change and the less honest one. micro-org#313.
+       *
+       * The guard is `test/legal.test.ts` › "the cookie claims, against the package that sets
+       * them". It reads `@cloudsforge/ui`'s `consent.ts` rather than this repository's source —
+       * which is the seam the old check could not see and the reason this went unnoticed.
+       */
+      title: 'Cookies: one that records your answer, and more only if you accept',
       status: 'stated',
       body: [
-        'Not "no advertising cookies" and not "only essential cookies" — none. No page in this estate writes a cookie, and no service sets one on a response. That is why there is no cookie banner: there is nothing to consent to, and a banner that asked would be theatre.',
-        'Signing in stores two tokens in your browser\'s local storage instead. Local storage is per-origin, which means the tokens are readable only by the exact site that stored them and are never attached automatically to a request the way a cookie is. A consequence a reader can verify: signing into one CloudsForge surface does not sign you into another on a different subdomain, because the storage does not cross origins.',
-        'Clearing site data in your browser removes them completely, and signing out removes them and revokes the session at the server.',
+        'A banner at the foot of every CloudsForge page asks whether analytics may count your visit. Answering it — either way — writes one cookie, `cf_consent_analytics`, whose value is the answer you gave. It is set on the CloudsForge domain rather than on the exact address you are reading, so that one answer covers every CloudsForge surface instead of the same question being put to you on each of them, and it lasts six months before you are asked again. The same answer is written to your browser\'s local storage as well, which is what still remembers it if you have blocked cookies.',
+        'If you accept, Google Analytics is fetched from Google and sets cookies of its own — `_ga`, and one named after the property — which is how it tells a returning visit from a new one. None of that exists before you answer. The tag is injected by the Accept button and by nothing else, and on every page load, before anything can arrive, the page records a denied position for every category of storage, so there is no window in which a tag that showed up would find permission waiting for it. Refuse, or refuse later having accepted, and those cookies are deleted and the advertising and personalisation features that would turn a page count into a profile are switched off where the tag is configured.',
+        'Clearing site data in your browser removes all of it, and the banner then asks again on your next visit. Withdrawing an analytics answer is that same act — clear this site\'s cookie and its local storage entry — because there is no control in the interface that will do it for you, and you are better served by that sentence than by the one a notice usually puts here.',
+        'Signing in does not use a cookie. It stores two tokens in your browser\'s local storage instead, and signing out removes them and revokes the session at the server. Local storage is per-origin, which means the tokens are readable only by the exact site that stored them and are never attached automatically to a request the way a cookie is. A consequence a reader can verify: signing into one CloudsForge surface does not sign you into another on a different subdomain, because the storage does not cross origins — and it is that same property which made the consent record a cookie instead, since otherwise the one answer would have had to be given on every surface separately.',
       ],
     },
     {
@@ -450,9 +483,10 @@ export const PRIVACY: LegalPage = {
       title: 'Who else sees your data, and where it physically is',
       status: 'stated',
       body: [
-        'Cloudflare. Every request to every CloudsForge address passes through Cloudflare, which terminates the connection and forwards it down a tunnel. Cloudflare therefore sees your IP address, the address you asked for and the metadata of the request. This became true on the day the estate first went public, and it is the only third party in the path of an ordinary request.',
+        'Cloudflare. Every request to every CloudsForge address passes through Cloudflare, which terminates the connection and forwards it down a tunnel. Cloudflare therefore sees your IP address, the address you asked for and the metadata of the request. This became true on the day the estate first went public, and it is in the path of every request whatever you answered about analytics.',
         'No mail provider is configured at present. Registration and password-reset mail is sent over plain SMTP with no provider SDK, and with no SMTP server configured the system records that no mail was sent rather than failing or silently losing it. When one is configured, that operator will see the address the mail is sent to.',
-        'There is no advertising network, no tag manager, no third-party analytics, no embedded font and no external script anywhere in these pages. Continuous integration fails if a request to an external host appears in this site\'s source.',
+        'Google, and only if you accepted analytics. Accepting fetches the Google Analytics tag from Google\'s servers, after which Google receives the fact of the visit, the address of the page, what your browser says about itself, and the identifiers in the cookies it sets. Refusing, or never answering, means no request reaches Google at all. Advertising and personalisation signals are switched off where that tag is configured, so what is asked for is counting rather than profiling — which is a setting on the request and is not an undertaking about what Google does with what it receives.',
+        'Beyond that tag there is no advertising network, no other measurement of any kind and no other external script in these pages. The typefaces are served from CloudsForge\'s own address rather than from a font host, so nobody outside is told what you are reading by the act of rendering it. Continuous integration fails if a request to an external host appears in this site\'s own source, and — because that scan cannot see the shared packages this site renders, which is how the tag went undisclosed — a second check now compares those packages against the section on cookies above.',
         'The platform runs on a single home server behind that tunnel. There is no second site, no failover, and no backup that has ever been restored. That is a statement about resilience rather than about privacy, but it is the kind of thing a reader deciding what to trust with money is entitled to know.',
       ],
     },
