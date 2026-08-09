@@ -316,12 +316,23 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     slug: 'foresight',
     eyebrow: 'Bet',
     headline: 'Bet on what happens next, in coins you already hold',
+    // ── THE THREE SENTENCES BELOW NAME `stakeAssets`, NEVER `chains` (micro-org#291) ───────────
+    //
+    // They used to read "any of the 8 chains the platform supports" and name all eight, because
+    // both halves derived from `ON_CHAIN_ASSETS` — the register of chains the estate MODELS. What
+    // this page is promising is what Foresight will ACCEPT, which is the enabled rows of its stake
+    // registry. Measured 2026-08-09 the two are off by four: ETC, DOGE, SOL and XRP are not
+    // disabled rows in `stake_assets`, they are not rows at all, so a bettor arriving with one is
+    // answered 404 by a page that had just named them. The blurb below said "Solana, XRP" outright.
+    //
+    // The count and the names now come from `foresight/src/stakeassets.ts`, and neither is typed
+    // here — a fifth enabled asset rewrites all three sentences with nothing for anybody to
+    // remember, which is the property the wrong derivation had and was the only good thing about it.
     standfirst: [
-      `Markets on future events, settled by the contract that holds the money. You can stake in any of the ${claim('chains')} chains the platform supports — ${claim('chainNames')} — or in an ERC-20 token, and every stake joins one EMBER pool.`,
+      `Markets on future events, settled by the contract that holds the money. You can stake in any of the ${claim('stakeAssets')} assets Foresight accepts — ${claim('stakeAssetNames')} — or in an ERC-20 token the platform has enabled, and every stake joins one EMBER pool.`,
       'If a market is voided you are refunded in the asset you staked, in the amount you staked. Not its value at some later rate.',
     ],
-    blurb:
-      'Bet on what happens next with Bitcoin, Ethereum, Litecoin, Solana, XRP, EMBER or an ERC-20 token. The contract holds the money and pays the winners — not us.',
+    blurb: `Bet on what happens next with ${claim('stakeAssetNames')}, or an ERC-20 token the platform has enabled. The contract holds the money and pays the winners — not us.`,
     stage: 'open',
     stageNote:
       'Open to the public. The service, the contract, the staking application and the console operators open questions from are all running and reachable. Every market so far has settled on an EMBER test network.',
@@ -329,7 +340,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       {
         title: 'Bet with what you already own',
         body: [
-          `Most prediction markets make you buy their own token before you can have an opinion. This one does not: bring ${claim('chainNames')}, or any ERC-20 token the platform has enabled, and stake it directly.`,
+          `Most prediction markets make you buy their own token before you can have an opinion. This one does not: bring ${claim('stakeAssetNames')}, or any ERC-20 token the platform has enabled, and stake it directly.`,
           'Whatever you bring is converted at the rate recorded when you stake and joins a single pool denominated in EMBER, so everyone in a market is in the same pool no matter what they arrived with.',
           'A token is identified by its chain, its network and its contract address, so two deployments of the same brand are two different assets and are never confused for each other.',
         ],
