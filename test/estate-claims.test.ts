@@ -49,6 +49,12 @@ const REQUIRED_SIBLINGS: ReadonlyArray<{ dir: string; repo: string; witness: str
   { dir: 'docs', repo: 'micro-docs', witness: 'ecosystem/01-product-vision.md' },
   { dir: 'ui', repo: 'micro-ui', witness: 'packages/ui/src/tokens.css' },
   { dir: 'brand', repo: 'micro-brand', witness: 'TRADEMARKS.md' },
+  // What Foresight will take a stake in, which is NOT the list of chains the estate models — see
+  // the two `stakeAsset*` derivations below and micro-org#291. Listed here so that a missing
+  // checkout is reported by name in one place, rather than as "cites a path in none of the roots"
+  // from the registry check, which reads as a broken citation and invites somebody to edit the
+  // citation.
+  { dir: 'foresight', repo: 'micro-foresight', witness: 'src/stakeassets.ts' },
   // The two the STAGE derivation reads. `test/estate-stages.test.ts` names them again in its own
   // message, but they are listed here as well so that a checkout gone missing is reported once,
   // early, with the whole list — rather than as two unrelated failures in two files.
@@ -104,6 +110,78 @@ function envDefault(text: string, name: string): string {
 const SUPERSCRIPT = '⁰¹²³⁴⁵⁶⁷⁸⁹'
 
 const CHAIN_SPEC = 'contracts/packages/chain/src/index.ts'
+const STAKE_REGISTRY = 'foresight/src/stakeassets.ts'
+
+/**
+ * The display names of the assets Foresight ships prepared to take a stake in.
+ *
+ * ── WHY THIS IS PARSED RATHER THAN IMPORTED ───────────────────────────────────────────────────
+ *
+ * `foresight/src/stakeassets.ts` exports `stakeableAssetNames()`, which would be the obvious thing
+ * to call. It cannot be called from here: the module imports `@cloudsforge/contracts-chain` to read
+ * each asset's decimals, and this repository does not depend on that package and must not start —
+ * a marketing bundle acquiring a chain package to print four words is a worse trade than a parser.
+ * So the file is read as text, exactly as every other derivation in this file reads its source.
+ *
+ * ── WHAT IT REFUSES TO GUESS ──────────────────────────────────────────────────────────────────
+ *
+ * Two shapes appear in the array and both are handled explicitly: `stakeable(CODE, NAME)`, which is
+ * a helper that hard-codes `enabled: true`, and a full object literal, which is the shape a
+ * DISABLED row must take because the schema's own constraints require a disabled row to carry a
+ * written reason. The helper is checked rather than believed — if it stops declaring `enabled:
+ * true` this throws instead of quietly counting a disabled asset as offerable.
+ *
+ * And the count of entries it PARSED is compared to the count of entries the array DECLARES, so a
+ * third shape — a second helper, a spread, a conditional — fails loudly here rather than being
+ * skipped into a smaller, wrong, plausible-looking list. That silent-narrowing failure is the one
+ * worth spending a check on: a promise that shrinks is not investigated by anybody.
+ */
+function stakeableAssets(text: string): readonly string[] {
+  const start = text.indexOf('export const STAKE_ASSET_REGISTRY')
+  if (start === -1) throw new Error('foresight no longer declares STAKE_ASSET_REGISTRY')
+  const end = text.indexOf('\n])', start)
+  if (end === -1) throw new Error('STAKE_ASSET_REGISTRY is no longer a frozen array literal')
+  const body = text.slice(start, end)
+
+  const helper = /function stakeable\([\s\S]*?\n}/.exec(text)
+  if (helper === null || !/enabled: true/.test(helper[0]) || !/blockedReason: null/.test(helper[0])) {
+    throw new Error('the `stakeable` helper no longer declares an enabled row with no reason')
+  }
+
+  const names: string[] = []
+  let parsed = 0
+  for (const entry of body.matchAll(/stakeable\('[A-Z]+',\s*'([^']+)'\)/g)) {
+    parsed += 1
+    names.push(entry[1] as string)
+  }
+  for (const entry of body.matchAll(/Object\.freeze\(\{([\s\S]*?)\n {2}\}\)/g)) {
+    parsed += 1
+    const row = entry[1] as string
+    const enabled = /enabled:\s*(true|false)/.exec(row)
+    const displayName = /displayName:\s*'([^']+)'/.exec(row)
+    if (enabled === null || displayName?.[1] === undefined) {
+      throw new Error('a stake asset row declares no enabled flag or no display name')
+    }
+    if (enabled[1] === 'true') names.push(displayName[1])
+  }
+
+  // Every top-level element of the array begins on its own line at one indent; an object literal's
+  // own fields sit a further indent in, and its closing `}),` starts with a brace. So this counts
+  // entries without knowing what SHAPE they are, which is the whole reason it can disagree with
+  // the two loops above. A comment is not an entry and a closing bracket is not an entry; anything
+  // else at that indent is, deliberately including a spread — `...SOMETHING,` is the shape that
+  // would otherwise slip past both loops and silently shrink the promise.
+  const declared = body
+    .split('\n')
+    .slice(1)
+    .filter((line) => /^ {2}(?![)\]}]|\/\/|\/\*|\*)\S/.test(line)).length
+  if (declared !== parsed) {
+    throw new Error(`STAKE_ASSET_REGISTRY declares ${declared} rows and ${parsed} were understood`)
+  }
+  if (parsed === 0) throw new Error('STAKE_ASSET_REGISTRY parsed to nothing')
+  if (names.length === 0) throw new Error('no stake asset is enabled, so the sentence promises none')
+  return names
+}
 
 const DERIVATIONS: Readonly<Record<string, Derivation>> = {
   emberConfirmations: {
@@ -166,6 +244,49 @@ const DERIVATIONS: Readonly<Record<string, Derivation>> = {
     reads: CHAIN_SPEC,
     witness: /ON_CHAIN_ASSETS/,
     derive: (text) => String(onChainAssets(text).length),
+  },
+
+  /**
+   * What Foresight will accept, which is a different register from the one above (micro-org#291).
+   *
+   * The Foresight page derived both its count and its list from `ON_CHAIN_ASSETS` and therefore
+   * promised a stake in eight chains where four are accepted — and it was getting WORSE on its
+   * own, because every chain added upstream enlarged the promise with this suite green. The two
+   * questions look identical and are not: "which chains does the estate model" against "which
+   * assets will this service take at the door". ETC, DOGE, SOL and XRP answer the first and are
+   * not rows in `stake_assets` at all, so they answer the second with `404 unknown_asset`.
+   *
+   * The count is derived from the ENABLED rows, and the derivation asserts that `STAKEABLE_ASSETS`
+   * upstream is defined as exactly that filter — so this cannot go on counting `enabled` rows
+   * after Foresight has redefined what it offers. Without that assertion the parse here would be a
+   * second opinion about the registry rather than a reading of it.
+   */
+  stakeAssets: {
+    reads: STAKE_REGISTRY,
+    witness: /export const STAKE_ASSET_REGISTRY/,
+    derive: (text) => {
+      assert.match(
+        text,
+        /STAKEABLE_ASSETS[\s\S]{0,200}?STAKE_ASSET_REGISTRY\.filter\(\(asset\) => asset\.enabled\)/,
+        'foresight no longer defines its stakeable set as the enabled rows of the registry',
+      )
+      return String(stakeableAssets(text).length)
+    },
+  },
+
+  /**
+   * The same rows as prose, from each row's own `displayName`.
+   *
+   * A plain comma list and no article, for the reason `chainNames` retreated to one: whether a
+   * proper noun takes "the" is an English fact that is not in the data. The names are the
+   * registry's own, which are the words the migrations seeded and the words a user is served when
+   * an asset is refused — not a second mapping in this file, which would be the typed list one
+   * level down.
+   */
+  stakeAssetNames: {
+    reads: STAKE_REGISTRY,
+    witness: /export const STAKE_ASSET_REGISTRY/,
+    derive: (text) => stakeableAssets(text).join(', '),
   },
 
   /**

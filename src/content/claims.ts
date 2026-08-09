@@ -39,10 +39,11 @@
  * nothing anywhere could have noticed.
  *
  * So the citations are now checked out and read. `test/estate-claims.test.ts` resolves every
- * `source` below against the sibling repositories, and for all but two of the entries it
+ * `source` below against the sibling repositories, and for all but one of the entries it
  * RECOMPUTES the value from that file rather than reading it back. `.github/workflows/ci.yml`
- * checks out `micro-contracts`, `micro-docs` and `micro-brand` alongside `micro-ui` so the check
- * runs in CI with teeth rather than skipping. The two entries that cannot be recomputed are exempt
+ * checks out every repository a citation names — `micro-contracts`, `micro-docs`, `micro-brand`
+ * and `micro-foresight` — alongside `micro-ui`, so the check runs in CI with teeth rather than
+ * failing for want of its inputs. The entries that cannot be recomputed are exempt
  * **by name**, with the reason recorded beside them — never by category, because a blanket
  * exemption is how this drifted the first time.
  *
@@ -221,6 +222,71 @@ export const CLAIMS = {
     meaning:
       'The on-chain assets written as prose, in ON_CHAIN_ASSETS order, using each chain\'s own `name` from the CHAINS table — "Hearth" being the exception, since the asset a reader holds is EMBER and the network it settles on is Hearth. A plain comma list: whether a name takes an article ("the XRP Ledger") is an English fact that is not in the data, so the copy sets the list off with dashes rather than the derivation guessing. Derived so that the sentence and the count beside it cannot disagree.',
     source: 'contracts/packages/chain/src/index.ts — ON_CHAIN_ASSETS',
+  },
+  /**
+   * ── WHAT FORESIGHT WILL TAKE A STAKE IN, WHICH IS NOT THE SAME LIST AS THE ONE ABOVE ─────────
+   *
+   * These two exist because the two above were used for both questions, and the questions came
+   * apart. The Foresight page read "You can stake in any of the 8 chains the platform supports —
+   * EMBER, Bitcoin, Ethereum, Ethereum Classic, Litecoin, Dogecoin, Solana, XRP Ledger", and both
+   * halves were correctly DERIVED — from `ON_CHAIN_ASSETS`, which answers "which chains does the
+   * estate model" and not "which assets will Foresight accept". Those were nearly the same set
+   * when the sentence was written.
+   *
+   * Measured on the live estate 2026-08-09, against Foresight's own `stake_assets` table:
+   *
+   *     enabled   EMBER, BTC, ETH, LTC
+   *     disabled  a Tether-on-Ethereum token row, which is served with its refusal in prose
+   *     absent    ETC, DOGE, SOL, XRP
+   *
+   * ETC, DOGE, SOL and XRP are not disabled rows carrying a reason. They are not rows at all, so a
+   * bettor arriving with one is answered `404 unknown_asset` by a page that had just invited them
+   * by name. **Being nameable by the estate and being accepted at the door are different facts,
+   * and only the second belongs in a promise.** The derivation is what made it degrade rather than
+   * merely be wrong: every chain `contracts` adds enlarges a promise Foresight has not made, with
+   * a green suite each time — DOGE and ETC were added the week this was found, and the sentence
+   * grew from six chains to eight on its own.
+   *
+   * So they are re-pointed rather than hand-typed. `micro-foresight` was given a declaration for
+   * exactly this — `STAKE_ASSET_REGISTRY`, checked byte-for-byte in both directions against the
+   * table its own migrations produce on an empty database (`foresight/src/migrations.test.ts`) —
+   * and both values here are recomputed from the ENABLED rows of it. Neither the count nor the
+   * names are typed anywhere on this site, which is the whole point: an operator enabling a fifth
+   * asset changes both halves of both sentences and nobody has to remember.
+   *
+   * ── WHAT THEY DO NOT CLAIM ───────────────────────────────────────────────────────────────────
+   *
+   * `enabled` is an operator switch, and `foresight/src/stakeassets.ts` says so: a row can be
+   * flipped in a live database without touching that repository. So this publishes what Foresight
+   * SHIPS prepared to take, which is the strongest statement a file can make and is the one a
+   * reader of a marketing page needs. It is not a live reading of one deployment.
+   */
+  stakeAssets: {
+    rendered: '4',
+    meaning:
+      'Assets Foresight will accept a stake in: the enabled rows of its stake-asset registry. Deliberately NOT the custodied-chain count above — an asset the estate can name is not an asset the stake door will take, and the two are off by four. No codes are restated here; `chains` restated its codes and they went stale within the week.',
+    source: 'foresight/src/stakeassets.ts — STAKE_ASSET_REGISTRY, the rows declared enabled',
+  },
+
+  /**
+   * The same rows, spelled the way a sentence spells them.
+   *
+   * Registered and derived for the reason `chainNames` was: a derived count beside a typed list is
+   * worse than two stale halves, because the moving half is evidence that somebody is looking. The
+   * rendered form carries no digits, so the content scan has nothing to say about it — it earns
+   * its place by being recomputed in `estate-claims.test.ts` and by having to appear verbatim in
+   * published copy.
+   *
+   * The names are the registry's own `displayName` values, which are the migrations' own words and
+   * are what a user is served at the stake door. A plain comma list, for the same reason as above:
+   * whether a name takes an article is an English fact that is not in the data, so the copy sets
+   * the list off with dashes rather than the derivation guessing.
+   */
+  stakeAssetNames: {
+    rendered: 'EMBER, Bitcoin, Ethereum, Litecoin',
+    meaning:
+      'The assets Foresight will take a stake in, written as prose in the registry\'s own order, using each row\'s own display name. Derived from the same rows as the count beside it, so the sentence and the number in it cannot disagree.',
+    source: 'foresight/src/stakeassets.ts — STAKE_ASSET_REGISTRY, the rows declared enabled',
   },
   /**
    * The three figures a developer needs before they can point a wallet or a deployment tool at

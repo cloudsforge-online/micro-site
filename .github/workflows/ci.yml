@@ -122,6 +122,26 @@ jobs:
           path: brand
           token: ${{ secrets.ESTATE_READ_TOKEN }}
 
+      # What Foresight will take a stake in — `STAKE_ASSET_REGISTRY` in src/stakeassets.ts, which
+      # that repository proves byte-for-byte against the table its own migrations produce.
+      #
+      # This one is here because of a drift the other checkouts could not have caught, and would
+      # have kept hidden: the Foresight page derived its "you can stake in N chains" sentence from
+      # micro-contracts' ON_CHAIN_ASSETS, which is checked out above and which recomputed the
+      # sentence correctly — from the register that answers a DIFFERENT question. Measured
+      # 2026-08-09 the page promised eight and the service accepts four, and the four it named
+      # extra answer 404 at the stake door. See micro-org#291.
+      #
+      # Without this checkout the claims check does NOT skip — the citation would resolve in none
+      # of the roots and the run would fail — but it would fail reading as a broken citation rather
+      # than as a missing input, which is the failure most likely to be "fixed" by deleting the
+      # citation.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-foresight
+          path: foresight
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+
       # ────────────────────────────────────────────────────────────────────────────────────────
       # AND THESE TWO ARE WHAT MAKE THE STAGE ON EVERY PRODUCT CARD DERIVED RATHER THAN TYPED.
       #
@@ -345,7 +365,7 @@ jobs:
           fi
           # And CI must actually provide the estate, or the check above fails every run and gets
           # deleted for being noisy. Every sibling checkout is named in the check job.
-          for repo in micro-contracts micro-docs micro-brand; do
+          for repo in micro-contracts micro-docs micro-brand micro-foresight; do
             grep -q "repository: cloudsforge-online/$repo" .github/workflows/ci.yml \
               || { echo "::error::$repo is no longer checked out; the claims check cannot read it"; exit 1; }
           done
