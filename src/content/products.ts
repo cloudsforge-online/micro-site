@@ -61,6 +61,33 @@ export interface ProductPage {
 }
 
 /**
+ * Counts, spelled.
+ *
+ * A word is a number. "Five products on one account" was typed into JSX in three files and went on
+ * being rendered after a sixth product was added, because the digit scan only reads `src/content`
+ * and only matches digits. So the counts are computed here, the sentences that carry them live in
+ * `./pages.ts` where the copy walk can see them, and adding a product changes nothing anybody has
+ * to remember.
+ *
+ * THE TABLES SIT ABOVE THE COPY, and the functions that read them below it, which is deliberate
+ * rather than untidy. A `const` is in its temporal dead zone until the line that declares it runs,
+ * while a function declaration is hoisted — so a section title spelled at module initialisation
+ * (Hub's "One balance instead of eight") can call `chainCount()` from inside the array literal
+ * below, but only if these two tables are already initialised when that literal is evaluated.
+ * Declared after it, the module throws `Cannot access 'CARDINALS' before initialization` on import
+ * and every suite in this repository fails at once.
+ */
+const CARDINALS = [
+  'zero', 'one', 'two', 'three', 'four', 'five', 'six',
+  'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
+] as const
+
+const ORDINALS = [
+  'zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth',
+  'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth',
+] as const
+
+/**
  * The pages, in the order the story is told. One per product, plus Hub.
  *
  * This is NOT the registry's order, which is tuned so that no two neighbouring switcher accents can
@@ -85,7 +112,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Open to the public. The account, the sign-in and the portfolio work end to end through a real browser, and the surface answers on the public internet. Nobody outside the project has used it yet.',
     sections: [
       {
-        title: 'One balance instead of six',
+        title: `One balance instead of ${chainCount()}`,
         body: [
           'Hub adds up what you hold across every chain the platform supports and shows it as one figure, with each holding underneath it. Deposits still waiting on confirmations, withdrawals in flight and every past movement sit on a single timeline.',
           'You do not visit a different screen per product to find out what you own. There is one account, so there is one answer.',
@@ -432,25 +459,6 @@ export function productPage(slug: string): ProductPage | undefined {
 }
 
 /**
- * Counts, spelled.
- *
- * A word is a number. "Five products on one account" was typed into JSX in three files and went on
- * being rendered after a sixth product was added, because the digit scan only reads `src/content`
- * and only matches digits. So the counts are computed here, the sentences that carry them live in
- * `./pages.ts` where the copy walk can see them, and adding a product changes nothing anybody has
- * to remember.
- */
-const CARDINALS = [
-  'zero', 'one', 'two', 'three', 'four', 'five', 'six',
-  'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
-] as const
-
-const ORDINALS = [
-  'zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth',
-  'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth',
-] as const
-
-/**
  * A count as an English word.
  *
  * Throws rather than falling back to digits past the table. A silent fallback would put an
@@ -478,6 +486,29 @@ export function sentenceCase(word: string): string {
 /** Products in the registry, spelled. Six today. */
 export function productCount(): string {
   return spell(PRODUCTS.length)
+}
+
+/**
+ * Custodied chains, spelled. Eight today.
+ *
+ * ── Why this exists, dated ────────────────────────────────────────────────────────────────────
+ *
+ * On 2026-08-09 `micro-contracts` added ETC and DOGE to `ON_CHAIN_ASSETS`. `claims.ts` recomputes
+ * the count and the names from that array, so `test/estate-claims.test.ts` went red and both were
+ * corrected in one place. Two sentences did not move, because they spell the count as a WORD:
+ * "Six coins, not just ours" on the home page and "One balance instead of six" on Hub's page. A
+ * word is a number, the digit scan cannot see one, and the claims check reads the count and not
+ * the sentence — so those two were the only places on the site where the old figure survived.
+ *
+ * That is the same failure `productCount` was written for, one register key over. So the word is
+ * derived from the register entry rather than typed beside it, and the next asset changes both
+ * halves of both sentences with nothing for anybody to remember.
+ *
+ * `spell` throws past twelve rather than falling back to a digit, which is the right failure: a
+ * thirteenth chain should stop a build here and not put an unregistered numeral into copy.
+ */
+export function chainCount(): string {
+  return spell(Number(claim('chains')))
 }
 
 /**

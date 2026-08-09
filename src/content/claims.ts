@@ -190,8 +190,9 @@ export const CLAIMS = {
     source: 'analytics/src/env.ts — ANALYTICS_EVENT_RETENTION_DAYS',
   },
   chains: {
-    rendered: '6',
-    meaning: 'On-chain assets the platform custodies: EMBER, BTC, ETH, LTC, SOL and XRP.',
+    rendered: '8',
+    meaning:
+      'On-chain assets the platform custodies, in ON_CHAIN_ASSETS order: EMBER, BTC, ETH, ETC, LTC, DOGE, SOL and XRP. The codes are restated here for a reader of this file and are NOT what the site prints — the printed list is `chainNames`, which is derived. Kept in step by hand, and it went stale on 2026-08-09 when micro-contracts listed ETC and DOGE, which is the argument for saying as little as possible in a `meaning`.',
     source: 'contracts/packages/chain/src/index.ts — ON_CHAIN_ASSETS',
   },
 
@@ -216,7 +217,7 @@ export const CLAIMS = {
    * names, which is the check that matters.
    */
   chainNames: {
-    rendered: 'EMBER, Bitcoin, Ethereum, Litecoin, Solana, XRP Ledger',
+    rendered: 'EMBER, Bitcoin, Ethereum, Ethereum Classic, Litecoin, Dogecoin, Solana, XRP Ledger',
     meaning:
       'The on-chain assets written as prose, in ON_CHAIN_ASSETS order, using each chain\'s own `name` from the CHAINS table — "Hearth" being the exception, since the asset a reader holds is EMBER and the network it settles on is Hearth. A plain comma list: whether a name takes an article ("the XRP Ledger") is an English fact that is not in the data, so the copy sets the list off with dashes rather than the derivation guessing. Derived so that the sentence and the count beside it cannot disagree.',
     source: 'contracts/packages/chain/src/index.ts — ON_CHAIN_ASSETS',
