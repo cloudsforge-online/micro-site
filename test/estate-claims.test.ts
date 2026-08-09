@@ -165,11 +165,16 @@ function stakeableAssets(text: string): readonly string[] {
     if (enabled[1] === 'true') names.push(displayName[1])
   }
 
-  // Every top-level element of the array begins on its own line at one indent and starts with a
-  // letter; an object literal's own fields sit a further indent in, and its closing `}),` starts
-  // with a brace. So this counts entries without knowing what shape they are, which is what makes
-  // it able to disagree with the loops above.
-  const declared = body.split('\n').slice(1).filter((line) => /^ {2}[A-Za-z]/.test(line)).length
+  // Every top-level element of the array begins on its own line at one indent; an object literal's
+  // own fields sit a further indent in, and its closing `}),` starts with a brace. So this counts
+  // entries without knowing what SHAPE they are, which is the whole reason it can disagree with
+  // the two loops above. A comment is not an entry and a closing bracket is not an entry; anything
+  // else at that indent is, deliberately including a spread — `...SOMETHING,` is the shape that
+  // would otherwise slip past both loops and silently shrink the promise.
+  const declared = body
+    .split('\n')
+    .slice(1)
+    .filter((line) => /^ {2}(?![)\]}]|\/\/|\/\*|\*)\S/.test(line)).length
   if (declared !== parsed) {
     throw new Error(`STAKE_ASSET_REGISTRY declares ${declared} rows and ${parsed} were understood`)
   }

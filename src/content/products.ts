@@ -332,7 +332,11 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       `Markets on future events, settled by the contract that holds the money. You can stake in any of the ${claim('stakeAssets')} assets Foresight accepts — ${claim('stakeAssetNames')} — or in an ERC-20 token the platform has enabled, and every stake joins one EMBER pool.`,
       'If a market is voided you are refunded in the asset you staked, in the amount you staked. Not its value at some later rate.',
     ],
-    blurb: `Bet on what happens next with ${claim('stakeAssetNames')}, or an ERC-20 token the platform has enabled. The contract holds the money and pays the winners — not us.`,
+    // The blurb is this page's meta description, so it is written against a 160-character ceiling
+    // (test/meta.test.ts) with a derived list inside it. A fifth enabled asset lengthens it and may
+    // push it over — which is the right failure and a loud one, and much better than the list being
+    // typed short to fit.
+    blurb: `Bet on what happens next with ${claim('stakeAssetNames')} or an enabled ERC-20 token. The contract holds the money and pays the winners — not us.`,
     stage: 'open',
     stageNote:
       'Open to the public. The service, the contract, the staking application and the console operators open questions from are all running and reachable. Every market so far has settled on an EMBER test network.',
