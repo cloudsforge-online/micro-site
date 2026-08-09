@@ -419,11 +419,31 @@ jobs:
           done
           echo "ok: the stage check is present, cannot skip, and has its inputs"
 
+      - name: The privacy notice is held to the package that sets the cookies
+        # The scan below reads THIS repository's source, and that is exactly how the notice became
+        # false: the consent cookie and the Google Analytics loader live in @cloudsforge/ui, which
+        # this scan never sees, while the notice said in a `stated` section that there were no
+        # cookies anywhere and no analytics. micro-org#313. The suite that compares the two is in
+        # test/legal.test.ts and reads ../ui; repeated here so deleting it does not delete the rule.
+        run: |
+          set -uo pipefail
+          grep -q 'the cookie claims, against the package that sets them' test/legal.test.ts \
+            || { echo "::error::the consent-claim check is gone"; exit 1; }
+          grep -q "ui/packages/ui/src/" test/legal.test.ts \
+            || { echo "::error::the consent-claim check no longer reads the design system"; exit 1; }
+          if grep -nE '\bit\.skip\b|\bdescribe\.skip\b|\{ *skip *:' test/legal.test.ts; then
+            echo "::error::a legal check has been skipped rather than fixed"; exit 1
+          fi
+          echo "ok: the privacy notice is checked against @cloudsforge/ui"
+
       - name: No third-party request
-        # The privacy notice claims this site embeds no external script, stylesheet, font or image.
-        # It is a claim about a static file, so it is checkable, and a claim that is checkable and
-        # unchecked is a claim waiting to become false. Comments are stripped: several files
-        # document a decision by naming what was rejected.
+        # The privacy notice claims this site's OWN source embeds no external script, stylesheet,
+        # font or image. It is a claim about static files, so it is checkable, and a claim that is
+        # checkable and unchecked is a claim waiting to become false. Comments are stripped: several
+        # files document a decision by naming what was rejected.
+        #
+        # Its boundary is named on the privacy page rather than left to be discovered: it does not
+        # read the shared packages this site renders, and the step above is the check that does.
         run: |
           set -uo pipefail
           stripped=$(cat $(find src -name '*.ts' -o -name '*.tsx' -o -name '*.css') index.html \

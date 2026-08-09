@@ -52,7 +52,8 @@ That is not modesty. It is the only position from which the rest of the site can
 | No hostname, URL or port in copy; every link resolves through the registry | `test/content.test.ts`, and a grep in CI |
 | The product pages and the surface registry are the same set | `test/content.test.ts` |
 | No legal section is invented; undrafted ones are visibly marked | `src/content/legal.ts` + `test/legal.test.ts` |
-| The site fetches nothing from a third-party host | `test/legal.test.ts` + a grep in CI |
+| This repository's own source fetches nothing from a third-party host | `test/legal.test.ts` + a grep in CI |
+| What the design system's consent banner actually does is what the privacy notice says it does | `test/legal.test.ts`, against `@cloudsforge/ui` |
 | Every text pair clears WCAG AA on both grounds, computed | `test/contrast.test.ts` |
 | An unknown address answers 404, not 200 | `nginx.conf` + `test/routes.test.ts` + the image probe in CI |
 | Nothing in the bundle knows which environment it is in | `test/no-build-time-config.test.ts` + a grep in CI |
@@ -109,10 +110,19 @@ Ember on ash, set like something that expects to be read and cited. Four devices
    company-coloured. Nothing in the source names a product hex.
 4. **The stage chip.** Glyph, word and colour — three channels, never one.
 
-No web font is loaded. `--cf-font-display` names two faces and falls back to the system stack, so
-in practice the hierarchy is carried by size, weight and tracking rather than by a face that costs
-a request and a layout shift. This is also what lets the privacy notice say the site fetches
-nothing from outside CloudsForge.
+No font is loaded from outside CloudsForge. The three faces `--cf-font-display`, `--cf-font-sans`
+and `--cf-font-mono` name are declared in `@cloudsforge/ui`'s `tokens.css` and served as `.woff2`
+from this site's own `/assets`, each with a system fallback behind it, so a reader's browser never
+asks anybody else for type. That is what the privacy notice means by "no external font" — the
+privacy-relevant property is where the request goes, not whether a face is downloaded at all.
+
+**The one thing this site does fetch from outside CloudsForge, and only on a reader's say-so, is
+Google Analytics.** The shared consent banner loads it if, and only if, a reader accepts; nothing
+is fetched and no analytics cookie is set before that. The notice says so, in the section on
+cookies. `test/legal.test.ts` holds that section to `@cloudsforge/ui` rather than to this
+repository's source, because reading only this repository's source is what let the two drift apart:
+the cookie and the tag live in the design system, the scan below never saw them, and the notice
+went on saying there were no cookies anywhere (micro-org#313).
 
 ### Contrast, computed rather than eyeballed
 
@@ -236,7 +246,7 @@ from the browser name a line rather than a minified offset.
 | `test/meta.test.ts` | Titles and descriptions for every address, distinct and inside budget; trailing-slash normalisation; the canonical of a 404 being the address asked for; `og:` as `property` and the rest as `name`; unknown products and third segments treated as unknown. |
 | `test/routes.test.ts` | The route declaration, `app.tsx` and `nginx.conf` checked against each other in both directions; the enumerated product slugs against `PRODUCT_PAGES`; the catch-all; that nothing is behind a session gate; the two cache rules in the right order. |
 | `test/contrast.test.ts` | Real WCAG ratios for every text and non-text pair on both grounds, computed from the stylesheets, including the two shortfalls that produced `--si-accent`. |
-| `test/legal.test.ts` | Undrafted sections carry no prose and a real brief; drafted ones are never empty and make no undertaking; the notice survives; the privacy claim about third-party requests, cookies and fonts, checked against the source. |
+| `test/legal.test.ts` | Undrafted sections carry no prose and a real brief; drafted ones are never empty and make no undertaking; the notice survives; the privacy claim about third-party requests and fonts, checked against this repository's source — and the cookie and analytics claims checked against `@cloudsforge/ui`, which is where the banner, the cookie and the Google tag actually live and is the seam the source scan cannot see. |
 | `test/api.test.ts` | Inherited. Token storage, the memory fallback, one refresh for ten concurrent 401s, the request id on the error, 403 marked forbidden, and the auth code stripped from the address bar *before* the exchange is sent. |
 | `test/hosts.test.ts` | Inherited. Localhost to dev ports, apex derived from a subdomain, an unknown prefix left alone, same-origin versus cross-origin. |
 | `test/obs.test.ts` | Inherited. The queue bound drops the oldest; the envelope stamps the page. |
