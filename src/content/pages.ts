@@ -16,7 +16,7 @@
  * capability named before the philosophy behind it.
  */
 import { claim } from './claims.ts'
-import { productCount, sentenceCase } from './products.ts'
+import { chainCount, productCount, sentenceCase } from './products.ts'
 import type { SurfaceKey } from '@cloudsforge/ui'
 
 /* ────────────────────────────── chrome ────────────────────────────── */
@@ -261,7 +261,10 @@ export const HOME = {
         body: `Hearth is our own chain, and its virtual machine is an Ethereum-compatible one we wrote in Node rather than Ethereum's own. In practice that means MetaMask, ethers, viem, Hardhat and Foundry connect to it with no changes — chain ${claim('emberChainId')} for the main network, ${claim('emberTestnetChainId')} for the test network — and a contract written for Ethereum deploys here as it is.`,
       },
       {
-        title: 'Six coins, not just ours',
+        // Spelled from the register rather than typed. This heading read "Six coins" from the
+        // moment micro-contracts listed ETC and DOGE (2026-08-09), sitting directly above a list
+        // of eight names that derives itself. See `chainCount` in ./products.ts.
+        title: `${sentenceCase(chainCount())} coins, not just ours`,
         accentKey: 'foresight' as SurfaceKey,
         linkTo: 'foresight',
         linkLabel: 'What you can bet and trade with',
