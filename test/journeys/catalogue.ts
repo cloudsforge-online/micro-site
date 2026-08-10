@@ -232,7 +232,11 @@ export const CATALOGUE: readonly Scenario[] = [
         // the paragraph under it turns into reassurance is the shape this whole page is arranged
         // against. Each is checked separately so that losing one cannot be hidden by the others.
         for (const [what, pattern] of [
-          ['EMBER has no market, listing or price', /no market, no listing and no price/i],
+          // Split 2026-08-10 when EMBER acquired an administered price of $0.0001: "no market" and
+          // "no listing" are still true, "no price" is not, and the clause that now carries the
+          // disclosure is the one naming who set the figure a reader can see elsewhere on the site.
+          ['EMBER has no market or listing', /no market and no listing/i],
+          ['the EMBER price is one we set', /price you see for it is one we set ourselves/i],
           ['nobody outside the project has used it', /nobody outside the project has used/i],
           ['there is no redundancy or failover', /no redundancy, no failover/i],
           // Reworded 2026-08-10 with the copy it checks: a restore HAS been rehearsed on the live
@@ -557,9 +561,19 @@ export const CATALOGUE: readonly Scenario[] = [
         try {
           await assertMounted(session)
           const note = await session.page.locator('.si-footer__note').first().innerText()
+          // The literal changed on 2026-08-10 and the reason is the whole point of this journey.
+          // EMBER now HAS a price — $0.0001, set by the operator through the administered-price
+          // route and shown wherever this estate shows a value — so a footer still saying "no
+          // price" would be the same defect this journey exists to catch, only inverted: the
+          // reader would meet a figure elsewhere and a denial here. What has to reach every
+          // address is now that the figure is ours rather than a market's.
           assert.ok(
-            note.includes('no market, no listing and no price'),
-            `${path}: the footer no longer says EMBER has no price. It says: ${note.slice(0, 200)}`,
+            note.includes('no market and no listing'),
+            `${path}: the footer no longer says EMBER has no market or listing. It says: ${note.slice(0, 200)}`,
+          )
+          assert.ok(
+            note.includes('one we set ourselves rather than one anybody has paid'),
+            `${path}: the footer no longer says the EMBER price is ours rather than traded. It says: ${note.slice(0, 200)}`,
           )
           assert.ok(
             note.includes('Nobody outside the project has used any of this yet'),

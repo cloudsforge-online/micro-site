@@ -36,8 +36,13 @@ strongest pages on the site are the ones most companies would not publish:
 - **`/platform`** reproduces the eleven statements that define "one platform" — in full, including
   the ones that are not true yet, because a definition you only publish once you pass it is not a
   definition.
-- **`/build`** says that nothing is deployed. It says it at the top, and the footer of every page
-  says it again.
+- **`/build`** says how new and how fragile the thing is, at the top, and the footer of every page
+  says it again. It used to say **"nothing is deployed"**, and this line described that; both went
+  false on 2026-08-05 when the estate went public. The page is now headed "Open to the public, and
+  days old" (`src/content/pages.ts`, the `honesty` block) and denies, explicitly, the maturity a
+  reader would otherwise supply: one machine behind a tunnel, no failover, no backup that has ever
+  been restored, a chain still at its launch difficulty carrying 62 transactions across 10,987
+  blocks with every one of them our own, and EMBER with no market, no listing and no price.
 
 That is not modesty. It is the only position from which the rest of the site can be believed.
 
@@ -79,8 +84,12 @@ A price that is wrong on a marketing site is a price a customer quotes back at s
 are right to. So the site publishes what is **free** — a policy of the platform rather than a value
 in a config file — and says plainly that prices are not published yet.
 
-There are no user counts, no uptime figures and no testimonials, for the simpler reason that
-nothing is deployed and every such number would be either zero or invented.
+There are no user counts, no uptime figures and no testimonials, for the simpler reason that every
+such number would be either zero or invented. That reason used to be written as "nothing is
+deployed", which stopped being true on 2026-08-05; the estate is deployed and reachable, and the
+accounts on it are the beacon's synthetic registrations and test residue rather than people. A
+deployed platform with no users is a cold start, and publishing a user count for one is how a
+number becomes a lie without anybody typing a false digit.
 
 ### The legal pages are honest about being unfinished
 

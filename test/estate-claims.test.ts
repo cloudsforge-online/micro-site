@@ -650,10 +650,19 @@ describe('what this site claims about being live', () => {
     // while the same issue's triage found the nightly run queued and unclaimed and the destination
     // directory empty. So the limit that is real is the schedule, not the restore, and that is
     // what a reader now has to be told before the good news.
+    // 2026-08-10, later the same day: the price clause split in two. The operator set an
+    // administered EMBER price of $0.0001 through `PUT /admin/prices/:asset` and the estate shows
+    // it, so "no price" became false while "no market" and "no listing" stayed true. A reader who
+    // sees a figure on one page and "no price" on another concludes the site is careless; the clause
+    // that protects them is the one saying whose price it is. Pin moved, never dropped.
     const honesty = BUILD.honesty.body.join(' ')
     assert.ok(
-      /no market, no listing and no price/i.test(honesty),
-      'the honesty block no longer says EMBER has no market, listing or price',
+      /no market and no listing/i.test(honesty),
+      'the honesty block no longer says EMBER has no market or listing',
+    )
+    assert.ok(
+      /price you see for it is one we set ourselves/i.test(honesty),
+      'the honesty block no longer says the EMBER price is administered rather than traded',
     )
     assert.ok(
       /no redundancy, no failover/i.test(honesty) &&
