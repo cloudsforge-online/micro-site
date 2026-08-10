@@ -289,9 +289,17 @@ function SiteFooter() {
           title is the flattering claim — "Open to the public, and days old". `body[0]` elaborates
           it: everything is built, it runs against real databases and a real EMBER network, an
           automated suite drives a real browser and fakes nothing. `body[1]` is what that does NOT
-          mean: the main network is a few hundred blocks old, EMBER has no market, no listing and
-          no price, nobody outside the project has used any of this, and there are no user numbers
-          here for the same reason there is no uptime figure.
+          mean: the main network is days old and still at its launch difficulty, it has never
+          carried a transaction, EMBER has no market, no listing and no price, nobody outside the
+          project has used any of this, and there are no user numbers here for the same reason
+          there is no uptime figure.
+
+          That paraphrase is maintained by hand and it drifted once already: it said "a few hundred
+          blocks old" after `body[1]` had been corrected, because measured 2026-08-10 the chain was
+          at 10,987 blocks. A comment restating copy it does not own is a second copy of that copy,
+          and the second copy is the one that rots. It is kept because the halves of this
+          disclosure are easy to swap by accident and the reason has to be readable here; it is
+          NOT the rendered text, which is read from `BUILD.honesty` below.
 
           The footer carried the title and then `body[0]` — the good news, twice, under a heading
           about honesty — while the denial appeared on `/build` alone. That is the shape this whole
