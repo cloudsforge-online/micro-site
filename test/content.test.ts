@@ -429,7 +429,14 @@ describe('stages', () => {
     )
     const honesty = BUILD.honesty.body.join(' ')
     for (const [what, pattern] of [
-      ['EMBER has no market or price', /no market, no listing and no price/i],
+      // Was /no market, no listing and no price/ until 2026-08-10, when the operator set an
+      // administered price of $0.0001 through `PUT /admin/prices/:asset` and the estate began
+      // showing it. "No price" was then false while "no market" and "no listing" stayed true, so
+      // the pin moves to what is true — and gains the half that now carries the disclosure, which
+      // is that the figure is one we set rather than one anybody paid. Dropping the pin instead
+      // would have let the whole clause quietly disappear the next time the copy was touched.
+      ['EMBER has no market or listing', /no market and no listing/i],
+      ['the EMBER price is ours, not a traded one', /price you see for it is one we set ourselves/i],
       ['nobody outside has used it', /nobody outside the project has used/i],
       ['one machine, no failover', /no redundancy, no failover/i],
       // Was "no backup that has ever been restored" until 2026-08-10. micro-org#214 rehearsed a

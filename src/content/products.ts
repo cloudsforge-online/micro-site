@@ -157,7 +157,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Mine EMBER in your browser or on any spare processor — no rig, no pool, no install. Hearth, the chain underneath it, is a full Ethereum virtual machine.',
     stage: 'open',
     stageNote:
-      'Open to the public. The main network mines, a public node answers Ethereum JSON-RPC and a public block explorer runs beside it. The chain is new, and EMBER has no market, no listing and no price.',
+      'Open to the public. The main network mines, a public node answers Ethereum JSON-RPC and a public block explorer runs beside it. The chain is new, and EMBER has no market and no listing — the price shown for it is one we set ourselves, not one anybody has paid.',
     sections: [
       {
         title: 'Mining starts in a browser tab',

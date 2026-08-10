@@ -289,14 +289,18 @@ function SiteFooter() {
           title is the flattering claim — "Open to the public, and days old". `body[0]` elaborates
           it: everything is built, it runs against real databases and a real EMBER network, an
           automated suite drives a real browser and fakes nothing. `body[1]` is what that does NOT
-          mean: the main network is days old, still at its launch difficulty and nearly empty with
-          every transaction on it our own, EMBER has no market, no listing and no price, nobody
-          outside the project has used any of this, and there are no user numbers here for the same
-          reason there is no uptime figure.
+          mean: the main network is days old and nearly empty with every transaction and every block
+          on it our own, EMBER has no market and no listing and the price shown for it is one we set
+          ourselves, nobody outside the project has used any of this, and there are no user numbers
+          here for the same reason there is no uptime figure.
 
-          That paraphrase is maintained by hand and it drifted once already: it said "a few hundred
-          blocks old" after `body[1]` had been corrected, because measured 2026-08-10 the chain was
-          at 10,987 blocks. A comment restating copy it does not own is a second copy of that copy,
+          That paraphrase is maintained by hand and it has now drifted TWICE, which is the argument
+          against comments like this one making itself. First it said "a few hundred blocks old"
+          after `body[1]` had been corrected, because measured 2026-08-10 the chain was at 10,987
+          blocks. Then it said "still at its launch difficulty" for about six hours: browser mining
+          shipped in 2.5.16, one reader's tab took the difficulty from the floor to 8,146 and back
+          out again, and EMBER acquired an administered price of $0.0001 the same evening
+          (micro-org#363). A comment restating copy it does not own is a second copy of that copy,
           and the second copy is the one that rots. It is kept because the halves of this
           disclosure are easy to swap by accident and the reason has to be readable here; it is
           NOT the rendered text, which is read from `BUILD.honesty` below.
@@ -304,7 +308,7 @@ function SiteFooter() {
           The footer carried the title and then `body[0]` — the good news, twice, under a heading
           about honesty — while the denial appeared on `/build` alone. That is the shape this whole
           site is arranged against, and it was worst exactly where it mattered most: the home page
-          invites a reader to mine EMBER and never said the coin has no price. The estate's rule
+          invites a reader to mine EMBER and never said what the coin is worth. The estate's rule
           (docs/ecosystem/18-build-status.md:38, restated for both networks at :118-122, and rule 4
           of docs/ecosystem/32-roadmap-ui-and-content.md §1) is that the page inviting someone to
           mine EMBER must also say what EMBER is not.

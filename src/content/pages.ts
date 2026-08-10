@@ -635,12 +635,36 @@ export const BUILD = {
    * `test/estate-claims.test.ts` could recompute — and an unrecomputable digit on this page is the
    * exact defect that register exists to prevent. The measured figures live in `hearth`'s MAP.md
    * §10 and in `docs/ecosystem/18-build-status.md` §0.2, where a date sits beside them.
+   *
+   * ── AND THE DIFFICULTY HALF OF THAT CORRECTION LASTED SIX HOURS ────────────────────────────
+   *
+   * "The chain sits at its launch difficulty" was offered above as a property that "does not move".
+   * It moved the same evening. Browser mining shipped to three surfaces in 2.5.16, one reader
+   * started an EMBER session in sweep mode, and the mainnet node shows difficulty leaving the floor
+   * at block 10,942 and reaching 8,146 by block 11,242 — a factor of 32 — before the tab closed and
+   * the tip stopped for nineteen minutes. Measured 2026-08-10 (micro-org#363).
+   *
+   * So it is not a durable caveat at all: it is a live reading that now oscillates with whoever has
+   * a tab open, which is precisely what the "No estate census" note says not to publish. What
+   * replaces it is the property underneath it, which browser mining does not change — every block
+   * this chain has ever had was mined by us. That is the same claim as the one about senders, made
+   * about hashrate instead of transactions, and it is the honest half of "nobody outside the
+   * project has used any of this".
+   *
+   * ── AND THE PRICE CLAUSE, SAME EVENING ──
+   *
+   * The body also said EMBER has "no price". On 2026-08-10 the operator set an administered price
+   * of $0.0001 through `PUT /admin/prices/:asset`, and it is now shown wherever this estate shows a
+   * value. "No price" therefore became false while "no market" and "no listing" stayed true — and
+   * the difference between them is the entire point. A reader who sees a figure and is told there
+   * is no price concludes the site is careless; a reader who is told the figure is one we set
+   * ourselves has been given the thing that actually matters about it.
    */
   honesty: {
     title: 'Open to the public, and days old',
     body: [
       'Everything described on this site is built, runs together against real databases and a real EMBER network, and now answers on the public internet under a proper certificate. An automated suite drives a real browser through the real gateway the way a person would, faking nothing.',
-      'What that does not mean: the main network is days old, still at its launch difficulty, and nearly empty — the handful of transactions on it are all our own. EMBER has no market, no listing and no price. Nobody outside the project has used any of this yet. There are no user numbers on this page for the same reason there is no uptime figure — both would be either zero or invented.',
+      'What that does not mean: the main network is days old and nearly empty — the handful of transactions on it are all our own, and so is every block ever mined on it. EMBER has no market and no listing, and the price you see for it is one we set ourselves rather than one anybody has paid. Nobody outside the project has used any of this yet. There are no user numbers on this page for the same reason there is no uptime figure — both would be either zero or invented.',
       'It all runs on one machine behind a tunnel. There is no redundancy, no failover, and no scheduled backup that has ever run. Being reachable is the weakest thing a platform can claim about itself, and today it is the only thing this one has earned.',
     ],
   },
