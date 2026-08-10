@@ -91,6 +91,13 @@ export const SCOPED_SURFACES: readonly SurfaceKey[] = [
   'create',
   'market',
   'worlds',
+  // The pool page and the home page's pool capability both scope this key. It was ALREADY being
+  // scoped by the capability before it was declared anywhere: `micro-ui`'s tokens.css had no
+  // `[data-cf-product='pool']` block, so all four accent tokens fell through to the company ember
+  // in silence — the failure the note above is about, caught here because this list is what
+  // `test/contrast.test.ts` checks against the stylesheet. The block now exists, shared with
+  // `create`, which is the hue the registry already gives `pool`.
+  'pool',
 ]
 
 /**

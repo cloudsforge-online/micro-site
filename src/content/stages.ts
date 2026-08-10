@@ -238,6 +238,13 @@ export const PUBLIC_SURFACES: readonly string[] = [
   'foresight',
   'market',
   'worlds',
+  // The mining pool console. `deploy/cloudflared/config.mainnet.public.yml` routes
+  // `pool.<apex>`, and it answered 200 when read on 2026-08-10. The tunnel file's own comment is
+  // worth knowing before trusting this entry: the hostname publishes the CONSOLE and can never
+  // publish the stratum port, because a tunnel forwards HTTP and stratum is a raw socket. `open`
+  // here means what it means everywhere else on this site — a stranger can reach the address —
+  // and deliberately not that a miner can connect to the pool from outside the network.
+  'pool',
 ]
 
 export const RUNS_ON: Readonly<Record<string, readonly string[]>> = {
@@ -248,4 +255,8 @@ export const RUNS_ON: Readonly<Record<string, readonly string[]>> = {
   foresight: ['foresight-web', 'foresight'],
   market: ['market-web', 'market'],
   worlds: ['worlds-web', 'worlds'],
+  // `pool` is the Stratum server and `pool-web` the console in front of it, sharing one hostname.
+  // `pool-migrate` is deliberately absent: it is a one-shot migrator that runs to completion and
+  // exits, so requiring it to be a live service would be requiring the wrong thing.
+  pool: ['pool-web', 'pool'],
 }

@@ -308,6 +308,137 @@ export const CATALOGUE: readonly Scenario[] = [
     },
   },
 
+  /**
+   * THE POOL PAGE, AND THE CALL TO ACTION THAT POINTED AT NOTHING.
+   *
+   * `/products/pool` was a published address before it was a page. The home page's "And Litecoin,
+   * in the same tab" capability carries `linkTo: 'pool'`, and `src/pages/home.tsx` renders every
+   * capability's link as `/products/<linkTo>` — so the visible call to action "See the pool" led
+   * to an address `nginx.conf` enumerated no location for. Measured 2026-08-10: a hard 404, on the
+   * one link the front page offers a reader who has just been told the pool exists.
+   *
+   * BJ-SITE-404 now walks that address because `OWNED` is built from `PRODUCT_PAGES`, and
+   * BJ-SITE-03 mounts it because it walks the same list. Neither can tell whether the page still
+   * SAYS the things it was written to say, and both would stay green against a page that had been
+   * quietly reduced to a headline.
+   *
+   * ── What is asserted here, and what deliberately is not ───────────────────────────────────────
+   *
+   * Everything below is copy this repository owns and can therefore be wrong about on its own.
+   * Nothing below is a measurement. Which chains are served, what the endpoint is, what the
+   * template height is and what a worker has done are live facts about a running service;
+   * `micro-pool-web` reads all of them from `GET /v1/pool` on every load and this file may no more
+   * assert them than `src/` may print them.
+   *
+   * The one about Bitcoin is the reason this scenario has teeth. The estate's Bitcoin node was
+   * fully synced on 2026-08-10 (961,903 of 961,903) and `POOL_CHAINS` does not list it, so the
+   * pool serves no Bitcoin at all — and "our Bitcoin node is synced" is exactly the fact that
+   * talks somebody into adding the word to a marketing page. A synced node is not a served chain.
+   */
+  {
+    id: 'BJ-SITE-POOL',
+    title: 'the pool page offers both ways in, promises no payout, and links out to the console',
+    tier: 1,
+    // `presentation`, not `navigation`: this asserts what the page OFFERS and never follows the
+    // outbound link. The console is another repository's surface and its status is that
+    // repository's to keep.
+    asserts: 'presentation',
+    gate: true,
+    async run(surface) {
+      const page = PRODUCT_PAGES.find((p) => p.slug === 'pool')
+      assert.ok(page, 'there is no pool page in PRODUCT_PAGES')
+
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, {
+        path: '/products/pool',
+        stubs: ANONYMOUS,
+      })
+      try {
+        await assertMounted(session, { showing: [page.headline, page.stageNote] })
+
+        // `#main` rather than the body, so the bar and the footer are outside the reading. The
+        // footer links to the console by name and would satisfy half of this on its own.
+        const text = await session.page.locator('#main').innerText()
+
+        /*
+         * BOTH WAYS IN, ON ONE PAGE. This is the whole of what was asked for: a reader with no
+         * hardware and a reader with a rig must both find their route here. A page that keeps only
+         * the browser half is the easier page to write and is the failure — the second audience is
+         * the one that already owns the hashrate.
+         */
+        assert.ok(/browser tab/i.test(text), 'the pool page no longer offers the browser route')
+        assert.ok(
+          /\bStratum\b/.test(text),
+          'the pool page no longer offers the route for a miner somebody already runs',
+        )
+
+        // Verbatim, and from the design system rather than retyped. Six surfaces publish this
+        // sentence and the failure mode of a retyped one is that five of them get updated.
+        assert.ok(
+          text.includes(NOT_PAID_CLAUSE),
+          'the pool page mentions mining without carrying the not-paid clause',
+        )
+
+        // Litecoin is what the pool answers for, so it is the only coin the page may offer.
+        assert.ok(text.includes('Litecoin'), 'the pool page no longer names the chain it serves')
+        assert.ok(
+          !/\bBitcoin\b/.test(text),
+          'the pool page names Bitcoin. The node is synced; POOL_CHAINS does not serve it',
+        )
+
+        /*
+         * Dogecoin is named AND switched off, in that order and in the same breath. Naming it
+         * without the second half is the defect — merge-mining is built and merged in `micro-pool`
+         * and `POOL_LTC_AUX_CHAINS` is unset, so the live pool answers `merged: null`. Dropping
+         * the denial to keep the feature sounding available is the single most likely edit anybody
+         * makes to this page, and it is the one thing on it that is a lie.
+         */
+        assert.ok(text.includes('Dogecoin'), 'the pool page no longer mentions merge-mining at all')
+        assert.ok(
+          /switched off/i.test(text),
+          'the pool page names Dogecoin without saying merge-mining is switched off',
+        )
+        assert.equal(
+          await textOrder(session.page, 'Dogecoin', 'switched off'),
+          'before',
+          'the page reaches "switched off" before it names Dogecoin',
+        )
+
+        /*
+         * …and it hands the reader on to the console, which is where every measurement lives. The
+         * href is read for the two properties that together prove it is a registry lookup rather
+         * than a hostname somebody typed: it is absolute, and it is on an origin this site is not
+         * served from. The hostname itself is never named here, for the same reason `src` may not
+         * name one.
+         */
+        const out = session.page.locator('.si-productaside a[href]').first()
+        const href = (await out.getAttribute('href')) ?? ''
+        assert.ok(/^https?:\/\//.test(href), `the pool page's outbound link is not resolved: ${href}`)
+        assert.notEqual(
+          new URL(href).origin,
+          surface.origin,
+          'the pool page sends the reader back to this site instead of to the console',
+        )
+      } finally {
+        await session.close()
+      }
+
+      // THE ORIGINAL DEFECT, ASSERTED AT ITS SOURCE. The front page's call to action has to lead
+      // to the page above and not to a 404, and the link is generated from `linkTo` — so this goes
+      // red the moment the pool page's slug and the capability's key drift apart again.
+      const home = await renderOnlyWithStubbedNetwork(surface.origin, { stubs: ANONYMOUS })
+      try {
+        await assertMounted(home)
+        const cta = home.page.locator(`.si-points__more a[href="/products/${page.slug}"]`)
+        assert.ok(
+          (await cta.count()) > 0,
+          'the front page no longer offers a way through to the pool page',
+        )
+      } finally {
+        await home.close()
+      }
+    },
+  },
+
   /* ---- doc 22 BJ-SITE-04 ---------------------------------------------- */
   {
     id: 'BJ-SITE-04',

@@ -313,12 +313,41 @@ describe('the product pages and the registry', () => {
     }
   })
 
+  /**
+   * The two keys excluded here are the two pages that are deliberately NOT products, and the
+   * exclusion is a list rather than a predicate on purpose: `kind !== 'product'` would let any
+   * future non-product page in without anybody deciding to admit it, which is the whole thing
+   * this assertion is for. Each name below had to be typed by somebody.
+   *
+   *   `hub`   the account the products run on. A container is not a peer of the things inside it.
+   *   `pool`  the mining pool console, added 2026-08-10. It is a `service` in the registry and
+   *           stays one — `ProductKey` is the six the design system validated accents and art
+   *           for, and `productCards()` filters on `kind`, so this page adds no card to the grid
+   *           and `productCount()` is still six. It has a page because the home page already
+   *           linked `/products/pool` and that address answered a hard 404.
+   */
+  const NON_PRODUCT_PAGES: readonly string[] = ['hub', 'pool']
+
   it('covers every registry product, and invents none', () => {
     // Both directions. A product with no page vanishes from the site silently; a page with no
     // product is a page about something that does not exist.
-    const paged = new Set(PRODUCT_PAGES.filter((p) => p.key !== 'hub').map((p) => p.key))
+    const paged = new Set(
+      PRODUCT_PAGES.filter((p) => !NON_PRODUCT_PAGES.includes(p.key)).map((p) => p.key),
+    )
     const registered = new Set(PRODUCTS.map((s) => s.key))
     assert.deepEqual([...paged].sort(), [...registered].sort())
+  })
+
+  it('keeps every non-product page out of the product grid', () => {
+    // The assertion that makes the exclusion list above safe. A key may be excused from the set
+    // check only while it is genuinely not rendered as a product card; without this, excusing a
+    // key would be a way to quietly put a seventh card on a page whose art was made for six.
+    for (const key of NON_PRODUCT_PAGES) {
+      assert.ok(
+        !productCards().some(({ surface }) => surface.key === key),
+        `${key} is excused from the product set check and is on the product grid anyway`,
+      )
+    }
   })
 
   it('has a page for Hub, which is a surface rather than a product', () => {

@@ -219,6 +219,22 @@ function SiteFooter() {
               <li>
                 <Link to="/products/hub">{surface('hub').name}</Link>
               </li>
+              {/*
+                The mining pool, also separately, and for the mirror-image reason: it is chain
+                infrastructure rather than something a person chooses between, so it is a `service`
+                in the registry and REGISTRY_PRODUCTS above does not carry it.
+
+                It is in this column anyway because the page exists and nothing led to it. Until
+                2026-08-10 the only thing on this site that mentioned the pool was a home-page
+                capability whose "See the pool" link resolved to /products/pool — an address
+                nginx.conf enumerated no location for, which answered a hard 404. This site and
+                micro-network-site are also the only two bundles in the estate that do not mount
+                `CloudsForgeFooter`, whose "More" column is where every other surface links the
+                pool from, so there was no second route to fall back on either.
+              */}
+              <li>
+                <Link to="/products/pool">{surface('pool').name}</Link>
+              </li>
             </ul>
           </nav>
 
@@ -274,6 +290,17 @@ function SiteFooter() {
               </li>
               <li>
                 <a href={h.explorer}>{surface('explorer').name}</a>
+              </li>
+              {/*
+                The pool CONSOLE, which is a different destination from the /products/pool page in
+                the first column and belongs beside the explorer for the same reason: both are
+                chain infrastructure a reader opens to see live numbers rather than to read about.
+                The page states what the pool is; only the console can say which chains it is
+                serving right now, how fresh the work is and what it has found, because it reads
+                all of that from `GET /v1/pool` on every load.
+              */}
+              <li>
+                <a href={h.pool}>{surface('pool').name}</a>
               </li>
             </ul>
           </nav>
