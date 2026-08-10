@@ -17,7 +17,7 @@
  * `presentation` or `navigation` over content this repository owns, plus one `client-request`.
  */
 import assert from 'node:assert/strict'
-import { PRODUCTS, SWITCHER_SURFACES } from '@cloudsforge/ui'
+import { HUB_MINE_PATH, NOT_PAID_CLAUSE, PRODUCTS, SWITCHER_SURFACES } from '@cloudsforge/ui'
 import { assertMounted, renderOnlyWithStubbedNetwork, type Stubs } from './browser.ts'
 import { assertAxeClean, assertKnownStillBroken, textOrder, type KnownViolation } from './axe.ts'
 import type { Scenario } from './scenario.ts'
@@ -646,6 +646,137 @@ export const CATALOGUE: readonly Scenario[] = [
         assert.equal((await capability.first().innerText()).trim(), 'Start mining')
       } finally {
         await session.close()
+      }
+    },
+  },
+
+  /**
+   * THE OFFER OF BROWSER MINING IS BESIDE THE ACCOUNT, ON EVERY ADDRESS THIS SITE SERVES.
+   *
+   * `mining` is an OPT-IN prop on `CloudsForgeBar` (`ui/packages/ui/src/index.tsx`). A bar rendered
+   * without it is a perfectly valid bar, so a shell that stops passing it is indistinguishable from
+   * one that passes it — by typecheck, by lint, and by every other scenario in this file. Eleven of
+   * eighteen frontends passed it on 2026-08-10 and this surface was one of the three that did not.
+   *
+   * Of those three this is the one the omission costs the most, because it is the front door. This
+   * file's own header says why: this is the site search engines crawl, that link checkers walk, and
+   * that people paste into chat. It is where a reader who has never heard of any of this ARRIVES
+   * FIRST, and a capability missing from the chrome here is missing from the only page most readers
+   * will ever open.
+   *
+   * ── This is not BJ-SITE-10 again ──────────────────────────────────────────────────────────────
+   *
+   * That scenario is about the home page's hero: one address, one screen, the loudest action on it.
+   * This is about all the others — the product pages, `/build`, `/terms`, `/privacy`, and the 404 —
+   * where there is no hero and the bar is the whole of what a reader has to move with. Deleting the
+   * hero button leaves this green and deleting the bar prop leaves that one green, which is the
+   * reason both exist.
+   *
+   * `src/components/shell.tsx` is where this one is decided, and it is a single line. Reverting
+   * `mining={miningOnHub(hosts().hub)}` turns this red and leaves the rest of the suite green,
+   * which is the mutation proof.
+   *
+   * What it does NOT assert is what the control DRAWS — micro-ui's `mining.test.ts` owns that — nor
+   * that pressing it mines anything, which is asserted in micro-hub-web, the surface that actually
+   * mounts the miner. A session is a WebSocket and two Web Workers pinned to ONE origin, and this
+   * bundle is not served from it. What this site owes a reader is that the offer exists, that it is
+   * where they will look for it, and that it is a LINK they can middle-click rather than an
+   * `onClick` no link check can see.
+   */
+  {
+    id: 'BJ-MINE-BAR',
+    title: 'the offer of browser mining is beside the account, on every address this site serves',
+    tier: 2,
+    asserts: 'presentation',
+    async run(surface) {
+      // Every owned address, and one this app does not own. `/products/pay` is the bookmark from
+      // the previous estate that BJ-SITE-404 pins: nginx answers 404 for it and still serves this
+      // shell, and chrome that is absent on the 404 is absent exactly where a lost reader needs a
+      // way onwards.
+      for (const path of [...OWNED, '/products/pay']) {
+        const session = await renderOnlyWithStubbedNetwork(surface.origin, { path, stubs: ANONYMOUS })
+        try {
+          const found = await session.page.$$('.cf-bar .cf-mine')
+          assert.equal(found.length, 1, `${path}: expected one mining control in the bar, found ${found.length}`)
+          const mine = found[0] as NonNullable<(typeof found)[number]>
+
+          /*
+           * An anchor, and pointed at HUB. Getting the surface wrong is the likely mistake rather
+           * than a hypothetical one — every other destination in this shell is an in-app route, and
+           * `src/lib/hosts.ts` exists precisely because writing `/mine` here would be the natural
+           * thing to type. A control that offered mining and led to a page of this site is
+           * indistinguishable from a working one in every screenshot.
+           */
+          assert.equal(
+            await mine.evaluate((el) => el.tagName),
+            'A',
+            `${path}: the mining control is not a link`,
+          )
+          const href = (await mine.getAttribute('href')) ?? ''
+          assert.ok(
+            href.endsWith(HUB_MINE_PATH),
+            `${path}: the mining control points at ${href}, not at ${HUB_MINE_PATH}`,
+          )
+          assert.notEqual(
+            new URL(href, surface.origin).origin,
+            new URL(surface.origin).origin,
+            `${path}: the mining control leads back to this site instead of to Forge Hub`,
+          )
+
+          /*
+           * DOCUMENT ORDER, NOT CSS. A stylesheet can put a box anywhere on the row — `order:` and
+           * `flex-direction: row-reverse` both do it without moving a node — so reading the
+           * rendered geometry would pass for a control a keyboard reader reaches last, after the
+           * switcher and the whole page. "Beside the account" is a claim about where you find it.
+           *
+           * The `.cf-sr` skipped between them is the control's own description span, which
+           * `MiningControl` renders as a SIBLING so it is a description and not part of the
+           * accessible name (`ui/packages/ui/src/mining.tsx`).
+           */
+          const placement = await session.page.evaluate(() => {
+            const inner = document.querySelector('.cf-bar__inner')
+            if (!inner) return null
+            const kids = [...inner.children]
+            const mineAt = kids.findIndex((el) => el.classList.contains('cf-mine'))
+            const last = kids.length - 1
+            return {
+              between: kids.slice(mineAt + 1, last).filter((el) => !el.classList.contains('cf-sr')).length,
+              account: kids[last]?.className ?? '',
+            }
+          })
+          assert.ok(placement, `${path}: the bar has no inner row`)
+          assert.equal(placement.between, 0, `${path}: something now sits between mining and the account`)
+          assert.match(
+            placement.account,
+            /cf-pop|cf-btn--ember/,
+            `${path}: the last control in the bar is not the account (${placement.account})`,
+          )
+
+          /*
+           * And it promises nothing. `pool/src/payouts.ts` states it — "PAYOUTS ARE OFF" — and
+           * `miningOnHub()` defaults `payoutsImplemented` to false rather than asking a bundle that
+           * has never spoken to the pool to assert otherwise. This site is the one place where that
+           * silence would be read as a promise: the footer says on every address that EMBER has no
+           * market, no listing and no price (BJ-SITE-09), and an invitation to mine standing in the
+           * same row without the clause is the pair of claims that rule 4 of
+           * docs/ecosystem/32-roadmap-ui-and-content.md §1 exists about.
+           *
+           * Asserted against the exported constant, so rewording the sentence in micro-ui does not
+           * leave this checking a string that no longer appears anywhere.
+           */
+          const clause = await session.page.evaluate(() => {
+            const el = document.querySelector('.cf-bar .cf-mine')
+            const id = el?.getAttribute('aria-describedby') ?? ''
+            return document.getElementById(id)?.textContent ?? null
+          })
+          assert.ok(clause, `${path}: the mining control carries no description for a screen reader`)
+          assert.ok(
+            clause.includes(NOT_PAID_CLAUSE),
+            `${path}: the mining control does not carry the not-paid clause`,
+          )
+        } finally {
+          await session.close()
+        }
       }
     },
   },

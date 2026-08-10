@@ -11,7 +11,13 @@
  * Everything this app adds goes below the bar.
  */
 import { useEffect } from 'react'
-import { CloudsForgeBar, CookieBanner, PRODUCTS as REGISTRY_PRODUCTS, surface } from '@cloudsforge/ui'
+import {
+  CloudsForgeBar,
+  CookieBanner,
+  PRODUCTS as REGISTRY_PRODUCTS,
+  miningOnHub,
+  surface,
+} from '@cloudsforge/ui'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { hosts, isTestnet, liveUrl, PRODUCT } from '../lib/hosts.ts'
 import { NAV, ROUTES } from '../lib/routes.ts'
@@ -35,7 +41,23 @@ export function AppShell() {
         Skip to content
       </a>
 
-      <CloudsForgeBar current={PRODUCT} account={account} onSignIn={() => signIn()} onSignOut={signOut} />
+      {/*
+        `mining` beside the account, as on every other surface that mounts this bar.
+
+        The company site was one of the two left out, and it is the one that matters most: it is
+        where a reader arrives first, and the control being absent here is what makes the miner
+        feel like something buried on a page rather than something the account carries with it.
+
+        `miningOnHub()` — the miner is a WebSocket and two Web Workers on ONE origin, and this
+        bundle is not served from it, so this renders an anchor to the surface that can start it.
+      */}
+      <CloudsForgeBar
+        current={PRODUCT}
+        account={account}
+        onSignIn={() => signIn()}
+        onSignOut={signOut}
+        mining={miningOnHub(hosts().hub)}
+      />
 
       <EnvironmentNotice />
       <SiteNav />
