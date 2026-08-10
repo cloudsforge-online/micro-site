@@ -139,7 +139,7 @@ export const TERMS: LegalPage = {
         'It does not protect against the operator. The value that decrypts every stored key is held by the platform, and it is supplied to the software as ordinary configuration on the machine that runs it. There is no second key held by you, no password of yours mixed into it, and no hardware module that would refuse to release it. Anyone who holds both that value and the stored files can derive your private key and move your assets without your involvement. That is a plain statement of what the system can do, and it should be read as one.',
         'There is no multi-signature scheme, no threshold or split-key arrangement, and no hardware security module anywhere in this. It is one encrypted file per address on one server.',
         'Deposits arrive at an address minted for you, and are then swept into a single platform-held address per chain. After the sweep, what records that the assets are yours is the ledger — an internal record — rather than a separate on-chain position in your name. Withdrawals are paid out of that shared platform address.',
-        'The whole platform runs on a single home server behind one tunnel. There is no second site and no failover, there is no scheduled backup of any kind, and no restore has ever been performed. If the value that decrypts the keys is lost, every stored key and every stored recovery phrase becomes permanently undecryptable, and assets at those addresses can never be moved again — by anyone, including the operator. That is stated because it is the failure mode with no remedy after the fact.',
+        'The whole platform runs on a single home server behind one tunnel. There is no second site and no failover. A backup run is queued on a schedule and nothing claims it, so no scheduled backup has ever been produced; what exists instead is database dumps taken by hand before a release, and they do not cover everything the platform holds. The restore path is not theoretical — it has been rehearsed on this machine into throwaway copies and checked against what was dumped — but it has never been run onto the live system. If the value that decrypts the keys is lost, every stored key and every stored recovery phrase becomes permanently undecryptable, and assets at those addresses can never be moved again — by anyone, including the operator. That is stated because it is the failure mode with no remedy after the fact.',
         'There is no insurance, no compensation scheme, no proof-of-reserves publication and no reserve attestation. No code in the platform produces any of those, and no third party checks the platform\'s holdings. The internal reconciliation that compares the ledger against the chain is an operational alarm that freezes withdrawals when the two disagree; it is not an attestation, and nothing publishes its result.',
         'A wallet you hold the keys to yourself is a different thing and is genuinely different: the browser extension and the mobile and desktop wallets generate and seal keys on your own device under a password of yours, and the platform never sees them. Everything above describes the managed wallet, which is what an ordinary sign-up on the website gets.',
         'You can take a managed wallet out of this arrangement. Exporting the private key or the recovery phrase is a real, supported operation, gated by a password and a second factor, a twenty-four hour waiting period, and a single-use short-lived confirmation. Once exported, that key is marked as exported and does not go back.',
@@ -212,7 +212,7 @@ export const TERMS: LegalPage = {
       status: 'counsel',
       body: [],
       outstanding:
-        'The risk disclosures a custodial crypto service is required to make, in the form and place the applicable regime requires them. A summary written by an engineer is not a disclosure. There is now a separate risk page setting out, in plain words, how the system can fail — the operator\'s ability to move held assets, the absence of backups, the irreversibility of transfers and the absence of insurance. It is written from the code, it is not this section, and it does not discharge whatever this section turns out to require.',
+        'The risk disclosures a custodial crypto service is required to make, in the form and place the applicable regime requires them. A summary written by an engineer is not a disclosure. There is now a separate risk page setting out, in plain words, how the system can fail — the operator\'s ability to move held assets, what backups exist and what they do not cover, the irreversibility of transfers and the absence of insurance. It is written from the code, it is not this section, and it does not discharge whatever this section turns out to require.',
     },
     {
       title: 'Liability, warranties and indemnities',
@@ -304,15 +304,45 @@ export const TERMS: LegalPage = {
  * These are now written out below as `stated` sections, because each is a description of code.
  * What they MEAN for the reader's rights remains `counsel` and remains empty.
  *
- * ── ONE CLAIM WAS PUT TO ME AND IS NOT WRITTEN HERE, BECAUSE IT IS NOT TRUE YET ───────────────
+ * ── ONE CLAIM WAS REFUSED ON 2026-08-05, AND HAS SINCE BECOME TRUE ────────────────────────────
  *
- * I was told Mailtrap is the SMTP relay for registration and reset mail. **The estate has no SMTP
- * configured at all** — `grep -cE '^SMTP_' .env` returns 0, and `notify/src/email.ts` returns a
- * `no_transport` failure rather than sending when `SMTP_HOST` is unset, which the module documents
- * as a supported mode. Mailtrap appears once in `.env.example`, in a list beside Brevo, Resend,
- * SendGrid and postfix, as an *example* of what generic SMTP can point at. Naming a processor that
- * is not processing anything would be exactly the invented paragraph the header of this file
- * exists to forbid, so the notice says no mail provider is configured and what happens when one is.
+ * The refusal is kept, because it was right and because the shape of how it expired is the lesson.
+ *
+ * I was told on 2026-08-05 that Mailtrap was the SMTP relay for registration and reset mail, and
+ * the notice refused to say so: `grep -cE '^SMTP_' .env` returned 0, `notify/src/email.ts` returns
+ * a `no_transport` failure rather than sending when `SMTP_HOST` is unset, and Mailtrap appeared
+ * once in `.env.example` in a list beside Brevo, Resend, SendGrid and postfix, as an EXAMPLE of
+ * what generic SMTP can point at. Naming a processor that was not processing anything would have
+ * been the invented paragraph this header exists to forbid. So the page said no mail provider was
+ * configured, and what would happen when one was.
+ *
+ * **A relay was then configured, and the page was not changed.** The measurement that refused the
+ * claim was made against `.env` in a repository, and the estate's SMTP settings are not there —
+ * they are in an untracked file on the host, which is why a repository-shaped check could go on
+ * returning 0 for ever while mail flowed. Exactly the boundary that let the cookies section go on
+ * denying a cookie set by a linked package: a scan that is correct, green, and looking in the
+ * wrong place.
+ *
+ * What is now measured, dated, and from the running estate rather than from a checkout:
+ *
+ *   the relay          micro-org#233, 2026-08-08 — a real `AUTH LOGIN` handshake driven against
+ *                      `live.smtp.mailtrap.io` from inside the `notify` container. Configured,
+ *                      authenticated, and externally deliverable: a test message reached an
+ *                      outside inbox with SPF, DKIM and DMARC all passing.
+ *   that it sends      micro-org#243, measured 2026-08-07 on the host — succeeded and failed send
+ *                      counts for that single day, against a free-tier daily allowance. Mail is
+ *                      leaving the estate to a third party, addressed to real addresses.
+ *   the mechanism      unchanged and still as the notice describes it: `notify/src/email.ts`,
+ *                      plain SMTP, no provider SDK, `no_transport` when `SMTP_HOST` is unset.
+ *
+ * The notice was therefore corrected to the system rather than the system to the notice. The
+ * provider is NAMED, because the entry a reader needs is which company holds their address; and
+ * the sentence says the relay is a deployment setting, so a reader is not told that this
+ * particular name is a property of the software.
+ *
+ * The same wrong inventory had propagated into the `Sharing, and transfers out of your territory`
+ * brief, which is the text a drafter would work from. That is the more expensive half: a notice is
+ * read by people who can check it, and a drafting brief is read once, by somebody who cannot.
  *
  * ── THIS NEEDS A LAWYER AND HAS NOT HAD ONE ───────────────────────────────────────────────────
  *
@@ -484,10 +514,11 @@ export const PRIVACY: LegalPage = {
       status: 'stated',
       body: [
         'Cloudflare. Every request to every CloudsForge address passes through Cloudflare, which terminates the connection and forwards it down a tunnel. Cloudflare therefore sees your IP address, the address you asked for and the metadata of the request. This became true on the day the estate first went public, and it is in the path of every request whatever you answered about analytics.',
-        'No mail provider is configured at present. Registration and password-reset mail is sent over plain SMTP with no provider SDK, and with no SMTP server configured the system records that no mail was sent rather than failing or silently losing it. When one is configured, that operator will see the address the mail is sent to.',
+        'A mail relay, for anything the platform has to send you. Registration, address-verification and password-reset messages leave over plain SMTP with no provider SDK — a host, a port, a user, a password and a From address — so which relay carries them is a setting of the deployment rather than something written into the software. One is configured on the live estate and is in use: Mailtrap. It therefore receives the address each message is addressed to and the contents of that message. Where no relay is configured at all, which is what a development stack looks like, nothing is sent and the system records that no mail was sent rather than failing quietly or losing it.',
+        'Until this correction that paragraph said no mail provider was configured. It was measured and true when it was written, and it stopped being true without the page changing — the same defect as the cookies section above, found the same way and corrected the same way. A processor holding readers\' email addresses is exactly the entry a notice like this exists to carry, so it is written out here rather than left to whoever next reads the deployment.',
         'Google, and only if you accepted analytics. Accepting fetches the Google Analytics tag from Google\'s servers, after which Google receives the fact of the visit, the address of the page, what your browser says about itself, and the identifiers in the cookies it sets. Refusing, or never answering, means no request reaches Google at all. Advertising and personalisation signals are switched off where that tag is configured, so what is asked for is counting rather than profiling — which is a setting on the request and is not an undertaking about what Google does with what it receives.',
         'Beyond that tag there is no advertising network, no other measurement of any kind and no other external script in these pages. The typefaces are served from CloudsForge\'s own address rather than from a font host, so nobody outside is told what you are reading by the act of rendering it. Continuous integration fails if a request to an external host appears in this site\'s own source, and — because that scan cannot see the shared packages this site renders, which is how the tag went undisclosed — a second check now compares those packages against the section on cookies above.',
-        'The platform runs on a single home server behind that tunnel. There is no second site, no failover, and no backup that has ever been restored. That is a statement about resilience rather than about privacy, but it is the kind of thing a reader deciding what to trust with money is entitled to know.',
+        'The platform runs on a single home server behind that tunnel. There is no second site, no failover, and no scheduled backup that has ever run — a run is queued nightly and nothing claims it. A restore has been rehearsed into throwaway copies and has never been performed on the live system. That is a statement about resilience rather than about privacy, but it is the kind of thing a reader deciding what to trust with money is entitled to know.',
       ],
     },
     {
@@ -533,7 +564,7 @@ export const PRIVACY: LegalPage = {
       status: 'counsel',
       body: [],
       outstanding:
-        'The LAWFUL BASIS for transferring personal data across a border, and the transfer mechanism relied on. The processors themselves are now listed above from the deployment inventory — Cloudflare in the path of every request, and no mail provider configured yet — but which jurisdictions the data reaches and what makes that lawful is not an engineering question. This section stops being accurate the day a dependency is added, so it is checked against the tunnel configuration rather than remembered.',
+        'The LAWFUL BASIS for transferring personal data across a border, and the transfer mechanism relied on. The processors themselves are listed above from the deployment inventory — Cloudflare in the path of every request, a mail relay carrying every address-verification and password-reset message, and Google where a reader has accepted analytics — but which jurisdictions the data reaches and what makes that lawful is not an engineering question. This brief carried the wrong inventory until it was corrected: it repeated the page\'s own claim that no mail provider was configured, which would have put a drafter to work on a list with a processor missing from it. That is stated because the failure was in the brief and not only in the notice, and a drafting brief is read once, by somebody with no way to check it.',
     },
     {
       title: 'Your rights, and how to exercise them',
@@ -572,7 +603,7 @@ export const RISK: LegalPage = {
   slug: 'risk',
   title: 'Risk disclosure',
   blurb:
-    'What can go wrong: the operator can move the assets it holds, there are no backups, transfers cannot be reversed, and nothing is insured. Written from the code.',
+    'What can go wrong: the operator can move the assets it holds, no scheduled backup has ever run, transfers cannot be reversed, and nothing is insured.',
   standfirst: [
     'This page collects, in one place, the things most likely to cost you money. It is written from the software rather than from a template, and it is deliberately blunt.',
     'It is not the formal risk disclosure a financial regulator would require. That has not been drafted, is marked as outstanding at the bottom, and is not something the people who built this are competent to write.',
@@ -591,10 +622,11 @@ export const RISK: LegalPage = {
       ],
     },
     {
-      title: 'There are no backups, and losing one value destroys everything',
+      title: 'The scheduled backup has never run, and losing one value destroys everything',
       status: 'stated',
       body: [
-        'The whole platform runs on a single home server behind a single tunnel. There is no second location, no failover and no standby. No scheduled backup exists, and no restore has ever been carried out.',
+        'The whole platform runs on a single home server behind a single tunnel. There is no second location, no failover and no standby.',
+        'A backup run is queued on a schedule and nothing claims it, so no scheduled backup has ever been produced and the directory meant to hold them is empty. What exists is database dumps taken by hand before a release; they are real, and they cover the databases rather than everything the platform holds. The restore path itself has been rehearsed on this machine — into throwaway copies, checked against what was dumped, with key material recovered on a separate machine — and has never been run onto the live system. This section previously said there were no backups and that no restore had ever been carried out. Both were true when written and neither is now, and the honest position is worse in one direction and better in the other, so both halves are stated rather than the flattering one.',
         'The value that decrypts stored keys exists in one place. The recovery phrases behind managed wallets are themselves stored inside the encrypted files it protects, so there is no separate copy of them anywhere. If that value is lost, every stored key and every stored recovery phrase becomes permanently undecryptable, and the assets at those addresses can never be moved again — not by you, not by the operator, not by anybody.',
         'This is the failure with no remedy. Most problems on a platform can be fixed afterwards by somebody competent and determined; this one cannot be fixed at all, by anyone, once it has happened.',
       ],

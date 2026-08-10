@@ -432,7 +432,11 @@ describe('stages', () => {
       ['EMBER has no market or price', /no market, no listing and no price/i],
       ['nobody outside has used it', /nobody outside the project has used/i],
       ['one machine, no failover', /no redundancy, no failover/i],
-      ['no restored backup', /no backup that has ever been restored/i],
+      // Was "no backup that has ever been restored" until 2026-08-10. micro-org#214 rehearsed a
+      // restore on the live host, so the old wording was false; the same issue found the nightly
+      // backup run queued, unclaimed and producing nothing, so the limit itself is real and only
+      // its wording was wrong. A pin that becomes false is moved to what is true, never dropped.
+      ['the scheduled backup has never run', /no scheduled backup that has ever run/i],
     ] as const) {
       assert.ok(pattern.test(honesty), `the honesty block no longer says: ${what}`)
     }

@@ -235,7 +235,9 @@ export const CATALOGUE: readonly Scenario[] = [
           ['EMBER has no market, listing or price', /no market, no listing and no price/i],
           ['nobody outside the project has used it', /nobody outside the project has used/i],
           ['there is no redundancy or failover', /no redundancy, no failover/i],
-          ['no backup has ever been restored', /no backup that has ever been restored/i],
+          // Reworded 2026-08-10 with the copy it checks: a restore HAS been rehearsed on the live
+          // host (micro-org#214), while the nightly backup run is queued and claimed by nothing.
+          ['the scheduled backup has never run', /no scheduled backup that has ever run/i],
         ] as const) {
           assert.ok(
             pattern.test(callout),

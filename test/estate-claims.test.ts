@@ -643,6 +643,13 @@ describe('what this site claims about being live', () => {
     // fills in maturity, safety and value that nobody claimed. So the page may say it is open only
     // while it also says what that does not mean, and each clause below is separately checked so
     // that dropping any one of them fails.
+    // 2026-08-10: the backup clause moved from "no backup that has ever been restored" to "no
+    // scheduled backup that has ever run", and the pin moved with it rather than being dropped.
+    // The old sentence had become false in the reader's FAVOUR — micro-org#214 rehearsed a restore
+    // on the live host into throwaway databases and recovered key material on a separate machine —
+    // while the same issue's triage found the nightly run queued and unclaimed and the destination
+    // directory empty. So the limit that is real is the schedule, not the restore, and that is
+    // what a reader now has to be told before the good news.
     const honesty = BUILD.honesty.body.join(' ')
     assert.ok(
       /no market, no listing and no price/i.test(honesty),
@@ -650,7 +657,7 @@ describe('what this site claims about being live', () => {
     )
     assert.ok(
       /no redundancy, no failover/i.test(honesty) &&
-        /no backup that has ever been restored/i.test(honesty),
+        /no scheduled backup that has ever run/i.test(honesty),
       'the honesty block no longer states the single-machine risk',
     )
     assert.ok(

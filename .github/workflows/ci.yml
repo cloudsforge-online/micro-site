@@ -436,6 +436,33 @@ jobs:
           fi
           echo "ok: the privacy notice is checked against @cloudsforge/ui"
 
+      - name: The guards are plain text, so a search can still find them
+        # Every rule in this job is a grep, and so is most of how anyone audits this repository.
+        # A single NUL byte anywhere in a file makes GNU grep and ripgrep classify the WHOLE file as
+        # binary and report no match, silently — while `grep -q` keeps exiting 0, so the steps above
+        # go on passing and the file simply stops being findable.
+        #
+        # Not hypothetical. test/legal.test.ts — the suite that holds the privacy notice to
+        # @cloudsforge/ui, micro-org#313 — shipped with `?? '\0'` written into an unreachable
+        # fallback. Measured 2026-08-10: `rg 'the cookie claims' test/` and `grep -rI` both found
+        # NOTHING, on the estate's newest legal guard, in a green repository. `git grep` still saw
+        # it because git samples only the head of a file, which is why the org's secret scan was
+        # unaffected and why nothing anywhere went red.
+        #
+        # Source here is text. If a file needs a NUL it is not source, and it does not belong in
+        # src/ or test/.
+        run: |
+          set -uo pipefail
+          # Extensions rather than directories, and deliberately not `-I`: `-I` would skip exactly
+          # the files being looked for. The list is the text this repository owns; public/ holds
+          # images and fonts, which are binary on purpose and are not in it.
+          hits=$(git grep -lP '\x00' -- '*.ts' '*.tsx' '*.html' '*.css' '*.json' '*.mjs' || true)
+          if [ -n "$hits" ]; then
+            echo "::error::a NUL byte makes these files invisible to grep and ripgrep: $hits"
+            exit 1
+          fi
+          echo "ok: no tracked source file is binary to a text search"
+
       - name: No third-party request
         # The privacy notice claims this site's OWN source embeds no external script, stylesheet,
         # font or image. It is a claim about static files, so it is checkable, and a claim that is

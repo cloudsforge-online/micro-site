@@ -537,7 +537,7 @@ export const BUILD = {
   blurb:
     'Where every part of CloudsForge stands today: what is open to the public, what runs in-house, what is still being written, and how new all of it is.',
   standfirst: [
-    'This ecosystem is built as a set of independent services. They run together, and they now answer on the public internet — from one machine, with no failover and no backup anyone has ever restored.',
+    'This ecosystem is built as a set of independent services. They run together, and they now answer on the public internet — from one machine, with no failover and no scheduled backup that has ever run.',
     'Both halves of it are on this page. What is running is worth knowing before you spend an evening on it; what it is running on is worth knowing before you trust it with money.',
   ],
   /**
@@ -563,7 +563,7 @@ export const BUILD = {
     body: [
       'Everything described on this site is built, runs together against real databases and a real EMBER network, and now answers on the public internet under a proper certificate. An automated suite drives a real browser through the real gateway the way a person would, faking nothing.',
       'What that does not mean: the main network is a few hundred blocks old, and EMBER has no market, no listing and no price. Nobody outside the project has used any of this yet. There are no user numbers on this page for the same reason there is no uptime figure — both would be either zero or invented.',
-      'It all runs on one machine behind a tunnel. There is no redundancy, no failover, and no backup that has ever been restored. Being reachable is the weakest thing a platform can claim about itself, and today it is the only thing this one has earned.',
+      'It all runs on one machine behind a tunnel. There is no redundancy, no failover, and no scheduled backup that has ever run. Being reachable is the weakest thing a platform can claim about itself, and today it is the only thing this one has earned.',
     ],
   },
   expensive: {

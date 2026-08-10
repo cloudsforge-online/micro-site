@@ -60,7 +60,7 @@
  * **What being `open` does NOT assert**, and the reason the meaning below says so out loud: not
  * that the surface is finished, not that it is load-bearing, not that anyone has used it, and
  * emphatically not that EMBER is worth anything. The estate is one home server behind a tunnel,
- * with no redundancy and no backup anybody has ever restored. "Open" means a stranger can reach
+ * with no redundancy and no scheduled backup that has ever run. "Open" means a stranger can reach
  * it, which is the weakest of the three claims to make and the only one that can be checked from
  * outside — see `test/public-endpoints.test.ts`, which fetches every address published here.
  *

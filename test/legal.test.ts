@@ -19,22 +19,50 @@
  *   - the incomplete notice may not be removed while any section is still outstanding, so the
  *     warning cannot be quietly dropped ahead of the drafting.
  *
- * ── The privacy claim ─────────────────────────────────────────────────────────────────────────
+ * ── The privacy claims, and the three distances they sit at ───────────────────────────────────
  *
- * The privacy page asserts that this site sets no cookies, runs no analytics, embeds no
- * third-party script and requests nothing from an external host. That is the only kind of privacy
- * claim a static site can make on its own — and it is only worth making if it is checked, so the
- * last suite here checks it.
+ * This header used to say the privacy page "asserts that this site sets no cookies, runs no
+ * analytics, embeds no third-party script and requests nothing from an external host", and that
+ * the last suite checked it. Every clause of that is now wrong, and the way it went wrong is worth
+ * keeping, because it decides what each suite below can honestly claim to do.
+ *
+ *   IN THIS REPOSITORY   "no external host in our own source". Checkable exactly, by reading
+ *                        `src/**` and `index.html`. It was checked, it was green, and it was true.
+ *   IN A LINKED PACKAGE  the cookie and the Google tag live in `@cloudsforge/ui`, which the scan
+ *                        above never opened. The notice denied both for as long as it took a human
+ *                        to read the page against the banner underneath it (micro-org#313). The
+ *                        `cookie claims` suite closes that seam by reading the sibling's source.
+ *   ON THE ESTATE HOST   the mail relay's settings and the state of the backups are in neither
+ *                        repository. Nothing CI checks out can see them, so the last suite asserts
+ *                        only that the page does not go back to DENYING what was measured on the
+ *                        host — the half that is checkable from here, and the half that failed.
+ *
+ * The pattern in all three: a check was correct, green, and looking one boundary short of where
+ * the behaviour was. That is a stronger failure than a missing test, because it produces a tick.
  */
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { extname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, it } from 'node:test'
-import { LEGAL_PAGES, PRIVACY, TERMS, hasOutstanding, legalPage } from '../src/content/legal.ts'
+import { LEGAL_PAGES, PRIVACY, RISK, TERMS, hasOutstanding, legalPage } from '../src/content/legal.ts'
 import { LEGAL_PATHS, ROUTES } from '../src/lib/routes.ts'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
+
+/**
+ * Every string the privacy notice publishes, as data. Never as this repository's source text.
+ *
+ * Read from the exported objects rather than by scanning the file, so a claim that is written in a
+ * comment — several are, at length — cannot satisfy a check about what a reader is shown.
+ */
+function privacyCopy(): string {
+  const out: string[] = [PRIVACY.blurb, PRIVACY.notice, ...PRIVACY.standfirst]
+  for (const section of PRIVACY.sections) {
+    out.push(section.title, ...section.body, section.outstanding ?? '')
+  }
+  return out.join('\n')
+}
 
 describe('the legal pages', () => {
   it('exist, and are the ones the router serves', () => {
@@ -472,12 +500,6 @@ describe('the cookie claims, against the package that sets them', () => {
   /** The package's source with its comments removed — it documents at length what it rejected. */
   const code = consent.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
 
-  /** Every string this notice publishes, as data. Never as this repository's source text. */
-  function privacyCopy(): string {
-    const out: string[] = [PRIVACY.blurb, PRIVACY.notice, ...PRIVACY.standfirst]
-    for (const section of PRIVACY.sections) out.push(section.title, ...section.body)
-    return out.join('\n')
-  }
   const notice = privacyCopy()
 
   it('is rendered by this site, so the notice is describing this page and not somebody else\'s', () => {
@@ -491,8 +513,19 @@ describe('the cookie claims, against the package that sets them', () => {
     assert.ok(declared, 'the design system no longer declares a consent cookie name')
     // Named, not gestured at. A reader clearing one cookie needs the string the browser shows them,
     // and a notice that says "a consent cookie" cannot be checked against anything.
+    //
+    // `declared` is passed bare rather than through a fallback. It carried `?? '\0'` — an actual
+    // NUL byte, typed into the source when this suite was written — and `assert.ok` above is an
+    // assertion signature, so the fallback was unreachable in every run. It was not unreachable to
+    // the tools that read this file: measured 2026-08-10, `rg` and `grep -rI` both classify the
+    // whole file as binary on that one byte and report NO match for the suite name below, which is
+    // how a guard disappears from every search a reader or a reviewer runs while continuous
+    // integration stays green. (`git grep` was unaffected — it samples only the head of a file and
+    // the byte sat well past it — so the org's `git grep -nIE` secret scan did still read this
+    // file. The exposure was to everything else.) `.github/workflows/ci.yml` now fails on a NUL in
+    // any tracked source file, because this suite's whole value is that somebody can find it.
     assert.ok(
-      notice.includes(declared ?? ' '),
+      notice.includes(declared),
       `the privacy notice never names the cookie the estate sets (${declared})`,
     )
   })
@@ -570,5 +603,132 @@ describe('the cookie claims, against the package that sets them', () => {
       [],
       `the privacy notice denies what @cloudsforge/ui does:\n  ${revived.join('\n  ')}`,
     )
+  })
+})
+
+/* ────────── the claims about the estate, which no checkout can measure ────────── */
+
+/**
+ * The cookies suite above works because the thing it describes is IN A FILE — `consent.ts` is a
+ * `link:` sibling and can be read and compared. Two other classes of claim on this page are not
+ * like that, and pretending otherwise is how both of them rotted:
+ *
+ *   the mail relay   its settings are in an untracked file on the estate host, not in any
+ *                    repository. The measurement that once refused the claim — `grep -cE '^SMTP_'
+ *                    .env` returning 0 — went on returning 0 after a relay was configured, because
+ *                    it was looking at a checkout. Same boundary as the cookie, one repository
+ *                    further out.
+ *   the backups      `backup_runs` rows, an empty destination directory and a restore rehearsal
+ *                    live on the host. Nothing here can see any of it.
+ *
+ * So this suite does not assert what the estate does. It asserts that the page does not go back to
+ * DENYING what the estate was measured doing, which is the only half that is checkable from here
+ * and is the half that failed. Each entry names the measurement that retired it, with a date and
+ * an issue, so a future reader who finds one of these sentences true again can put it back and
+ * delete its line rather than argue with a regular expression.
+ *
+ * All measurements below were read from the running estate, not from a repository.
+ */
+describe('the estate claims the notice cannot check, which may not be re-denied', () => {
+  const notice = privacyCopy()
+  const risk = [RISK.blurb, ...RISK.sections.flatMap((s) => [s.title, ...s.body])].join('\n')
+  const terms = TERMS.sections.flatMap((s) => [s.title, ...s.body]).join('\n')
+
+  it('does not go back to saying no mail provider is configured', () => {
+    /*
+     * micro-org#233, 2026-08-08: a real AUTH LOGIN handshake driven against the relay from inside
+     * the notify container — configured, authenticated, and externally deliverable with SPF, DKIM
+     * and DMARC passing. micro-org#243, measured on the host 2026-08-07: mail both succeeded and
+     * failed that day against a free-tier daily allowance, i.e. it is sending.
+     *
+     * A processor holding readers' addresses is the single most consequential entry on this page,
+     * and it was absent while the page affirmatively said there was none.
+     */
+    const denials: ReadonlyArray<readonly [RegExp, string]> = [
+      [/no mail provider is configured/i, 'a relay is configured and sending (micro-org#233)'],
+      [/no mail provider configured/i, 'the same claim, as it appeared in the drafting brief'],
+      [/no SMTP server configured/i, 'SMTP is configured on the live estate'],
+    ]
+    const revived = denials
+      .filter(([pattern]) => pattern.test(notice))
+      .map(([pattern, why]) => `${String(pattern)} — ${why}`)
+    assert.deepEqual(revived, [], `the notice denies a processor:\n  ${revived.join('\n  ')}`)
+  })
+
+  it('names the mail relay, because a reader needs to know who holds their address', () => {
+    // Not "a third party" and not "a provider". The entry that is worth anything to a reader is
+    // the company, and a notice that will not name one is not disclosing a recipient.
+    assert.match(notice, /Mailtrap/, 'the notice no longer names the mail relay')
+    assert.match(
+      notice,
+      /verification|password-reset/i,
+      'the notice no longer says what the relay is used for',
+    )
+  })
+
+  it('carries the same processor inventory into the brief a lawyer would work from', () => {
+    /*
+     * The wrong inventory was not only published — it was repeated inside the `outstanding` brief
+     * for `Sharing, and transfers out of your territory`, which is the text a drafter reads once
+     * and cannot check. An error in a notice is read by people able to notice; an error in a brief
+     * is read by somebody hired because they were not there when it was written.
+     */
+    const brief = PRIVACY.sections.find((s) => /transfers out of your territory/i.test(s.title))
+    assert.ok(brief, 'the transfers section is gone')
+    const text = brief.outstanding ?? ''
+    for (const [what, pattern] of [
+      ['Cloudflare', /Cloudflare/],
+      ['the mail relay', /mail relay/i],
+      ['Google', /Google/],
+    ] as const) {
+      assert.match(text, pattern, `the transfers brief no longer lists ${what} as a processor`)
+    }
+  })
+
+  it('does not go back to saying no restore has ever been performed', () => {
+    /*
+     * micro-org#214: a restore was rehearsed on the live host into throwaway databases, five
+     * databases compared row for row against the source, and miner key material recovered on a
+     * SEPARATE machine and verified by re-deriving the address. It went nowhere near the live
+     * cluster, and "no restore has ever been performed" is nonetheless not what happened.
+     *
+     * The page had drifted in both directions at once, which is why this is not simply softened:
+     * the same issue's triage of 2026-08-09 found a backup run queued daily since 2026-08-05, no
+     * runner to claim any of them, and the destination directory empty. So a reader was told
+     * something too pessimistic about restores and something too optimistic about backups by the
+     * word "scheduled" being absent. Both halves are now published.
+     */
+    const denials: ReadonlyArray<readonly [RegExp, string]> = [
+      [/no backup that has ever been restored/i, 'one was restored into a throwaway (#214)'],
+      [/no restore has ever been (performed|carried out)/i, 'a restore was rehearsed (#214)'],
+      [/no backup anyone has ever restored/i, 'the same claim, in the shorter phrasing'],
+      [/there is no scheduled backup of any kind/i, 'a run is queued nightly; nothing claims it'],
+      [/there are no backups\b/i, 'hand-taken pre-release database dumps exist on the host'],
+    ]
+    const revived = denials
+      .filter(([pattern]) => [notice, risk, terms].some((page) => pattern.test(page)))
+      .map(([pattern, why]) => `${String(pattern)} — ${why}`)
+    assert.deepEqual(
+      revived,
+      [],
+      `a legal page states a backup claim the estate disproved:\n  ${revived.join('\n  ')}`,
+    )
+  })
+
+  it('still states the resilience risk, which is the half that has not changed', () => {
+    // The correction above must not become a softening. One machine, one tunnel, nothing standing
+    // by, and no scheduled backup that has ever produced anything: every one of those is still
+    // true, and a reader deciding what to trust with money is owed them in the same breath.
+    for (const [what, pattern] of [
+      ['a single machine', /single home server|one machine/i],
+      ['no failover', /no failover/i],
+      ['no scheduled backup has run', /no scheduled backup that has ever run/i],
+      ['no live restore', /never been (performed|run) on(to)? the live system/i],
+    ] as const) {
+      assert.ok(
+        [notice, risk, terms].some((page) => pattern.test(page)),
+        `no legal page states ${what} any more`,
+      )
+    }
   })
 })
