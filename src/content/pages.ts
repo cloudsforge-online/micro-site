@@ -603,12 +603,26 @@ export const BUILD = {
    * NOTHING here is stated as a number. The container count, the smoke-suite score and the chain
    * height are all true right now and all three move hourly; a marketing page is the worst possible
    * place to pin one. See the "No estate census" note in ./claims.ts.
+   *
+   * ── AND A THIRD REWRITE, 2026-08-10, IN THE OTHER DIRECTION ────────────────────────────────
+   *
+   * The body said "the main network is a few hundred blocks old". That was a magnitude rather than
+   * a registered digit, so no test could catch it, and it had drifted by a factor of thirty:
+   * measured 2026-08-10 against `https://rpc.cloudsforge.online`, `eth_blockNumber` answered
+   * `0x2aeb` — 10,987 blocks. Note the direction. Every previous correction here loosened a claim
+   * that had become too modest to be true; this one was ALSO too modest, and understating still
+   * costs credibility, because a reader who checks finds the page wrong about its own chain.
+   *
+   * It is replaced with the two properties that are still true and do not move: the chain sits at
+   * its launch difficulty (`difficulty: 0x100`, the `GENESIS_TARGET` floor in hearth's
+   * `node/src/params.js`), and it has never carried a transaction. Both are stronger caveats than
+   * an age, and neither needs re-measuring next week.
    */
   honesty: {
     title: 'Open to the public, and days old',
     body: [
       'Everything described on this site is built, runs together against real databases and a real EMBER network, and now answers on the public internet under a proper certificate. An automated suite drives a real browser through the real gateway the way a person would, faking nothing.',
-      'What that does not mean: the main network is a few hundred blocks old, and EMBER has no market, no listing and no price. Nobody outside the project has used any of this yet. There are no user numbers on this page for the same reason there is no uptime figure — both would be either zero or invented.',
+      'What that does not mean: the main network is days old, still at its launch difficulty, and it has never carried a transaction — and EMBER has no market, no listing and no price. Nobody outside the project has used any of this yet. There are no user numbers on this page for the same reason there is no uptime figure — both would be either zero or invented.',
       'It all runs on one machine behind a tunnel. There is no redundancy, no failover, and no scheduled backup that has ever run. Being reachable is the weakest thing a platform can claim about itself, and today it is the only thing this one has earned.',
     ],
   },
