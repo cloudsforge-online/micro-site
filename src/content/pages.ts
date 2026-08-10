@@ -68,8 +68,14 @@ export const HOME = {
    * it "doesn't say anything to anyone", and they were right — a stranger cannot tell from it
    * whether EMBER is something you buy, something you win or something you make. The verb is now
    * in the headline, and the second line says what the mined coin is then for.
+   *
+   * The verb's OBJECT changed on 2026-08-10, on the owner's instruction. It read "on the computer
+   * you already own", which is true and answers a question about hardware that a reader arriving
+   * cold has not asked yet; what they want to know is what they have to DO. The answer is nothing
+   * — no download, no wallet to install, no rig — and "in your browser" says that in three words.
+   * It is also now literally the instruction: the control is in the bar on this page.
    */
-  spine: 'Mine EMBER on the computer you already own.',
+  spine: 'Mine EMBER in your browser.',
   /**
    * The search-result and link-preview description.
    *
@@ -79,7 +85,7 @@ export const HOME = {
    * every blurb on this site to that budget.
    */
   blurb:
-    'Mine EMBER in a browser tab on the computer you already own. Hold it in one wallet, bet with it, trade with it, launch tokens, sell what you make, and play.',
+    'Mine EMBER in a browser tab — nothing to download. Hold it in one wallet, bet with it, trade with it, launch tokens, sell what you make, and play.',
   /** The verbs, in the order the story is told. Source: docs/ecosystem/01-product-vision.md §1. */
   verbLine: 'Then bet with it, trade with it, build with it and play with it — without leaving your account.',
   /**
@@ -241,6 +247,46 @@ export const HOME = {
          */
         startLabel: 'Start mining',
         body: 'No installer, no graphics card, no pool account. Open the page, press start, and the tab begins hashing. Your mining key is generated in the browser and never leaves it, and mining pauses on battery unless you say otherwise.',
+      },
+      {
+        /**
+         * EMBER IS NOT THE ONLY THING THE TAB CAN MINE, AND NOTHING ON THIS SITE SAID SO.
+         *
+         * `micro-pool` is a Stratum v1 server and it has been serving a real template on mainnet
+         * since 2.5.7. Read from it on 2026-08-10: one chain, `ltc`, scrypt, `ready: true`, height
+         * 3157556, a WebSocket endpoint a browser can open directly, and `payoutsImplemented:
+         * false`.
+         *
+         * Every clause below is that reading. In particular the last one: the pool records shares
+         * and pays nothing yet, and a page that mentioned pooled mining without saying so would be
+         * describing an income. `NOT_AN_INCOME` on the network site exists for the same reason.
+         *
+         * ── Dogecoin is NAMED, and named as switched off, which is the harder half ─────────────
+         *
+         * AuxPoW merge-mining is built and merged: one scrypt solution is submitted to Litecoin and
+         * to Dogecoin at once, so a share earned here counts on both chains and costs the miner
+         * nothing extra. The estate's own three UTXO nodes are what decide whether that is a fact or
+         * a plan, so they were measured rather than assumed — on the chain host, 2026-08-10:
+         *
+         *   litecoin  3,157,562 / 3,157,562   initialblockdownload: false   100%
+         *   dogecoin  5,043,030 / 6,326,461   initialblockdownload: true     39.6%
+         *   bitcoin     960,302 /   961,899   initialblockdownload: true     99.6%
+         *
+         * So `POOL_LTC_AUX_CHAINS=doge` stays unset, and the live pool answers `merged: null`. A
+         * node 1.28 million blocks behind would hand miners an aux template for a chain nobody else
+         * is working on — the shares would be real and the Dogecoin half of them worth nothing.
+         *
+         * The sentence therefore says built AND off AND why, in that order. Naming it without the
+         * denial would be the same defect as mentioning pooled mining without mentioning payouts,
+         * one paragraph apart. Bitcoin is close enough to the tip to be worth re-reading before the
+         * next release, and is not named here until it is in `POOL_CHAINS`; the deliberate absence
+         * of a count in this item is what lets a chain be added without rewriting the sentence.
+         */
+        title: 'And Litecoin, in the same tab',
+        accentKey: 'pool' as SurfaceKey,
+        linkTo: 'pool',
+        linkLabel: 'See the pool',
+        body: 'EMBER is not the only coin a browser tab can mine here. CloudsForge runs its own mining pool, and the same control points at it: Litecoin today, over a WebSocket, with nothing to install and no account on somebody else’s pool. Dogecoin is merge-mined from the same work — that part is built, and it stays switched off until our Dogecoin node has caught up with the chain. Payouts are not implemented yet either — the pool records your shares and the console shows them, and nothing is paid until that ships.',
       },
       {
         /**
