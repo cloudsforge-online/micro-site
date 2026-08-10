@@ -41,8 +41,8 @@ strongest pages on the site are the ones most companies would not publish:
   false on 2026-08-05 when the estate went public. The page is now headed "Open to the public, and
   days old" (`src/content/pages.ts`, the `honesty` block) and denies, explicitly, the maturity a
   reader would otherwise supply: one machine behind a tunnel, no failover, no backup that has ever
-  been restored, a chain still at its launch difficulty that has never carried a transaction, and
-  EMBER with no market, no listing and no price.
+  been restored, a chain still at its launch difficulty carrying 62 transactions across 10,987
+  blocks with every one of them our own, and EMBER with no market, no listing and no price.
 
 That is not modesty. It is the only position from which the rest of the site can be believed.
 

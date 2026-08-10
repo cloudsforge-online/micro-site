@@ -615,14 +615,32 @@ export const BUILD = {
    *
    * It is replaced with the two properties that are still true and do not move: the chain sits at
    * its launch difficulty (`difficulty: 0x100`, the `GENESIS_TARGET` floor in hearth's
-   * `node/src/params.js`), and it has never carried a transaction. Both are stronger caveats than
-   * an age, and neither needs re-measuring next week.
+   * `node/src/params.js`), and nobody outside this project has transacted on it. Both are stronger
+   * caveats than an age, and neither needs re-measuring next week.
+   *
+   * ── AND A CORRECTION TO THAT CORRECTION, SAME DAY ──
+   *
+   * The first draft of the sentence above said the chain "has never carried a transaction". That
+   * was ALSO wrong, and wrong in the tighter direction: it was inferred from the transaction count
+   * of the tip block instead of measured. Walking every block from 1 to 10,987 on 2026-08-10 finds
+   * 62 transactions in 52 blocks — including nine successful contract creations on 2026-08-04 that
+   * are live now (`eth_getCode` returns 6,007 bytes of runtime code at
+   * 0x49408b99deb3afaafd914ed9f0e71a89874b980e). The honest claim is the one about senders, not the
+   * one about counts: every transaction on this chain was produced by this project. Do not restate
+   * this as "empty" without walking the chain again.
+   *
+   * The corrected sentence deliberately says "a handful" rather than printing 62 and 10,987. Those
+   * are live readings of a chain, not values any file in this estate declares, so they could not
+   * be given a `source` that `src/content/claims.ts` would accept or that
+   * `test/estate-claims.test.ts` could recompute — and an unrecomputable digit on this page is the
+   * exact defect that register exists to prevent. The measured figures live in `hearth`'s MAP.md
+   * §10 and in `docs/ecosystem/18-build-status.md` §0.2, where a date sits beside them.
    */
   honesty: {
     title: 'Open to the public, and days old',
     body: [
       'Everything described on this site is built, runs together against real databases and a real EMBER network, and now answers on the public internet under a proper certificate. An automated suite drives a real browser through the real gateway the way a person would, faking nothing.',
-      'What that does not mean: the main network is days old, still at its launch difficulty, and it has never carried a transaction — and EMBER has no market, no listing and no price. Nobody outside the project has used any of this yet. There are no user numbers on this page for the same reason there is no uptime figure — both would be either zero or invented.',
+      'What that does not mean: the main network is days old, still at its launch difficulty, and nearly empty — the handful of transactions on it are all our own. EMBER has no market, no listing and no price. Nobody outside the project has used any of this yet. There are no user numbers on this page for the same reason there is no uptime figure — both would be either zero or invented.',
       'It all runs on one machine behind a tunnel. There is no redundancy, no failover, and no scheduled backup that has ever run. Being reachable is the weakest thing a platform can claim about itself, and today it is the only thing this one has earned.',
     ],
   },

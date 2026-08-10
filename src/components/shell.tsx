@@ -289,10 +289,10 @@ function SiteFooter() {
           title is the flattering claim — "Open to the public, and days old". `body[0]` elaborates
           it: everything is built, it runs against real databases and a real EMBER network, an
           automated suite drives a real browser and fakes nothing. `body[1]` is what that does NOT
-          mean: the main network is days old and still at its launch difficulty, it has never
-          carried a transaction, EMBER has no market, no listing and no price, nobody outside the
-          project has used any of this, and there are no user numbers here for the same reason
-          there is no uptime figure.
+          mean: the main network is days old, still at its launch difficulty and nearly empty with
+          every transaction on it our own, EMBER has no market, no listing and no price, nobody
+          outside the project has used any of this, and there are no user numbers here for the same
+          reason there is no uptime figure.
 
           That paraphrase is maintained by hand and it drifted once already: it said "a few hundred
           blocks old" after `body[1]` had been corrected, because measured 2026-08-10 the chain was
