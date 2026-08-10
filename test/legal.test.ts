@@ -491,8 +491,19 @@ describe('the cookie claims, against the package that sets them', () => {
     assert.ok(declared, 'the design system no longer declares a consent cookie name')
     // Named, not gestured at. A reader clearing one cookie needs the string the browser shows them,
     // and a notice that says "a consent cookie" cannot be checked against anything.
+    //
+    // `declared` is passed bare rather than through a fallback. It carried `?? '\0'` — an actual
+    // NUL byte, typed into the source when this suite was written — and `assert.ok` above is an
+    // assertion signature, so the fallback was unreachable in every run. It was not unreachable to
+    // the tools that read this file: measured 2026-08-10, `rg` and `grep -rI` both classify the
+    // whole file as binary on that one byte and report NO match for the suite name below, which is
+    // how a guard disappears from every search a reader or a reviewer runs while continuous
+    // integration stays green. (`git grep` was unaffected — it samples only the head of a file and
+    // the byte sat well past it — so the org's `git grep -nIE` secret scan did still read this
+    // file. The exposure was to everything else.) `.github/workflows/ci.yml` now fails on a NUL in
+    // any tracked source file, because this suite's whole value is that somebody can find it.
     assert.ok(
-      notice.includes(declared ?? ' '),
+      notice.includes(declared),
       `the privacy notice never names the cookie the estate sets (${declared})`,
     )
   })
