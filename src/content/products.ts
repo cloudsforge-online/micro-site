@@ -15,7 +15,13 @@
  * this site publishes without rendering anything. Copy that lives inside a component is copy no test
  * can see.
  */
-import { PRODUCTS, surface, type SurfaceKey } from '@cloudsforge/ui'
+/**
+ * `NOT_PAID_CLAUSE` is imported rather than retyped. It is the sentence `MiningControl` renders in
+ * the bar on every surface in the estate, and the pool page below is the one page here that offers
+ * mining — so the two have to be the same statement, not two statements a reader has to reconcile.
+ * Importing it also means this page stops saying it on the day it stops being true.
+ */
+import { NOT_PAID_CLAUSE, PRODUCTS, surface, type SurfaceKey } from '@cloudsforge/ui'
 import { claim } from './claims.ts'
 import type { Stage } from './stages.ts'
 
@@ -199,6 +205,146 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     linkTo: 'network',
     linkLabel: 'Start mining',
     ogImage: '/og/network.png',
+  },
+
+  {
+    /**
+     * ── THE POOL, AND WHY THIS PAGE EXISTS AT ALL ─────────────────────────────────────────────
+     *
+     * `/products/pool` was already a published address before it was a page. The home page's
+     * "And Litecoin, in the same tab" capability carries `linkTo: 'pool'`, and `src/pages/home.tsx`
+     * renders that as `/products/<slug>` — so the visible call to action "See the pool" pointed at
+     * `/products/pool`, which `nginx.conf` enumerates no location for. Measured 2026-08-10: a hard
+     * 404, on the one link the front page offers a reader who has just been told the pool exists.
+     * This entry is the destination that link always claimed to have.
+     *
+     * ── IT IS A PAGE UNDER /products, AND IT IS STILL NOT A PRODUCT ───────────────────────────
+     *
+     * `key: 'pool'` is a `service` in the registry and stays one. `productCards()` filters on
+     * `kind === 'product'`, so this page puts no seventh card on the index grid, `productCount()`
+     * is still six, and none of the copy or art that was validated for six products moves. Hub is
+     * the precedent and the mechanism was already built for a second one: `surfaceCount()` counts
+     * PRODUCT_PAGES rather than `PRODUCTS.length + 1` precisely "so that a second non-product page
+     * would be counted rather than assumed away". This is that second page.
+     *
+     * ── WHAT THIS PAGE MAY SAY, AND WHAT ONLY THE CONSOLE MAY SAY ─────────────────────────────
+     *
+     * Everything measurable about this pool changes without anybody editing this repository: which
+     * chains it serves, whether a template is fresh, what the stratum endpoint is, whether merged
+     * mining is committing. `micro-pool-web` reads all of that from `GET /v1/pool` on every load
+     * and is therefore the only surface that can state it truthfully. So this page carries the
+     * PROPOSITION — what the pool is, the two ways in, what a share is worth, what is switched off
+     * — and defers every number to the console, which is also why there is not a single digit in
+     * the copy below.
+     *
+     * That split is not merely taste here; this repository enforces it. `test/content.test.ts`
+     * refuses an unregistered digit, refuses any percentage, and refuses a `:NNNN` port anywhere
+     * in published copy. A page that tried to print the fee, the stratum port or the chain height
+     * could not pass its own suite — which is the correct answer, because all three belong to the
+     * service and not to a marketing page.
+     *
+     * ── EVERY CLAIM BELOW, AND HOW IT WAS CHECKED ─────────────────────────────────────────────
+     *
+     * Read from `https://pool.cloudsforge.online/v1/pool` on 2026-08-10, mainnet:
+     *
+     *   chains          exactly one: `ltc`, Litecoin, scrypt, `ready: true`, template age seconds
+     *   payoutsImplemented  false
+     *   merged          null  — nothing configured, so no Dogecoin commitment is being built
+     *   stratumEndpoint null  — NO PUBLIC STRATUM ENDPOINT IS PUBLISHED
+     *   websocketEndpoint  a `wss://` address on the console's own host
+     *
+     * So: Litecoin is named and Bitcoin is NOT, even though the estate's bitcoind reached the tip
+     * on 2026-08-10 — a synced node is not a served chain, and `POOL_CHAINS` does not list it.
+     * Dogecoin is named as built-and-off, because AuxPoW merge-mining is merged in `micro-pool`
+     * and `POOL_LTC_AUX_CHAINS` is unset while our Dogecoin node is still in initial block
+     * download. Naming it without the denial would describe an income that does not exist.
+     *
+     * The `stratumEndpoint: null` is the one that shapes the whole "bring your own miner" section.
+     * It is not an oversight waiting on a config value: `deploy/cloudflared/config.mainnet.public.
+     * yml` argues it out at length — stratum is newline-delimited JSON-RPC over a raw TCP socket,
+     * a Cloudflare Tunnel forwards HTTP, and Traefik has no router for a stream with no requests
+     * in it. `pool.<apex>` serves the console and can never serve the connection. So the section
+     * says the path is real, says where the address comes from, and does not invent one. An
+     * earlier draft of `micro-pool-web` composed `stratum+tcp://pool.<apex>:<port>` by hand and
+     * published something no miner on earth could dial; its `src/lib/hosts.ts` is the record of
+     * why that is never done again.
+     */
+    key: 'pool',
+    slug: 'pool',
+    eyebrow: 'Mine together',
+    // The title this page publishes is `${linkLabel} — ${headline} — CloudsForge`, and
+    // `test/meta.test.ts` holds that to ninety characters. Both halves below are written to that
+    // budget rather than trimmed by it later; "or on your own rig" is the shortest phrasing that
+    // still names the second way in, which is the half a reader with hardware is scanning for.
+    headline: 'Mine Litecoin in a browser tab, or on your own rig',
+    standfirst: [
+      'CloudsForge runs its own mining pool. It builds the block templates itself from the estate’s own Litecoin node, hands out work, checks every share that comes back and submits the blocks — there is no third-party pool in the middle and no account to open on one.',
+      'There are two ways in and they take the same work. A browser tab can hash for it with nothing installed, and any miner that speaks Stratum — the protocol the firmware on deployed hardware already talks — can be pointed at it.',
+    ],
+    blurb:
+      'CloudsForge runs its own Litecoin mining pool: hash for it in a browser tab with nothing installed, or point mining hardware you already own at it.',
+    stage: 'open',
+    stageNote:
+      'Open to the public. The pool builds real Litecoin templates against the estate’s own mainnet node and the console answers on the public internet. It records shares and settles none of them: there is no payout mechanism yet.',
+    sections: [
+      {
+        title: 'Two ways in, and they earn the same shares',
+        body: [
+          'The first is a browser tab. The mining control in the bar at the top of every CloudsForge page opens a session against the pool over a WebSocket, and the hashing happens in the tab you are already looking at. Nothing is installed, no driver is needed and no graphics card is involved.',
+          'The second is the miner you already run. The pool speaks Stratum over a plain socket, which is what cgminer, bfgminer and the firmware on an ASIC or a GPU rig already speak, so pointing one at it is a change of address rather than a change of software. Nothing about the protocol is unusual and nothing needs patching.',
+          'Both paths are judged identically. A share found in a tab and a share found by a rig are the same record, weighted the same way, against the same window.',
+        ],
+      },
+      {
+        title: 'Litecoin today, and the console is what says so',
+        body: [
+          'The pool serves Litecoin, and the work is scrypt. That is the whole list today, and it is deliberately not restated as a number anywhere on this page — which chains are being served is a live fact about a running service, and the console reads it from the pool itself on every load rather than from copy somebody typed.',
+          'A synced node is not the same thing as a served chain, and this page will not name a coin before the pool answers for it. Anything else you might want to know before pointing hardware somewhere — what it is building on right now, how fresh the work is, what it has actually found — is on the console for the same reason.',
+        ],
+      },
+      {
+        title: 'Dogecoin is built, and it is switched off',
+        body: [
+          'Dogecoin can be merge-mined from Litecoin work: one scrypt solution can win a block on both chains at once, and it costs a miner no extra hashing, no second connection and no second worker. That is built and merged here, not planned.',
+          'It is switched off, and it stays off until our own Dogecoin node has caught up with the chain. A node still downloading history would hand out work for a chain nobody else is building on, so the shares would be real and the Dogecoin half of them worth nothing. The pool reports whether it is committing to a merged chain as a field rather than as a claim, because this is a feature that fails by silently doing nothing.',
+        ],
+      },
+      {
+        /**
+         * The literal `NOT_PAID_CLAUSE` from the design system, not a paraphrase of it. The same
+         * sentence is rendered by `MiningControl` in the bar on every surface in the estate, so a
+         * reader who meets it here and meets it there meets one statement rather than two that
+         * have to be reconciled. Importing it also means it stops being said here on the day it
+         * stops being true, instead of surviving as the last stale copy.
+         */
+        title: 'Nothing is paid out yet',
+        body: [
+          `The pool records what you did and settles none of it. ${NOT_PAID_CLAUSE}`,
+          'So there is no balance on the console, no estimated earnings and no next payout — not zeroed and not greyed out, because a zero reads as “not yet, but soon” and the truth is “not at all, and there is no mechanism”. What the pool does have is your share history, share by share, which you can check against your own machine.',
+          'If you mine here today, mine here because you want to see it work. It is not an income and this page will not describe it as one.',
+        ],
+      },
+      {
+        title: 'Bringing your own miner is a question about your network',
+        body: [
+          'The console is on the public internet; the thing a miner dials is not. Stratum is a raw socket with no requests in it, and the tunnel that publishes every CloudsForge address forwards web traffic — it cannot carry that stream, and no amount of configuration on this side changes what a tunnel is.',
+          'So a rig reaches the pool across the local network, on the address an operator has chosen to expose, or it does not reach it yet. The console publishes that address the moment there is one to publish and says plainly when there is not, rather than composing something that looks copy-pasteable and connects to nothing.',
+          'What does not change is the rest of it: the username a miner authenticates with is your payout address and a worker name you pick, split on the first dot, and the password is ignored. The console carries the exact line to paste, beside whichever endpoint is really being served.',
+        ],
+      },
+    ],
+    linkTo: 'pool',
+    linkLabel: 'Open the pool',
+    /**
+     * The company card, deliberately, rather than a mark invented for this page.
+     *
+     * Every other page here uses its surface's own brand art, and `micro-brand` has no
+     * `assets/pool/` set — which is why the registry row carries `markId: null`. The honest
+     * answer to "there is no mark" is the company card that every non-product address on this
+     * site already uses (`DEFAULT_IMAGE` in `src/lib/meta.ts`), not a lookalike drawn here to
+     * fill the slot. A mark is a brand decision made in the brand repository.
+     */
+    ogImage: '/og-1200x630.png',
   },
 
   {
