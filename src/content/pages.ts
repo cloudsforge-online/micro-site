@@ -278,15 +278,34 @@ export const HOME = {
          *
          * The sentence therefore says built AND off AND why, in that order. Naming it without the
          * denial would be the same defect as mentioning pooled mining without mentioning payouts,
-         * one paragraph apart. Bitcoin is close enough to the tip to be worth re-reading before the
-         * next release, and is not named here until it is in `POOL_CHAINS`; the deliberate absence
-         * of a count in this item is what lets a chain be added without rewriting the sentence.
+         * one paragraph apart.
+         *
+         * ── BITCOIN IS NOW NAMED, BECAUSE THE CONDITION THIS COMMENT SET HAS BEEN MET ──────────
+         *
+         * The paragraph above used to end: "Bitcoin is close enough to the tip to be worth
+         * re-reading before the next release, and is not named here until it is in `POOL_CHAINS`."
+         * It is in `POOL_CHAINS`. bitcoind reached the tip on 2026-08-10 and the variable has named
+         * both chains since 2026-08-11; read from mainnet that day, `GET /v1/pool` answers with
+         * `ltc` at height 3,158,124 and `btc` at 962,013, both `ready: true`, both being handed out
+         * as real work. `/products/pool` was updated the same day and this item was not, so the
+         * home page understated the pool by a whole chain.
+         *
+         * IT IS NAMED WITH ITS REFUSAL ATTACHED, WHICH IS THE ONLY HONEST WAY TO NAME IT HERE.
+         * This item's subject is what a browser tab can do, and a tab may not mine Bitcoin: micro-
+         * pool refuses the browser transport for `btc` BY NAME and publishes the argument — about
+         * 793 EH/s of purpose-built SHA-256 silicon, so a tab would earn shares no pool could turn
+         * into a block. Naming the chain without the refusal would invite a reader to press the
+         * mining control expecting Bitcoin and be told no by a different page. Naming neither
+         * would go on hiding a chain from the one item on this site that mentions the pool.
+         *
+         * The deliberate absence of a COUNT survives all of this, and is what let the sentence
+         * take a second chain without being restructured. It will take a third the same way.
          */
         title: 'And Litecoin, in the same tab',
         accentKey: 'pool' as SurfaceKey,
         linkTo: 'pool',
         linkLabel: 'See the pool',
-        body: 'EMBER is not the only coin a browser tab can mine here. CloudsForge runs its own mining pool, and the same control points at it: Litecoin today, over a WebSocket, with nothing to install and no account on somebody else’s pool. Dogecoin is merge-mined from the same work — that part is built, and it stays switched off until our Dogecoin node has caught up with the chain. Payouts are not implemented yet either — the pool records your shares and the console shows them, and nothing is paid until that ships.',
+        body: 'EMBER is not the only coin a browser tab can mine here. CloudsForge runs its own mining pool, and the same control points at it: Litecoin, over a WebSocket, with nothing to install and no account on somebody else’s pool. The pool mines Bitcoin too, but only for mining hardware pointed at it — it says so itself rather than letting a tab find out, because a browser cannot earn a Bitcoin share worth anything. Dogecoin is merge-mined from the Litecoin work, so one solution can be a block on both and there is nothing extra to configure — that part is built, and it stays switched off until our Dogecoin node has caught up with the chain. Payouts are not implemented yet either — the pool records your shares and the console shows them, and nothing is paid until that ships.',
       },
       {
         /**
