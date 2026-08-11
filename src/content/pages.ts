@@ -16,7 +16,7 @@
  * capability named before the philosophy behind it.
  */
 import { claim } from './claims.ts'
-import { chainCount, productCount, sentenceCase } from './products.ts'
+import { creditableChainCount, productCount, sentenceCase, spell } from './products.ts'
 import type { SurfaceKey } from '@cloudsforge/ui'
 
 /* ────────────────────────────── chrome ────────────────────────────── */
@@ -54,6 +54,178 @@ export const TESTNET_NOTICE = {
 } as const
 
 /* ─────────────────────────────── home ─────────────────────────────── */
+
+/**
+ * The capabilities a reader is most likely not to expect, named on the front page.
+ *
+ * Every one is built and running, and every one was invisible here: browser mining had been
+ * removed from this site in a commit, the chain's Ethereum compatibility was one vague clause,
+ * and the coins you can stake and trade were named nowhere at all. A capability nobody is told
+ * about is, from the reader's side, a capability that does not exist.
+ *
+ * ── WHY THIS IS A CONST AND NOT AN ARRAY LITERAL INSIDE `HOME` (micro-org#421) ────────────────
+ *
+ * Because the heading above it counts it, and it could not count itself from in there. The block
+ * was written with three items, a fourth was added, and the heading went on reading "Three things
+ * worth knowing" over four of them with the lede underneath saying "All three of these" twice. A
+ * reader counts to four before they finish the section.
+ *
+ * That is `productCount` and `creditableChainCount` one more time — a word is a number, and the
+ * digit scan in `test/content.test.ts` cannot see one. The count is not a claim about the estate
+ * so it has no register entry; it is a fact about this array, so it is spelled from `.length` and
+ * a fifth item moves the heading with nothing for anybody to remember.
+ *
+ * The LEDE takes the other half of the lesson and carries no count at all. It said the number
+ * twice in one sentence, which is two chances to be wrong to say something the heading directly
+ * above has already said once.
+ */
+const CAPABILITIES = [
+    {
+      title: 'Mining that runs in a browser tab',
+      accentKey: 'network' as SurfaceKey,
+      linkTo: 'network',
+      linkLabel: 'How mining works',
+      /**
+       * A SECOND link, and the only thing on this list that can end the journey.
+       *
+       * This is the item a reader who has been convinced clicks, and until now the only thing it
+       * could offer them was another page about mining: `/products/network`, then the aside part
+       * way down it, then the outbound link. Three clicks and two page loads between the promise
+       * and the product, for the one action in this estate that needs no account at all
+       * (docs/ecosystem/32-roadmap-ui-and-content.md §6.1, step 3).
+       *
+       * Both links stay, because they answer different questions. "How mining works" is for the
+       * reader still deciding; this one is for the reader who has decided.
+       *
+       * The destination is NOT here. It is `minePage()` in `src/lib/hosts.ts` — the same
+       * function the hero's primary button calls, so the two cannot drift and neither of them
+       * spells a hostname, which nothing under `src` may do.
+       */
+      startLabel: 'Start mining',
+      body: 'No installer, no graphics card, no pool account. Open the page, press start, and the tab begins hashing. Your mining key is generated in the browser and never leaves it, and mining pauses on battery unless you say otherwise.',
+    },
+    {
+      /**
+       * EMBER IS NOT THE ONLY THING THE TAB CAN MINE, AND NOTHING ON THIS SITE SAID SO.
+       *
+       * `micro-pool` is a Stratum v1 server and it has been serving a real template on mainnet
+       * since 2.5.7. Read from it on 2026-08-10: one chain, `ltc`, scrypt, `ready: true`, height
+       * 3157556, a WebSocket endpoint a browser can open directly, and `payoutsImplemented:
+       * false`.
+       *
+       * Every clause below is that reading. In particular the last one: the pool records shares
+       * and pays nothing yet, and a page that mentioned pooled mining without saying so would be
+       * describing an income. `NOT_AN_INCOME` on the network site exists for the same reason.
+       *
+       * ── Dogecoin is NAMED, and named as switched off, which is the harder half ─────────────
+       *
+       * AuxPoW merge-mining is built and merged: one scrypt solution is submitted to Litecoin and
+       * to Dogecoin at once, so a share earned here counts on both chains and costs the miner
+       * nothing extra. The estate's own three UTXO nodes are what decide whether that is a fact or
+       * a plan, so they were measured rather than assumed — on the chain host, 2026-08-10:
+       *
+       *   litecoin  3,157,562 / 3,157,562   initialblockdownload: false   100%
+       *   dogecoin  5,043,030 / 6,326,461   initialblockdownload: true     39.6%
+       *   bitcoin     960,302 /   961,899   initialblockdownload: true     99.6%
+       *
+       * So `POOL_LTC_AUX_CHAINS=doge` stays unset, and the live pool answers `merged: null`. A
+       * node 1.28 million blocks behind would hand miners an aux template for a chain nobody else
+       * is working on — the shares would be real and the Dogecoin half of them worth nothing.
+       *
+       * The sentence therefore says built AND off AND why, in that order. Naming it without the
+       * denial would be the same defect as mentioning pooled mining without mentioning payouts,
+       * one paragraph apart.
+       *
+       * ── BITCOIN IS NOW NAMED, BECAUSE THE CONDITION THIS COMMENT SET HAS BEEN MET ──────────
+       *
+       * The paragraph above used to end: "Bitcoin is close enough to the tip to be worth
+       * re-reading before the next release, and is not named here until it is in `POOL_CHAINS`."
+       * It is in `POOL_CHAINS`. bitcoind reached the tip on 2026-08-10 and the variable has named
+       * both chains since 2026-08-11; read from mainnet that day, `GET /v1/pool` answers with
+       * `ltc` at height 3,158,124 and `btc` at 962,013, both `ready: true`, both being handed out
+       * as real work. `/products/pool` was updated the same day and this item was not, so the
+       * home page understated the pool by a whole chain.
+       *
+       * IT IS NAMED WITH ITS REFUSAL ATTACHED, WHICH IS THE ONLY HONEST WAY TO NAME IT HERE.
+       * This item's subject is what a browser tab can do, and a tab may not mine Bitcoin: micro-
+       * pool refuses the browser transport for `btc` BY NAME and publishes the argument — about
+       * 793 EH/s of purpose-built SHA-256 silicon, so a tab would earn shares no pool could turn
+       * into a block. Naming the chain without the refusal would invite a reader to press the
+       * mining control expecting Bitcoin and be told no by a different page. Naming neither
+       * would go on hiding a chain from the one item on this site that mentions the pool.
+       *
+       * The deliberate absence of a COUNT survives all of this, and is what let the sentence
+       * take a second chain without being restructured. It will take a third the same way.
+       *
+       * ── CUT TO ITS SIBLINGS' LENGTH, 2026-08-11 (micro-org#421) ────────────────────────────
+       *
+       * The owner read the live page and this item was roughly three times the length of every
+       * other one in the array — four facts, each with its argument attached, in one paragraph
+       * that nobody finishes. A denial nobody reads is not a denial.
+       *
+       * So the ARGUMENTS came out and the FACTS all stayed, which is the only cut available
+       * here: Litecoin over a WebSocket, Bitcoin for hardware only, Dogecoin built and off,
+       * payouts unimplemented. Everything above still says why each one is worded as it is.
+       * What went was "so one solution can be a block on both and there is nothing extra to
+       * configure", "no account on somebody else's pool", and the reasoning restated inline —
+       * all of it true, none of it the reader's reason to click, and all of it on
+       * `/products/pool`, which is what `linkLabel` is for.
+       */
+      title: 'And Litecoin, in the same tab',
+      accentKey: 'pool' as SurfaceKey,
+      linkTo: 'pool',
+      linkLabel: 'See the pool',
+      body: 'EMBER is not the only coin a browser tab can mine. The same control points at our own pool, where Litecoin mines over a WebSocket with nothing to install. Bitcoin is there for mining hardware only — a tab cannot earn a share worth anything. Dogecoin is merge-mined from the same work and stays off until our node catches up. Payouts are not built yet: shares are recorded and shown, nothing paid until that ships.',
+    },
+    {
+      /**
+       * ── This was factually wrong, and the owner caught it ─────────────────────────────────
+       *
+       * It said "Hearth runs the Ethereum virtual machine". Hearth does not run Ethereum's EVM;
+       * it is a Node implementation of one, written here. The distinction matters both ways
+       * round: it overstates the borrowed guarantee — a reader could take it to mean audited
+       * upstream code is executing their contract, which it is not — and it understates what
+       * was actually built, which is a compatible virtual machine from scratch. The compatible
+       * part is the reader's benefit, so it stays; the claim to be running somebody else's code
+       * goes.
+       */
+      title: 'A chain your Ethereum tools already work with',
+      accentKey: 'network' as SurfaceKey,
+      linkTo: 'network',
+      linkLabel: 'Connect a wallet or a toolchain',
+      body: `Hearth is our own chain, and its virtual machine is an Ethereum-compatible one we wrote in Node rather than Ethereum's own. In practice that means MetaMask, ethers, viem, Hardhat and Foundry connect to it with no changes — chain ${claim('emberChainId')} for the main network, ${claim('emberTestnetChainId')} for the test network — and a contract written for Ethereum deploys here as it is.`,
+    },
+    {
+      /**
+       * ── "EIGHT COINS, NOT JUST OURS" WAS A CLAIM THIS ESTATE COULD NOT HONOUR ──────────────
+       *
+       * Both halves were spelled from the register rather than typed, which is what this file
+       * is for, and both were wrong — the register was reading `ON_CHAIN_ASSETS`, which answers
+       * "which chains does the estate model" and not "which coins can I put in". Measured on
+       * mainnet 2026-08-11: three followers running, and no address ever issued on ETH, ETC,
+       * SOL or XRP. The owner caught it the same day (micro-org#421).
+       *
+       * The derivation is what made it degrade rather than merely be wrong: this heading read
+       * "Six coins" until micro-contracts listed ETC and DOGE on 2026-08-09 and it promoted
+       * itself to eight, with a green suite. Both halves now cite `CREDITABLE_ASSETS`, which
+       * upstream declares for exactly this question.
+       *
+       * DOGECOIN IS NAMED AND IS NOT IN THE LIST, and the distinction is the point — the same
+       * one the pool item two above makes about the same chain for the same reason. It is
+       * built, its node is still catching up, and a reader who is told "three" with no idea
+       * that a fourth is coming has been told something true and misleading. Naming it as
+       * coming is the honest form, and it stays typed here rather than registered: the register
+       * publishes what the estate can do, and this is a sentence about what it cannot do yet.
+       * When dogecoind finishes, `CREDITABLE_ASSETS` takes DOGE, both halves of the first
+       * sentence move on their own, and THIS clause is the one a person must delete.
+       */
+      title: `${sentenceCase(creditableChainCount())} coins, not just ours`,
+      accentKey: 'foresight' as SurfaceKey,
+      linkTo: 'foresight',
+      linkLabel: 'What you can bet and trade with',
+      body: `Your wallet holds ${claim('creditableChainNames')} — deposit any of them and the balance is yours everywhere in the ecosystem. Dogecoin is next, as soon as our node has caught up. Strategies are backtested against real price history, and you bet with a coin you already hold rather than one the platform prefers.`,
+    },
+]
 
 export const HOME = {
   /**
@@ -195,9 +367,14 @@ export const HOME = {
       {
         title: 'One wallet',
         // The names are a claim for the same reason the count is: they were typed here, so the
-        // count re-derived itself to 6 while the list beside it still read five chains. See the
-        // note on `chainNames` in claims.ts.
-        body: `${claim('chains')} chains behind one balance — ${claim('chainNames')} — with the same send and receive screens wherever in the ecosystem you opened them from.`,
+        // count re-derived itself to 6 while the list beside it still read five chains.
+        //
+        // Both halves now cite the DOOR and not the model (micro-org#421). This sentence is the
+        // one-wallet promise, and a chain the estate can denominate a balance in but will never
+        // hand you an address for does not belong in it — it read "8 chains behind one balance"
+        // over a list of eight when three of them could take a deposit. See the tombstone where
+        // `chains` and `chainNames` used to be, in claims.ts.
+        body: `${claim('creditableChains')} chains behind one balance — ${claim('creditableChainNames')} — with the same send and receive screens wherever in the ecosystem you opened them from.`,
       },
       {
         title: 'One history',
@@ -205,137 +382,17 @@ export const HOME = {
       },
     ],
   },
-  /**
-   * The three capabilities a reader is most likely not to expect, named on the front page.
-   *
-   * All three are built and running, and all three were invisible here: browser mining had been
-   * removed from this site in a commit, the chain's Ethereum compatibility was one vague clause,
-   * and the coins you can stake and trade were named nowhere at all. A capability nobody is told
-   * about is, from the reader's side, a capability that does not exist.
-   */
   capabilities: {
     /**
      * The lede said why the SECTION exists: "They are on the front page because a reader who never
      * scrolls past it would otherwise never learn that any of them is here." That is an editorial
      * note about page layout, addressed to whoever maintains this file. A reader does not care
      * where a block sits or why, and being told the reasoning is faintly insulting — it explains
-     * the shelf instead of the thing on it. What they need is that all three are real now.
+     * the shelf instead of the thing on it. What they need is that they are all real now.
      */
-    title: 'Three things worth knowing',
-    lede: 'All three of these are running today, and all three are easy to miss.',
-    items: [
-      {
-        title: 'Mining that runs in a browser tab',
-        accentKey: 'network' as SurfaceKey,
-        linkTo: 'network',
-        linkLabel: 'How mining works',
-        /**
-         * A SECOND link, and the only thing on this list that can end the journey.
-         *
-         * This is the item a reader who has been convinced clicks, and until now the only thing it
-         * could offer them was another page about mining: `/products/network`, then the aside part
-         * way down it, then the outbound link. Three clicks and two page loads between the promise
-         * and the product, for the one action in this estate that needs no account at all
-         * (docs/ecosystem/32-roadmap-ui-and-content.md §6.1, step 3).
-         *
-         * Both links stay, because they answer different questions. "How mining works" is for the
-         * reader still deciding; this one is for the reader who has decided.
-         *
-         * The destination is NOT here. It is `minePage()` in `src/lib/hosts.ts` — the same
-         * function the hero's primary button calls, so the two cannot drift and neither of them
-         * spells a hostname, which nothing under `src` may do.
-         */
-        startLabel: 'Start mining',
-        body: 'No installer, no graphics card, no pool account. Open the page, press start, and the tab begins hashing. Your mining key is generated in the browser and never leaves it, and mining pauses on battery unless you say otherwise.',
-      },
-      {
-        /**
-         * EMBER IS NOT THE ONLY THING THE TAB CAN MINE, AND NOTHING ON THIS SITE SAID SO.
-         *
-         * `micro-pool` is a Stratum v1 server and it has been serving a real template on mainnet
-         * since 2.5.7. Read from it on 2026-08-10: one chain, `ltc`, scrypt, `ready: true`, height
-         * 3157556, a WebSocket endpoint a browser can open directly, and `payoutsImplemented:
-         * false`.
-         *
-         * Every clause below is that reading. In particular the last one: the pool records shares
-         * and pays nothing yet, and a page that mentioned pooled mining without saying so would be
-         * describing an income. `NOT_AN_INCOME` on the network site exists for the same reason.
-         *
-         * ── Dogecoin is NAMED, and named as switched off, which is the harder half ─────────────
-         *
-         * AuxPoW merge-mining is built and merged: one scrypt solution is submitted to Litecoin and
-         * to Dogecoin at once, so a share earned here counts on both chains and costs the miner
-         * nothing extra. The estate's own three UTXO nodes are what decide whether that is a fact or
-         * a plan, so they were measured rather than assumed — on the chain host, 2026-08-10:
-         *
-         *   litecoin  3,157,562 / 3,157,562   initialblockdownload: false   100%
-         *   dogecoin  5,043,030 / 6,326,461   initialblockdownload: true     39.6%
-         *   bitcoin     960,302 /   961,899   initialblockdownload: true     99.6%
-         *
-         * So `POOL_LTC_AUX_CHAINS=doge` stays unset, and the live pool answers `merged: null`. A
-         * node 1.28 million blocks behind would hand miners an aux template for a chain nobody else
-         * is working on — the shares would be real and the Dogecoin half of them worth nothing.
-         *
-         * The sentence therefore says built AND off AND why, in that order. Naming it without the
-         * denial would be the same defect as mentioning pooled mining without mentioning payouts,
-         * one paragraph apart.
-         *
-         * ── BITCOIN IS NOW NAMED, BECAUSE THE CONDITION THIS COMMENT SET HAS BEEN MET ──────────
-         *
-         * The paragraph above used to end: "Bitcoin is close enough to the tip to be worth
-         * re-reading before the next release, and is not named here until it is in `POOL_CHAINS`."
-         * It is in `POOL_CHAINS`. bitcoind reached the tip on 2026-08-10 and the variable has named
-         * both chains since 2026-08-11; read from mainnet that day, `GET /v1/pool` answers with
-         * `ltc` at height 3,158,124 and `btc` at 962,013, both `ready: true`, both being handed out
-         * as real work. `/products/pool` was updated the same day and this item was not, so the
-         * home page understated the pool by a whole chain.
-         *
-         * IT IS NAMED WITH ITS REFUSAL ATTACHED, WHICH IS THE ONLY HONEST WAY TO NAME IT HERE.
-         * This item's subject is what a browser tab can do, and a tab may not mine Bitcoin: micro-
-         * pool refuses the browser transport for `btc` BY NAME and publishes the argument — about
-         * 793 EH/s of purpose-built SHA-256 silicon, so a tab would earn shares no pool could turn
-         * into a block. Naming the chain without the refusal would invite a reader to press the
-         * mining control expecting Bitcoin and be told no by a different page. Naming neither
-         * would go on hiding a chain from the one item on this site that mentions the pool.
-         *
-         * The deliberate absence of a COUNT survives all of this, and is what let the sentence
-         * take a second chain without being restructured. It will take a third the same way.
-         */
-        title: 'And Litecoin, in the same tab',
-        accentKey: 'pool' as SurfaceKey,
-        linkTo: 'pool',
-        linkLabel: 'See the pool',
-        body: 'EMBER is not the only coin a browser tab can mine here. CloudsForge runs its own mining pool, and the same control points at it: Litecoin, over a WebSocket, with nothing to install and no account on somebody else’s pool. The pool mines Bitcoin too, but only for mining hardware pointed at it — it says so itself rather than letting a tab find out, because a browser cannot earn a Bitcoin share worth anything. Dogecoin is merge-mined from the Litecoin work, so one solution can be a block on both and there is nothing extra to configure — that part is built, and it stays switched off until our Dogecoin node has caught up with the chain. Payouts are not implemented yet either — the pool records your shares and the console shows them, and nothing is paid until that ships.',
-      },
-      {
-        /**
-         * ── This was factually wrong, and the owner caught it ─────────────────────────────────
-         *
-         * It said "Hearth runs the Ethereum virtual machine". Hearth does not run Ethereum's EVM;
-         * it is a Node implementation of one, written here. The distinction matters both ways
-         * round: it overstates the borrowed guarantee — a reader could take it to mean audited
-         * upstream code is executing their contract, which it is not — and it understates what
-         * was actually built, which is a compatible virtual machine from scratch. The compatible
-         * part is the reader's benefit, so it stays; the claim to be running somebody else's code
-         * goes.
-         */
-        title: 'A chain your Ethereum tools already work with',
-        accentKey: 'network' as SurfaceKey,
-        linkTo: 'network',
-        linkLabel: 'Connect a wallet or a toolchain',
-        body: `Hearth is our own chain, and its virtual machine is an Ethereum-compatible one we wrote in Node rather than Ethereum's own. In practice that means MetaMask, ethers, viem, Hardhat and Foundry connect to it with no changes — chain ${claim('emberChainId')} for the main network, ${claim('emberTestnetChainId')} for the test network — and a contract written for Ethereum deploys here as it is.`,
-      },
-      {
-        // Spelled from the register rather than typed. This heading read "Six coins" from the
-        // moment micro-contracts listed ETC and DOGE (2026-08-09), sitting directly above a list
-        // of eight names that derives itself. See `chainCount` in ./products.ts.
-        title: `${sentenceCase(chainCount())} coins, not just ours`,
-        accentKey: 'foresight' as SurfaceKey,
-        linkTo: 'foresight',
-        linkLabel: 'What you can bet and trade with',
-        body: `Your wallet holds ${claim('chainNames')}. Strategies are backtested against real Bitcoin, Ethereum, Solana and XRP price history, and you can place a bet with whichever of those coins you already hold rather than one the platform prefers.`,
-      },
-    ],
+    title: `${sentenceCase(spell(CAPABILITIES.length))} things worth knowing`,
+    lede: 'Every one of them is running today, and every one is easy to miss.',
+    items: CAPABILITIES,
   },
   closing: {
     title: 'New, and honest about it',

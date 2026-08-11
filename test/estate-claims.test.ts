@@ -87,6 +87,52 @@ function onChainAssets(chainSpec: string): readonly string[] {
   return codes
 }
 
+/**
+ * The `CREDITABLE_ASSETS` array literal, as codes.
+ *
+ * A SEPARATE PARSE OF A SEPARATE DECLARATION, and that is the whole value of it. The two claims
+ * below could have been derived from `onChainAssets` with a filter typed here, and a filter typed
+ * here would be the four names the site had wrong, one level down and harder to see.
+ *
+ * Deliberately not tolerant of the array having become something other than a frozen literal: an
+ * upstream that stops declaring which coins take deposits must stop this build, not fall back to
+ * the list that answers a different question.
+ */
+function creditableAssets(chainSpec: string): readonly string[] {
+  const list = /CREDITABLE_ASSETS:[^=]*=\s*Object\.freeze\(\[([^\]]*)\]/.exec(chainSpec)
+  if (!list?.[1]) throw new Error('CREDITABLE_ASSETS is no longer a frozen array literal')
+  const codes = [...list[1].matchAll(/'([A-Z]+)'/g)].map((m) => m[1] as string)
+  if (codes.length === 0) throw new Error('CREDITABLE_ASSETS parsed to nothing')
+  return codes
+}
+
+/**
+ * Asset codes as the prose names upstream gives them, in the order handed in.
+ *
+ * Split out of the derivation of the deleted `chainNames` and left standing on its own, because
+ * the mapping from a code to the word a reader sees is the part that must not be retyped — the
+ * next list of chains this site publishes should reach for this rather than write "Ethereum
+ * Classic" into a template.
+ *
+ * Each name is the chain's OWN `name` field from the CHAINS table rather than a second mapping
+ * here — a lookup table in this file would be the same typed copy one level down. EMBER is the
+ * single exception and it is spelled out rather than special-cased silently: `CHAINS.EMBER` is
+ * named "Hearth", which is the network, while the thing a reader holds a balance of is EMBER.
+ */
+function chainNamesFor(chainSpec: string, codes: readonly string[]): readonly string[] {
+  return codes.map((asset) => {
+    // The asset a reader holds, not the network it settles on. The only asset where those two
+    // words differ, and the reason is on `CHAINS.EMBER` upstream.
+    if (asset === 'EMBER') return 'EMBER'
+    const entry = new RegExp(
+      `${asset}: Object\\.freeze\\(\\{[\\s\\S]*?asset: '${asset}'[\\s\\S]*?\\}\\),\\n`,
+    ).exec(chainSpec)
+    const name = entry?.[0] === undefined ? undefined : /name: '([^']+)'/.exec(entry[0])?.[1]
+    if (!name) throw new Error(`no name for ${asset} in the upstream CHAINS table`)
+    return name
+  })
+}
+
 function field(block: string, name: string): number {
   const match = new RegExp(`${name}:\\s*(\\d+)`).exec(block)
   if (!match?.[1]) throw new Error(`no ${name} in the EMBER chain spec`)
@@ -240,10 +286,54 @@ const DERIVATIONS: Readonly<Record<string, Derivation>> = {
     },
   },
 
-  chains: {
+  /**
+   * ── WHICH OF THOSE CHAINS A DEPOSIT CAN ACTUALLY ARRIVE ON (micro-org#421) ───────────────────
+   *
+   * `chains` above is the estate's MODEL of the world. This is its door. The home page derived
+   * "Eight coins, not just ours — your wallet holds EMBER, Bitcoin, Ethereum, Ethereum Classic,
+   * Litecoin, Dogecoin, Solana, XRP Ledger" from the model, correctly, and five of the eight were
+   * untrue: measured on mainnet 2026-08-11, micro-indexer runs exactly three followers, and no
+   * address has ever been issued on ETH, ETC, SOL or XRP.
+   *
+   * This is `stakeAssets` below, one register key over and with the same shape of answer, and the
+   * repetition is the argument for reading it: the third time a promise has been derived from
+   * `ON_CHAIN_ASSETS` and been wrong, so upstream now DECLARES the door — `CREDITABLE_ASSETS` in
+   * micro-contracts, asserted there to be a strict subset of the model in both directions.
+   *
+   * The derivation asserts the subset relation here TOO, against the same file, rather than trust
+   * the upstream suite: this site publishes both lists in the same paragraph, and a `creditable`
+   * asset absent from `chains` would print a coin the wallet cannot name beside a count that omits
+   * it. One parse, one file, two claims that must agree.
+   */
+  creditableChains: {
     reads: CHAIN_SPEC,
-    witness: /ON_CHAIN_ASSETS/,
-    derive: (text) => String(onChainAssets(text).length),
+    witness: /export const CREDITABLE_ASSETS/,
+    derive: (text) => {
+      const modelled = onChainAssets(text)
+      for (const asset of creditableAssets(text)) {
+        assert.ok(modelled.includes(asset), `${asset} takes deposits but is not a modelled chain`)
+      }
+      return String(creditableAssets(text).length)
+    },
+  },
+
+  /**
+   * The same three as prose, through the upstream `CHAINS` table's own names.
+   *
+   * A PLAIN COMMA LIST, with no "and" and no article, and that is a deliberate retreat carried
+   * over from the deleted `chainNames`. Its first version built "…, Solana and the XRP Ledger" —
+   * and the article is the problem: upstream's own name for that chain is "XRP Ledger", so "the"
+   * was being supplied here. That is a typed English fact sitting in a derivation, which is the
+   * same class of thing this claim exists to remove, one level further down. Whether a proper noun
+   * takes an article is not in the data and must not be guessed from it.
+   *
+   * So the derivation emits exactly the names upstream gives, joined by commas, and the copy sets
+   * the list off with dashes — where an enumeration reads correctly without a conjunction.
+   */
+  creditableChainNames: {
+    reads: CHAIN_SPEC,
+    witness: /export const CREDITABLE_ASSETS/,
+    derive: (text) => chainNamesFor(text, creditableAssets(text)).join(', '),
   },
 
   /**
@@ -313,48 +403,6 @@ const DERIVATIONS: Readonly<Record<string, Derivation>> = {
     reads: CHAIN_SPEC,
     witness: /decimals:\s*\d+/,
     derive: (text) => String(field(emberBlock(text), 'decimals')),
-  },
-
-  /**
-   * The same array, rendered as the English list the page prints.
-   *
-   * The count beside it was already derived and corrected itself to 6 the day Litecoin was listed;
-   * the names were typed, so the sentence would have read "6 chains — EMBER, Bitcoin, Ethereum,
-   * Solana and the XRP Ledger" and contradicted itself in its own clause. A number that maintains
-   * itself next to prose that does not is worse than two stale halves, because the moving half is
-   * evidence that somebody is looking.
-   *
-   * Each name is the chain's OWN `name` field from the CHAINS table rather than a second mapping
-   * here — a lookup table in this file would be the same typed copy one level down. EMBER is the
-   * single exception and it is spelled out below rather than special-cased silently: `CHAINS.EMBER`
-   * is named "Hearth", which is the network, while the thing a reader holds a balance of is EMBER.
-   */
-  chainNames: {
-    reads: CHAIN_SPEC,
-    witness: /ON_CHAIN_ASSETS/,
-    derive: (text) => {
-      const names = onChainAssets(text).map((asset) => {
-        // The asset a reader holds, not the network it settles on. The only asset where those two
-        // words differ, and the reason is on `CHAINS.EMBER` upstream.
-        if (asset === 'EMBER') return 'EMBER'
-        const entry = new RegExp(
-          `${asset}: Object\\.freeze\\(\\{[\\s\\S]*?asset: '${asset}'[\\s\\S]*?\\}\\),\\n`,
-        ).exec(text)
-        const name = entry?.[0] === undefined ? undefined : /name: '([^']+)'/.exec(entry[0])?.[1]
-        if (!name) throw new Error(`no name for ${asset} in the upstream CHAINS table`)
-        return name
-      })
-      // A PLAIN COMMA LIST, with no "and" and no article, and that is a deliberate retreat.
-      // The first version of this built "…, Solana and the XRP Ledger" — and the article is the
-      // problem: upstream's own name for that chain is "XRP Ledger", so "the" was being supplied
-      // here. That is a typed English fact sitting in a derivation, which is the same class of
-      // thing this claim exists to remove, one level further down. Whether a proper noun takes an
-      // article is not in the data and must not be guessed from it.
-      //
-      // So the derivation emits exactly the names upstream gives, joined by commas, and the copy
-      // sets the list off with dashes — where an enumeration reads correctly without a conjunction.
-      return names.join(', ')
-    },
   },
 
   /**
