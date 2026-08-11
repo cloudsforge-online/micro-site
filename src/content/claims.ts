@@ -190,39 +190,83 @@ export const CLAIMS = {
       'Days a pseudonymised product-analytics event is kept. The default of ANALYTICS_EVENT_RETENTION_DAYS. Chosen to exceed a year so a year-on-year comparison is possible at all.',
     source: 'analytics/src/env.ts — ANALYTICS_EVENT_RETENTION_DAYS',
   },
-  chains: {
-    rendered: '8',
+  /**
+   * ── `chains` AND `chainNames` WERE HERE, AND THEY ARE NOT COMING BACK (micro-org#421) ─────────
+   *
+   * They rendered '8' and "EMBER, Bitcoin, Ethereum, Ethereum Classic, Litecoin, Dogecoin, Solana,
+   * XRP Ledger", both correctly derived from `ON_CHAIN_ASSETS` upstream, and every sentence on this
+   * site that used them was a promise to a reader about their own money:
+   *
+   *     Eight coins, not just ours / Your wallet holds …          (home)
+   *     8 chains behind one balance — …                           (home, the one-account promise)
+   *     One balance instead of eight                              (Hub)
+   *
+   * A deposit could arrive in three of the eight. `ON_CHAIN_ASSETS` answers "which chains does the
+   * estate model", which is a real question with a real answer, and no sentence addressed to a
+   * customer was ever asking it. Both entries are therefore DELETED rather than re-pointed: the
+   * orphan check one file over exists because "the next person to need a number reaches for the
+   * nearest plausible-looking entry", and a registered count of modelled chains is the most
+   * plausible-looking wrong entry this register could hold. `creditableChains` and
+   * `creditableChainNames` below are what a promise may cite.
+   *
+   * If a future page genuinely needs to say how many chains the estate MODELS — a build page, an
+   * engineering note — register it then, with a name that cannot be mistaken for the door, and
+   * write the sentence at the same time so it is never an orphan.
+   */
+
+  /**
+   * ── WHICH OF THOSE CHAINS A DEPOSIT CAN ACTUALLY ARRIVE ON (micro-org#421) ────────────────────
+   *
+   * The two deleted above answered "which chains does the estate model". The home page asked them
+   * "which coins can I put in", because for a while those were the same question, and published:
+   *
+   *     Eight coins, not just ours
+   *     Your wallet holds EMBER, Bitcoin, Ethereum, Ethereum Classic, Litecoin, Dogecoin, Solana,
+   *     XRP Ledger.
+   *
+   * Both halves correctly derived. Five of the eight untrue. Measured on the mainnet estate
+   * 2026-08-11:
+   *
+   *     indexer followers configured   EMBER, BTC, LTC — and nothing else
+   *     custody keys ever issued       bitcoin 4, ember 258, litecoin 6
+   *     dogecoind                      39.6% through initial block download (2026-08-10)
+   *     ETH, ETC, SOL, XRP             no follower running, no address ever issued
+   *
+   * **This is `stakeAssets` again, one register key over, and the third time a promise has been
+   * derived from `ON_CHAIN_ASSETS` and been wrong.** The pattern is now unmistakable and so is the
+   * fix: the door gets its own declaration upstream rather than a second reading of the model.
+   * `CREDITABLE_ASSETS` in micro-contracts is that declaration, asserted there to be a strict
+   * subset of `ON_CHAIN_ASSETS` in both directions, and both values here are recomputed from it in
+   * `estate-claims.test.ts`.
+   *
+   * ── WHAT THEY DO NOT CLAIM ───────────────────────────────────────────────────────────────────
+   *
+   * Not a live reading of one deployment: this is what the estate SHIPS able to credit, which is
+   * the strongest statement a repository can make and the one a reader of a marketing page needs.
+   * And not a ceiling — Dogecoin's code is written and waits on a node, so copy that names the
+   * three should name it as coming rather than let the reader infer that three is the end of it.
+   */
+  creditableChains: {
+    rendered: '3',
     meaning:
-      'On-chain assets the platform custodies, in ON_CHAIN_ASSETS order: EMBER, BTC, ETH, ETC, LTC, DOGE, SOL and XRP. The codes are restated here for a reader of this file and are NOT what the site prints — the printed list is `chainNames`, which is derived. Kept in step by hand, and it went stale on 2026-08-09 when micro-contracts listed ETC and DOGE, which is the argument for saying as little as possible in a `meaning`.',
-    source: 'contracts/packages/chain/src/index.ts — ON_CHAIN_ASSETS',
+      'On-chain assets a deposit can actually arrive in — the ones this estate runs a follower for and will credit. Deliberately NOT the custodied-chain count above, which is what the ledger can supervise and the oracle can price. No codes are restated here; `chains` restated its codes and they went stale within the week.',
+    source: 'contracts/packages/chain/src/index.ts — CREDITABLE_ASSETS',
   },
 
   /**
-   * The same list, spelled the way a sentence spells it.
+   * The same three, spelled the way a sentence spells them.
    *
-   * ── WHY A LIST OF WORDS IS IN A REGISTER OF NUMBERS ──────────────────────────────────────────
-   *
-   * Because the failure it prevents is the one this file exists for, and the digit rule did not
-   * catch it. `pages.ts` read: "`${claim('chains')}` chains behind one balance — EMBER, Bitcoin,
-   * Ethereum, Solana and the XRP Ledger". The COUNT was derived and updated itself to 6 the moment
-   * Litecoin was listed upstream. The NAMES beside it were typed, so the sentence would have gone
-   * out reading "6 chains behind one balance — EMBER, Bitcoin, Ethereum, Solana and the XRP
-   * Ledger": a number contradicted by the list immediately after it, on the page that promises one
-   * wallet across every chain, published by a platform that custodies the money.
-   *
-   * That is worse than a stale number, because the derived half makes it look maintained. So the
-   * names are derived too — from the same array, through the same mechanism, failing the same way.
-   *
-   * The rendered form carries no digits, so `content.test.ts` has nothing to say about it; this
-   * entry earns its place by being RECOMPUTED in `estate-claims.test.ts` from the upstream chain
-   * names, which is the check that matters.
+   * Through the same name lookup `chainNames` uses, against the same upstream `CHAINS` table, so
+   * the depositable list and the modelled one cannot spell one chain two ways. A plain comma list
+   * with no article, for the reason recorded on `chainNames`.
    */
-  chainNames: {
-    rendered: 'EMBER, Bitcoin, Ethereum, Ethereum Classic, Litecoin, Dogecoin, Solana, XRP Ledger',
+  creditableChainNames: {
+    rendered: 'EMBER, Bitcoin, Litecoin',
     meaning:
-      'The on-chain assets written as prose, in ON_CHAIN_ASSETS order, using each chain\'s own `name` from the CHAINS table — "Hearth" being the exception, since the asset a reader holds is EMBER and the network it settles on is Hearth. A plain comma list: whether a name takes an article ("the XRP Ledger") is an English fact that is not in the data, so the copy sets the list off with dashes rather than the derivation guessing. Derived so that the sentence and the count beside it cannot disagree.',
-    source: 'contracts/packages/chain/src/index.ts — ON_CHAIN_ASSETS',
+      'The assets a deposit can arrive in, written as prose in CREDITABLE_ASSETS order, using each chain\'s own `name` from the CHAINS table — "Hearth" being the exception, since the asset a reader holds is EMBER and the network it settles on is Hearth. Derived from the same array as the count beside it, so the sentence and the number in it cannot disagree.',
+    source: 'contracts/packages/chain/src/index.ts — CREDITABLE_ASSETS',
   },
+
   /**
    * ── WHAT FORESIGHT WILL TAKE A STAKE IN, WHICH IS NOT THE SAME LIST AS THE ONE ABOVE ─────────
    *

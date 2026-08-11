@@ -78,7 +78,7 @@ export interface ProductPage {
  * THE TABLES SIT ABOVE THE COPY, and the functions that read them below it, which is deliberate
  * rather than untidy. A `const` is in its temporal dead zone until the line that declares it runs,
  * while a function declaration is hoisted — so a section title spelled at module initialisation
- * (Hub's "One balance instead of eight") can call `chainCount()` from inside the array literal
+ * (Hub's "One balance instead of three") can call `creditableChainCount()` from inside the literal
  * below, but only if these two tables are already initialised when that literal is evaluated.
  * Declared after it, the module throws `Cannot access 'CARDINALS' before initialization` on import
  * and every suite in this repository fails at once.
@@ -118,9 +118,11 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Open to the public. The account, the sign-in and the portfolio work end to end through a real browser, and the surface answers on the public internet. Nobody outside the project has used it yet.',
     sections: [
       {
-        title: `One balance instead of ${chainCount()}`,
+        // The count a reader checks this against is the number of coins they can actually put in,
+        // not the number the ledger can denominate a balance in — see `creditableChainCount`.
+        title: `One balance instead of ${creditableChainCount()}`,
         body: [
-          'Hub adds up what you hold across every chain the platform supports and shows it as one figure, with each holding underneath it. Deposits still waiting on confirmations, withdrawals in flight and every past movement sit on a single timeline.',
+          'Hub adds up what you hold across every chain you can deposit on and shows it as one figure, with each holding underneath it. Deposits still waiting on confirmations, withdrawals in flight and every past movement sit on a single timeline.',
           'You do not visit a different screen per product to find out what you own. There is one account, so there is one answer.',
         ],
       },
@@ -664,26 +666,34 @@ export function productCount(): string {
 }
 
 /**
- * Custodied chains, spelled. Eight today.
+ * Chains a deposit can actually arrive on, spelled. Three today.
  *
  * ── Why this exists, dated ────────────────────────────────────────────────────────────────────
  *
- * On 2026-08-09 `micro-contracts` added ETC and DOGE to `ON_CHAIN_ASSETS`. `claims.ts` recomputes
- * the count and the names from that array, so `test/estate-claims.test.ts` went red and both were
- * corrected in one place. Two sentences did not move, because they spell the count as a WORD:
- * "Six coins, not just ours" on the home page and "One balance instead of six" on Hub's page. A
- * word is a number, the digit scan cannot see one, and the claims check reads the count and not
- * the sentence — so those two were the only places on the site where the old figure survived.
+ * It was `chainCount`, and it counted `ON_CHAIN_ASSETS` through `claims.chains`. On 2026-08-09
+ * `micro-contracts` added ETC and DOGE to that array and this function dutifully spelled "eight"
+ * into two sentences: "Eight coins, not just ours" on the home page and "One balance instead of
+ * eight" on Hub's. Both were true of the estate's MODEL of the world and false of its door — a
+ * deposit could arrive in three of the eight. The owner caught it on 2026-08-11 (micro-org#421).
  *
- * That is the same failure `productCount` was written for, one register key over. So the word is
- * derived from the register entry rather than typed beside it, and the next asset changes both
- * halves of both sentences with nothing for anybody to remember.
+ * So the register's `chains` and `chainNames` are gone and this reads `creditableChains`, which is
+ * recomputed from `CREDITABLE_ASSETS` — a declaration micro-contracts now carries for exactly this
+ * question, asserted there to be a strict subset of the modelled list. **Every sentence on this
+ * site that spells a number of chains is addressed to a reader about their own money, and there
+ * was never a second kind.** If one is ever written — a build page counting what the ledger can
+ * supervise — it registers its own claim rather than borrowing this one.
+ *
+ * The original argument for deriving the word at all stands unchanged, and it is why the wrong
+ * figure survived a whole release: a word is a number, the digit scan cannot see one, and the
+ * claims check reads the register and not the sentence. So the count is spelled from the register
+ * rather than typed beside it, and the next chain changes both halves of both sentences with
+ * nothing for anybody to remember.
  *
  * `spell` throws past twelve rather than falling back to a digit, which is the right failure: a
  * thirteenth chain should stop a build here and not put an unregistered numeral into copy.
  */
-export function chainCount(): string {
-  return spell(Number(claim('chains')))
+export function creditableChainCount(): string {
+  return spell(Number(claim('creditableChains')))
 }
 
 /**
