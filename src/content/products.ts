@@ -245,16 +245,29 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
      *
      * ── EVERY CLAIM BELOW, AND HOW IT WAS CHECKED ─────────────────────────────────────────────
      *
-     * Read from `https://pool.cloudsforge.online/v1/pool` on 2026-08-10, mainnet:
+     * Read from `GET /v1/pool` on mainnet, 2026-08-11 — TWO chains now, where the 2026-08-10
+     * reading of this same route had one:
      *
-     *   chains          exactly one: `ltc`, Litecoin, scrypt, `ready: true`, template age seconds
+     *   chains          `ltc`, Litecoin, scrypt, `ready: true`, and `btc`, Bitcoin, sha256d,
+     *                   `ready: true` — both building templates against the estate's own nodes
      *   payoutsImplemented  false
-     *   merged          null  — nothing configured, so no Dogecoin commitment is being built
-     *   stratumEndpoint null  — NO PUBLIC STRATUM ENDPOINT IS PUBLISHED
-     *   websocketEndpoint  a `wss://` address on the console's own host
+     *   merged          null on both — nothing configured, so no Dogecoin commitment is built
+     *   stratumEndpoint null on both — NO PUBLIC STRATUM ENDPOINT IS PUBLISHED
+     *   websocketEndpoint  LTC: a `wss://` address on the console's own host. BTC: **null**
+     *   browserMining   LTC: `{available, reason: null}`. BTC: `{available: false, reason: …}`
      *
-     * So: Litecoin is named and Bitcoin is NOT, even though the estate's bitcoind reached the tip
-     * on 2026-08-10 — a synced node is not a served chain, and `POOL_CHAINS` does not list it.
+     * So Bitcoin is now named, and it is named with its own asymmetry rather than beside Litecoin
+     * as though the two were offered alike. Bitcoin was excluded on 2026-08-10 because a synced
+     * node is not a served chain and `POOL_CHAINS` did not list it; bitcoind reached the tip that
+     * day, `POOL_CHAINS` names both from 2026-08-11, and the pool now hands out real Bitcoin work.
+     *
+     * What it does NOT do is hand it to a browser, and that is a decision rather than a gap
+     * (micro-org#360). `micro-pool` refuses BTC to the browser transport by name and says why on
+     * the wire, because the Bitcoin network runs on purpose-built SHA-256 silicon and a tab
+     * against it returns shares that can never become a block. Copy that said "mine Bitcoin in a
+     * browser tab" would be selling a tab an outcome it cannot reach — so the sections below name
+     * the second chain and name the hardware in the same breath, every time.
+     *
      * Dogecoin is named as built-and-off, because AuxPoW merge-mining is merged in `micro-pool`
      * and `POOL_LTC_AUX_CHAINS` is unset while our Dogecoin node is still in initial block
      * download. Naming it without the denial would describe an income that does not exist.
@@ -276,30 +289,31 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     // `test/meta.test.ts` holds that to ninety characters. Both halves below are written to that
     // budget rather than trimmed by it later; "or on your own rig" is the shortest phrasing that
     // still names the second way in, which is the half a reader with hardware is scanning for.
-    headline: 'Mine Litecoin in a browser tab, or on your own rig',
+    headline: 'Mine Litecoin in a browser tab, or Bitcoin with a rig',
     standfirst: [
-      'CloudsForge runs its own mining pool. It builds the block templates itself from the estate’s own Litecoin node, hands out work, checks every share that comes back and submits the blocks — there is no third-party pool in the middle and no account to open on one.',
-      'There are two ways in and they take the same work. A browser tab can hash for it with nothing installed, and any miner that speaks Stratum — the protocol the firmware on deployed hardware already talks — can be pointed at it.',
+      'CloudsForge runs its own mining pool. It builds the block templates itself from the estate’s own Litecoin and Bitcoin nodes, hands out work, checks every share that comes back and submits the blocks — there is no third-party pool in the middle and no account to open on one.',
+      'There are two ways in and they take the same work. A browser tab can hash for Litecoin with nothing installed, and any miner that speaks Stratum — the protocol the firmware on deployed hardware already talks — can be pointed at either chain. Bitcoin is offered to hardware only, and the pool says so itself rather than leaving a tab to find out.',
     ],
     blurb:
-      'CloudsForge runs its own Litecoin mining pool: hash for it in a browser tab with nothing installed, or point mining hardware you already own at it.',
+      'Mine on CloudsForge’s own pool: hash for Litecoin in a browser tab with nothing installed, or point mining hardware you own at Litecoin or Bitcoin.',
     stage: 'open',
     stageNote:
-      'Open to the public. The pool builds real Litecoin templates against the estate’s own mainnet node and the console answers on the public internet. It records shares and settles none of them: there is no payout mechanism yet.',
+      'Open to the public. The pool builds real Litecoin and Bitcoin templates against the estate’s own mainnet nodes and the console answers on the public internet. It records shares and settles none of them: there is no payout mechanism yet.',
     sections: [
       {
         title: 'Two ways in, and they earn the same shares',
         body: [
           'The first is a browser tab. The mining control in the bar at the top of every CloudsForge page opens a session against the pool over a WebSocket, and the hashing happens in the tab you are already looking at. Nothing is installed, no driver is needed and no graphics card is involved.',
           'The second is the miner you already run. The pool speaks Stratum over a plain socket, which is what cgminer, bfgminer and the firmware on an ASIC or a GPU rig already speak, so pointing one at it is a change of address rather than a change of software. Nothing about the protocol is unusual and nothing needs patching.',
-          'Both paths are judged identically. A share found in a tab and a share found by a rig are the same record, weighted the same way, against the same window.',
+          'Both paths are judged identically. A share found in a tab and a share found by a rig are the same record, weighted the same way, against the same window. What differs is which chains each path is offered, and the pool answers that itself — the console asks it on every load.',
         ],
       },
       {
-        title: 'Litecoin today, and the console is what says so',
+        title: 'Two chains, and only one of them belongs in a tab',
         body: [
-          'The pool serves Litecoin, and the work is scrypt. That is the whole list today, and it is deliberately not restated as a number anywhere on this page — which chains are being served is a live fact about a running service, and the console reads it from the pool itself on every load rather than from copy somebody typed.',
-          'A synced node is not the same thing as a served chain, and this page will not name a coin before the pool answers for it. Anything else you might want to know before pointing hardware somewhere — what it is building on right now, how fresh the work is, what it has actually found — is on the console for the same reason.',
+          'The pool serves Litecoin, where the work is scrypt, and Bitcoin, where it is the algorithm the whole ASIC industry was built around. Both are built against the estate’s own fully synced nodes. Which chains are being served is a live fact about a running service, so it is deliberately not restated as a number anywhere on this page — the console reads it from the pool itself on every load rather than from copy somebody typed.',
+          'Bitcoin is offered to mining hardware and refused to browsers, on purpose. The Bitcoin network is secured by an enormous quantity of purpose-built silicon that does nothing else, and a browser tab hashing against it would return shares that can never become a block — a real session, honestly recorded, mining something unreachable. So the pool declines the chain to the browser transport and states the reason in its own response, and every surface that offers mining prints that reason rather than quietly leaving Bitcoin off a list.',
+          'A synced node is not the same thing as a served chain, and a served chain is not the same thing as one you should mine in a tab. Anything else you might want to know before pointing hardware somewhere — what it is building on right now, how fresh the work is, what it has actually found — is on the console for the same reason.',
         ],
       },
       {

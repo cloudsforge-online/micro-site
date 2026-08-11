@@ -378,11 +378,36 @@ export const CATALOGUE: readonly Scenario[] = [
           'the pool page mentions mining without carrying the not-paid clause',
         )
 
-        // Litecoin is what the pool answers for, so it is the only coin the page may offer.
+        /*
+         * BOTH CHAINS THE POOL ANSWERS FOR, AND BITCOIN ONLY WITH ITS REFUSAL.
+         *
+         * This assertion was the exact inverse until 2026-08-11: Bitcoin was forbidden here,
+         * because bitcoind was synced and `POOL_CHAINS` did not list it, and a page naming a coin
+         * the pool would not serve is the ordinary way a marketing page starts lying. `POOL_CHAINS`
+         * now names both and `GET /v1/pool` answers for both, so the forbidden thing became the
+         * required thing — and a stale prohibition would have kept the page a chain behind the
+         * service it describes for as long as nobody re-read it.
+         *
+         * What has NOT changed is the shape of the check, which is deliberately the one applied to
+         * Dogecoin below: name the chain, then reach the qualification that limits it, in that
+         * order. For Dogecoin the qualification is that merge-mining is switched off. For Bitcoin
+         * it is that
+         * browsers are refused it — the pool declines it to the browser transport (micro-org#360)
+         * because a tab against that network returns shares that can never become a block, so a
+         * page that offered "mine Bitcoin in a browser tab" would be selling an unreachable
+         * outcome. Naming the chain without the refusal is the single most likely edit anybody
+         * makes here, and it is the one that would be false.
+         */
         assert.ok(text.includes('Litecoin'), 'the pool page no longer names the chain it serves')
+        assert.ok(text.includes('Bitcoin'), 'the pool page no longer names the second chain the pool serves')
         assert.ok(
-          !/\bBitcoin\b/.test(text),
-          'the pool page names Bitcoin. The node is synced; POOL_CHAINS does not serve it',
+          /refused to browsers|hardware only|offered to mining hardware and refused/i.test(text),
+          'the pool page names Bitcoin without saying browsers are refused it',
+        )
+        assert.equal(
+          await textOrder(session.page, 'Bitcoin', 'refused'),
+          'before',
+          'the page reaches the refusal before it has named the chain the refusal is about',
         )
 
         /*
