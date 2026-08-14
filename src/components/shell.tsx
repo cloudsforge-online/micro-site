@@ -10,7 +10,7 @@
  *
  * Everything this app adds goes below the bar.
  */
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   CloudsForgeBar,
   CookieBanner,
@@ -25,8 +25,13 @@ import { applyMeta, metaFor } from '../lib/meta.ts'
 import { useSession } from '../lib/auth.tsx'
 import { BUILD, TESTNET_NOTICE } from '../content/pages.ts'
 import { Ridge } from './parts.tsx'
+import { setViewedNetwork, viewedNetwork, type ViewedNetwork } from '../lib/viewed.ts'
 
 export function AppShell() {
+  // The viewed network: in-tab memory, defaulting to the hostname's own (micro-org#459).
+  // `setViewedNetwork` runs first in the handler below so the remounted tree reads the new value
+  // on its very first render.
+  const [viewed, setViewed] = useState<ViewedNetwork>(viewedNetwork())
   const { account, signIn, signOut } = useSession()
 
   return (
@@ -51,12 +56,28 @@ export function AppShell() {
         `miningOnHub()` — the miner is a WebSocket and two Web Workers on ONE origin, and this
         bundle is not served from it, so this renders an anchor to the surface that can start it.
       */}
+      {/*
+        In-app network context (micro-org#459, the combined view). The reader's choice lives in
+        `lib/viewed.ts` — module memory, never storage — and the `key` on the Outlet below is the
+        refetch mechanism: switching remounts the page tree, and `apiBase()` reads `viewedHosts()`,
+        so the same page re-reads itself from the other estate WITHOUT going anywhere. The band and
+        the switcher both follow the selection, so testnet data under a mainnet address bar is
+        never unmarked. The bar also stamps `?net=` onto its product links, which is what carries
+        the choice across a product switch — every surface is its own origin, so nothing else can.
+      */}
       <CloudsForgeBar
         current={PRODUCT}
         account={account}
         onSignIn={() => signIn()}
         onSignOut={signOut}
         mining={miningOnHub(hosts().hub)}
+        networkSwitch={{
+          selected: viewed,
+          onSelect: (n) => {
+            setViewedNetwork(n)
+            setViewed(n)
+          },
+        }}
       />
 
       <EnvironmentNotice />
@@ -64,7 +85,7 @@ export function AppShell() {
       <DocumentMeta />
 
       <main className="si-main" id="main">
-        <Outlet />
+        <Outlet key={viewed} />
       </main>
 
       <SiteFooter />
