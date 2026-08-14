@@ -10,7 +10,7 @@ import { surface } from '@cloudsforge/ui'
 import { hosts } from '../lib/hosts.ts'
 import { PRODUCT_PAGES, hubPage, productCards, productPage } from '../content/products.ts'
 import { PRODUCTS_INDEX } from '../content/pages.ts'
-import { PageHead, Prose, Ridge, Section, StageChip, SurfaceMark, accentProps } from '../components/parts.tsx'
+import { IncompleteNote, PageHead, Prose, Ridge, Section, StageChip, SurfaceMark, accentProps } from '../components/parts.tsx'
 import { NotFoundPage } from './not-found.tsx'
 
 /* ─────────────────────────── the index ────────────────────────────── */
@@ -73,6 +73,7 @@ export function ProductsIndexPage() {
                   </div>
                 </div>
                 <p className="si-card__blurb">{page.headline}</p>
+                <IncompleteNote surfaceKey={s.key} />
                 <span className="si-card__foot">
                   <StageChip stage={page.stage} />
                   <span className="si-card__more" aria-hidden="true">
@@ -118,10 +119,25 @@ export function ProductDetailPage() {
             <SurfaceMark surfaceKey={page.key} size={44} />
             <StageChip stage={page.stage} />
             <p className="si-productaside__note">{page.stageNote}</p>
+            {/* Above the outbound link on purpose. A reader meets the caveat before the button. */}
+            <IncompleteNote surfaceKey={page.key} />
             {/*
-              The outbound link is resolved from the registry at runtime. It is rendered even though
-              nothing is deployed: the address is where the surface WILL be, it is correct in local
-              development today, and removing it would mean adding it back later in six places.
+              ── THE BUTTON IS RENDERED ONLY FOR A SURFACE THAT SERVES ONE ───────────────────────
+
+              `servesUi` is the registry's measurement of whether anything answers on that
+              hostname, and it is false for Forge Exchange: no repository, no container, and a
+              hostname whose DNS record the estate deliberately never created (micro-deploy's
+              `EXPECTED_UNROUTED` records why a router would be the wrong fix). A button reading
+              "Open Forge Exchange" would be a dead link on a page whose entire subject is that
+              the thing does not exist yet — the exact failure this site was written against.
+
+              This is a `&&` rather than a second page component because the day it ships, the
+              registry row flips one boolean and the button appears. Nothing here is edited.
+
+              The outbound link is otherwise resolved from the registry at runtime and rendered
+              even where nothing is deployed: the address is where the surface WILL be, it is
+              correct in local development today, and removing it would mean adding it back later
+              in six places.
 
               Outlined rather than filled. A filled button here would put a label on a fill in the
               PRODUCT's accent, and the ink token that keeps such a label legible is tightest on
@@ -129,9 +145,11 @@ export function ProductDetailPage() {
               draws the accent as type instead, which `--si-accent` already guarantees on both
               grounds. It is also simply less colour on a page already wearing that colour.
             */}
-            <a className="si-btn si-btn--outline" href={url}>
-              Open {s.name}
-            </a>
+            {surface(page.linkTo).servesUi && (
+              <a className="si-btn si-btn--outline" href={url}>
+                Open {s.name}
+              </a>
+            )}
           </div>
         }
       />

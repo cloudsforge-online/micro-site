@@ -59,13 +59,14 @@
  * of the estate's own `worlds-api` name — so `test/public-endpoints.test.ts` fetches each one.
  */
 import assert from 'node:assert/strict'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, it } from 'node:test'
 import { PRODUCT_PAGES } from '../src/content/products.ts'
 import { BUILD } from '../src/content/pages.ts'
 import { ENV_LABELS, SURFACES, splitEnvLabel, surface, type SurfaceKey } from '@cloudsforge/ui'
 import {
+  PLANNED_SURFACES,
   PUBLIC_SURFACES,
   RUNS_ON,
   SELF_CUSTODY_REPOS,
@@ -86,11 +87,37 @@ const TUNNEL = `${ESTATE}deploy/cloudflared/config.mainnet.public.yml`
 /** Its testnet twin, read only to prove none of ITS names is published. */
 const TUNNEL_TESTNET = `${ESTATE}deploy/cloudflared/config.testnet.public.yml`
 
+/**
+ * The estate's own route check, read for one declaration: which surfaces are DELIBERATELY not
+ * served. See the planned-surfaces suite for why a name in the tunnel stopped being proof.
+ */
+const ROUTE_CHECK = `${ESTATE}deploy/scripts/surface-routes.py`
+/** The deployment configuration, as a directory: every file that can set a variable. */
+const COMPOSE_DIR = `${ESTATE}deploy/compose`
+/** Where the trading service decides whether it is allowed to spend money. */
+const TRADE_ENV = `${ESTATE}trade/src/env.ts`
+/**
+ * The exchange's contracts, and the suite that runs them.
+ *
+ * The Forge Exchange page says the pool contracts are already written and already driven through
+ * Hearth's own virtual machine. That is the one claim on a page about a plan that is a claim about
+ * code, so it is read from the code — see the evidence suite at the bottom of this file.
+ */
+const AMM_DIR = `${ESTATE}hearth/contracts/src`
+const AMM_SUITE = `${ESTATE}hearth/node/test/dex.js`
+
 const REQUIRED: ReadonlyArray<{ file: string; repo: string; dir: string }> = [
   { file: COMPOSE, repo: 'micro-deploy', dir: 'deploy' },
   { file: SMOKE, repo: 'micro-beacon', dir: 'beacon' },
   { file: TUNNEL, repo: 'micro-deploy', dir: 'deploy' },
   { file: TUNNEL_TESTNET, repo: 'micro-deploy', dir: 'deploy' },
+  { file: ROUTE_CHECK, repo: 'micro-deploy', dir: 'deploy' },
+  // Read by the incompleteness suite at the bottom of this file, and listed here for the same
+  // reason as the rest: a marker saying a product does not work yet is a claim about the running
+  // estate, and a claim about the running estate that cannot open a file must fail, not skip.
+  { file: TRADE_ENV, repo: 'micro-trade', dir: 'trade' },
+  // `hearth`, not `micro-hearth`: the chain predates the micro- estate and kept its name.
+  { file: AMM_SUITE, repo: 'hearth', dir: 'hearth' },
 ]
 
 /* ─────────────────────────── reading the estate ─────────────────────────── */
@@ -159,6 +186,29 @@ export function tunnelHostnames(text: string): Set<string> {
     if (match?.[1]) out.add(match[1])
   }
   return out
+}
+
+/**
+ * The surfaces the estate declares it deliberately does not route.
+ *
+ * Read from the `EXPECTED_UNROUTED` declaration alone, for the reason every reader above records:
+ * that script's prose names surfaces constantly — `account`, `worlds-api`, `foresight-admin` and
+ * `explorer` all appear in its docstring — so a scan of the file would return a set assembled out
+ * of an argument rather than out of a declaration.
+ *
+ * The keys only. The reason strings are that repository's to maintain and this one has no business
+ * asserting their wording.
+ */
+export function expectedUnrouted(text: string): Set<string> {
+  const start = text.indexOf('EXPECTED_UNROUTED = {')
+  assert.notEqual(start, -1, 'micro-deploy no longer declares EXPECTED_UNROUTED')
+  const end = text.indexOf('\n}', start)
+  assert.notEqual(end, -1, 'the EXPECTED_UNROUTED declaration is not closed')
+  // Key-and-value lines only: a comment inside that dict is prose, and one of them is exactly the
+  // string `# (no entry needed: the check resolves by SUBDOMAIN, not by key)`.
+  return new Set(
+    [...text.slice(start, end).matchAll(/^\s*"([a-z][a-z0-9-]*)":\s*"/gm)].map((m) => m[1] as string),
+  )
 }
 
 /**
@@ -251,6 +301,12 @@ export function stageFor(
   published: ReadonlySet<string>,
 ): Stage {
   if (published.has(key)) return 'open'
+  // A page that names NO containers names a plan, and an empty dependency list must never read as
+  // "everything it needs is deployed" — which is what `every` over an empty list would say, and
+  // it would grade an unstarted product `tested` by vacuous truth. The both-directions guard for
+  // this branch is the PLANNED_SURFACES suite below: planned pages and empty-needs pages must be
+  // the same set, and nothing in that set may appear in compose, the smoke tier or either tunnel.
+  if (needs.length === 0) return 'planned'
   const deployed = needs.every((service) => services.has(service))
   return deployed && walked.has(key) ? 'running' : 'tested'
 }
@@ -338,6 +394,29 @@ describe('the readers themselves', () => {
     assert.equal(stageFor('a', ['a-web'], new Set(), new Set(), published), 'open')
     // And nothing else can produce `open`.
     assert.equal(stageFor('a', ['a-web'], new Set(['a-web']), new Set(['a']), new Set()), 'running')
+  })
+
+  it('reads the unrouted declaration and not the argument around it', () => {
+    const keys = expectedUnrouted(
+      [
+        '"""Every surface must have a router. account and exchange are discussed here.',
+        'BEFORE = {"decoy": "not the declaration"}',
+        'EXPECTED_UNROUTED = {',
+        '    # a comment naming "hub": which is prose, not an entry',
+        '    "account": "no repository serves it",',
+        '    "exchange": "planned, and nothing serves it",',
+        '    # (no entry needed: the check resolves by SUBDOMAIN, not by key)',
+        '}',
+        'AFTER = {"also-decoy": "still not the declaration"}',
+      ].join('\n'),
+    )
+    assert.deepEqual([...keys].sort(), ['account', 'exchange'])
+  })
+
+  it('refuses to answer when that declaration is gone, rather than exempting nothing', () => {
+    // An empty set here would silently re-arm the tunnel probe against a name the estate says
+    // nothing is behind — a red build for a correct estate, which gets fixed by deleting a check.
+    assert.throws(() => expectedUnrouted('nothing here'), /no longer declares EXPECTED_UNROUTED/)
   })
 
   it('reads hostnames out of the ingress block and not out of anything else', () => {
@@ -507,6 +586,83 @@ describe('the stage of every surface, recomputed', () => {
   })
 })
 
+describe('the planned surfaces, whose chip must fail the moment anything runs', () => {
+  const services = composeServices(readFileSync(COMPOSE, 'utf8'))
+  const walked = smokeSurfaces(readFileSync(SMOKE, 'utf8'))
+  const tunnel = tunnelHostnames(readFileSync(TUNNEL, 'utf8'))
+  const testnetTunnel = tunnelHostnames(readFileSync(TUNNEL_TESTNET, 'utf8'))
+  const apex = apexOf(tunnel)
+
+  it('publishes planned on exactly the pages that name no containers', () => {
+    // Three sets, one identity. The pages wearing the chip, the pages with an empty RUNS_ON
+    // entry, and PLANNED_SURFACES have to agree, or one of them is a claim nobody derived.
+    const wearing = PRODUCT_PAGES.filter((p) => p.stage === 'planned').map((p) => p.key).sort()
+    const empty = Object.entries(RUNS_ON)
+      .filter(([, needs]) => needs.length === 0)
+      .map(([key]) => key)
+      .sort()
+    assert.deepEqual(wearing, [...PLANNED_SURFACES].sort())
+    assert.deepEqual(empty, [...PLANNED_SURFACES].sort())
+  })
+
+  const unrouted = expectedUnrouted(readFileSync(ROUTE_CHECK, 'utf8'))
+
+  it('finds no trace of a planned surface anywhere the estate runs things', () => {
+    // The direction a marketing chip must fail: the day exchange is a compose service, a smoke
+    // surface or a SERVED hostname, "Planned, not built" has quietly become an understatement of
+    // a different kind — a live thing described as an idea — and the build refuses until the chip
+    // is upgraded on the measurement.
+    //
+    // ── THE TUNNEL STOPPED PROVING A SURFACE IS SERVED, AND THIS IS THE REPAIR ────────────────
+    //
+    // Both ingress lists are GENERATED from the registry by `deploy/cloudflared/gen.py`: one
+    // hostname per row, whether or not anything is behind it. So the day `exchange` became a
+    // registry row, its name appeared in both files and this assertion failed — while nothing
+    // whatsoever served it. A check that fails on a registry edit is measuring the registry, and
+    // this suite exists to measure the ESTATE.
+    //
+    // The repair is not to drop the tunnel probe, which is still the thing that catches a name
+    // quietly published. It is to read the estate's own answer to "is this deliberately not
+    // served": `EXPECTED_UNROUTED` in `deploy/scripts/surface-routes.py`, where every entry is a
+    // claim checked IN BOTH DIRECTIONS by that script — a surface listed as intentionally
+    // routerless that has since gained a router fails micro-deploy's own CI, and the entry has to
+    // be deleted in the same commit that adds the router. That deletion is what fails this.
+    //
+    // So the exemption cannot rot: it survives exactly as long as the estate keeps asserting that
+    // nothing is behind the name, in the repository that would know.
+    for (const key of PLANNED_SURFACES) {
+      assert.ok(!services.has(key), `${key} is now a service in the estate; the chip is stale`)
+      assert.ok(!walked.has(key), `${key} is now driven by the smoke tier; the chip is stale`)
+      for (const [label, names] of [
+        ['publicly routed', tunnel],
+        ['routed on testnet', testnetTunnel],
+      ] as const) {
+        assert.ok(
+          !names.has(hostFor(key, apex)) || unrouted.has(key),
+          `${key} is now ${label} and the estate no longer lists it as deliberately unrouted; ` +
+            'the chip is stale',
+        )
+      }
+    }
+  })
+
+  it('is exempted by an estate that still says nothing is behind the name', () => {
+    // The reader that grants the exemption above, proven able to fail. An `expectedUnrouted` that
+    // returned everything — a rename, a reformat, a file that moved — would make the tunnel probe
+    // vacuous and say nothing about it, which is the failure mode every reader in this file is
+    // written against.
+    assert.ok(unrouted.size > 0, 'the estate no longer records any surface as deliberately unrouted')
+    assert.ok(!unrouted.has('hub'), 'the reader is matching things outside the declaration')
+    for (const key of PLANNED_SURFACES) {
+      assert.ok(
+        unrouted.has(key),
+        `${key} is published as planned, and micro-deploy does not record it as unrouted. ` +
+          'Either something serves it now, or the entry was deleted without upgrading this chip.',
+      )
+    }
+  })
+})
+
 describe('the self-custody wallets, whose stage is recorded rather than derived', () => {
   const services = composeServices(readFileSync(COMPOSE, 'utf8'))
   const walked = smokeSurfaces(readFileSync(SMOKE, 'utf8'))
@@ -535,6 +691,140 @@ describe('the self-custody wallets, whose stage is recorded rather than derived'
     assert.match(BUILD.wallets.recordedBy, /recorded/i)
     assert.match(BUILD.wallets.recordedBy, /cannot be|not.*derived/i)
     assert.ok(BUILD.wallets.recordedBy.length > 120, 'the recorder note is a stub')
+  })
+})
+
+describe('the second status: open, and switched off', () => {
+  /**
+   * For each surface carrying the registry's `incomplete` marker: the switch that would clear it,
+   * and the file where that switch's default is written.
+   *
+   * A marker with no entry here fails the first check below, and that is the whole design. "There
+   * is nothing to do here" is a claim about the RUNNING estate — the same class of claim as a
+   * stage chip — and this file has one rule for those: it opens the file rather than believing the
+   * sentence. Without this table a marker is a copywriter's opinion, and the failure mode is not
+   * that it is wrong today but that it stays up for a year after the switch is thrown, which is
+   * precisely the direction recorded at the top of this file as the one nobody investigates.
+   */
+  const INCOMPLETE_EVIDENCE: Readonly<Record<string, { flag: string; source: string }>> = {
+    trade: { flag: 'TRADE_LIVE_ENABLED', source: TRADE_ENV },
+  }
+
+  /** Every tracked file in the estate's compose directory that can set a variable. */
+  const deploymentFiles = (): string[] => {
+    const here = readdirSync(COMPOSE_DIR, { withFileTypes: true })
+    const files = here
+      .filter((e) => e.isFile() && (e.name.endsWith('.yml') || e.name.endsWith('.env')))
+      .map((e) => `${COMPOSE_DIR}/${e.name}`)
+    const env = readdirSync(`${COMPOSE_DIR}/env`, { withFileTypes: true })
+      .filter((e) => e.isFile() && e.name.endsWith('.env'))
+      .map((e) => `${COMPOSE_DIR}/env/${e.name}`)
+    return [...files, ...env]
+  }
+
+  it('marks nothing it cannot produce the switch for', () => {
+    const marked = SURFACES.filter((s) => s.incomplete !== undefined)
+      .map((s) => s.key)
+      .sort()
+    assert.deepEqual(
+      marked,
+      Object.keys(INCOMPLETE_EVIDENCE).sort(),
+      'a surface is published as incomplete with no switch named here, or a switch is named for a ' +
+        'surface that no longer says so. Both are a marker nobody can check.',
+    )
+  })
+
+  it('finds the switch in the service, defaulted off', () => {
+    for (const [key, { flag, source }] of Object.entries(INCOMPLETE_EVIDENCE)) {
+      const text = readFileSync(source, 'utf8')
+      // The declaration, not a mention: the flag name immediately followed by the default. A bare
+      // `text.includes(flag)` would match the long comment at the top of that same file, which
+      // discusses this variable at length — the comment-matching hazard every reader above guards
+      // against, and the one this estate keeps rediscovering.
+      assert.match(
+        text,
+        new RegExp(`'${flag}',\\s*false`),
+        `${key} is published as incomplete, but ${flag} is no longer declared with a false default ` +
+          `in ${source}. Either the service changed and the marker is stale, or the flag was renamed.`,
+      )
+    }
+  })
+
+  it('fails the day the estate switches one on', () => {
+    // The staleness direction, and the reason this suite is worth its length. The marker's sentence
+    // is only true while nothing sets the flag; the moment a deployment does, the product works and
+    // the site is still telling people it does not.
+    //
+    // ── WHAT THIS CAN AND CANNOT SEE ──────────────────────────────────────────────────────────
+    //
+    // Every TRACKED file in the compose directory, which is where the estate's variables are set
+    // and reviewed. It cannot see `compose/estate/tokens.env`, which is untracked and lives only on
+    // the app host — so an operator could in principle set the flag there without failing this.
+    // That gap is narrow and deliberate: the alternative is a test that needs a host it cannot
+    // reach and skips when it has not got one, which is the failure this whole file was written
+    // against. The runtime half is already covered elsewhere — the service publishes its own
+    // refusal in its capabilities response and `trade-web` renders that, not this sentence.
+    const setters: string[] = []
+    for (const { flag } of Object.values(INCOMPLETE_EVIDENCE)) {
+      for (const file of deploymentFiles()) {
+        if (readFileSync(file, 'utf8').includes(flag)) setters.push(`${flag} in ${file}`)
+      }
+    }
+    assert.deepEqual(
+      setters,
+      [],
+      'the estate now sets a switch that a surface is still published as missing. Clear the ' +
+        '`incomplete` marker in the registry, or explain why the deployment names it.',
+    )
+  })
+
+  it('never marks a surface a person cannot open', () => {
+    // The marker means "you can open it and there is nothing to do". On a surface nobody can reach
+    // it would be a second, quieter way of saying `planned` — and `content/stages.ts` argues at
+    // length that two vocabularies for one fact is how a page ends up contradicting itself.
+    for (const page of PRODUCT_PAGES) {
+      if (surface(page.key).incomplete === undefined) continue
+      assert.notEqual(
+        page.stage,
+        'planned',
+        `${page.slug} is published as planned AND as incomplete; a plan has nothing to be short of`,
+      )
+    }
+  })
+})
+
+describe("the plan's own evidence: written, and nowhere near deployed", () => {
+  /*
+   * ── THE ONE CLAIM ON A PLAN'S PAGE THAT IS A CLAIM ABOUT CODE ─────────────────────────────────
+   *
+   * The Forge Exchange page carries a section headed "The contracts are written; nothing is
+   * deployed", and it is there because the first draft said the opposite — "none of it is built,
+   * there is no repository" — while `hearth/contracts/src` held the whole AMM and
+   * `hearth/node/test/dex.js` had been driving it through this project's own EVM for weeks.
+   *
+   * That is the understatement direction, and the header of this file says why it is the worse
+   * one: nobody goes looking for evidence that a thing exists after being told it does not. It got
+   * caught by opening the repository the page is about, which is what these two tests now do on
+   * every run.
+   */
+  const AMM = ['WEMBER.sol', 'HearthV2Factory.sol', 'HearthV2Pair.sol', 'HearthV2Router02.sol']
+
+  it('finds the pool contracts the page says are already written', () => {
+    for (const file of AMM) {
+      assert.ok(
+        existsSync(`${AMM_DIR}/${file}`),
+        `${file} is gone from hearth/contracts/src; the exchange page claims it exists`,
+      )
+    }
+  })
+
+  it("finds the suite that drives them through the chain's own virtual machine", () => {
+    // Named contracts rather than the filename alone: a `dex.js` that no longer deploys the router
+    // is not the evidence the page cites, and would leave this green while the sentence went false.
+    const suite = readFileSync(AMM_SUITE, 'utf8')
+    for (const contract of ['WEMBER', 'HearthV2Factory', 'HearthV2Router02']) {
+      assert.match(suite, new RegExp(contract), `hearth's dex suite no longer drives ${contract}`)
+    }
   })
 })
 

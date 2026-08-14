@@ -429,8 +429,12 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     blurb:
       'Trade crypto natively: strategies settle on chain against a price feed, with no order book and no exchange account. Test on real history before you fund one.',
     stage: 'open',
+    // The clause this used to end on — "live trading is switched off in the running service" — now
+    // lives on the registry's `incomplete` marker, which renders directly under this note on both
+    // pages that show it. What stays here is the half a stage note is for: the CONDITION. The
+    // marker says what you cannot do today; this says what has to happen before you can.
     stageNote:
-      'Open to the public. Backtesting, fills, fees and the performance accounting run behind an application anyone can reach. Live trading is switched off in the running service and stays off until a full cycle has completed on testnet.',
+      'Open to the public. Backtesting, fills, fees and the performance accounting run behind an application anyone can reach; live trading turns on when a full cycle has completed on testnet.',
     sections: [
       {
         title: 'Nothing here is an exchange account',
@@ -627,6 +631,95 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     linkTo: 'worlds',
     linkLabel: 'Open Forge Worlds',
     ogImage: '/og/worlds.png',
+  },
+
+  /**
+   * Forge Exchange — the first page on this site written BEFORE the thing it describes.
+   *
+   * ── WHY A PLAN GETS A PAGE AT ALL ─────────────────────────────────────────────────────────────
+   *
+   * Every other page here was written after the surface it describes was running, and the rule the
+   * site is built on — say where a thing IS — was applied to them retroactively, which is the easy
+   * direction. This is the hard one: publishing a plan is how a marketing site normally starts
+   * lying, because a plan on a product page reads as a product with a date on it.
+   *
+   * It is publishable under the same rule, and only under it. The stage chip says `planned`, that
+   * chip is DERIVED — `content/stages.ts` grades a page naming no containers as a plan, and
+   * `test/estate-stages.test.ts` fails the build the day anything with this key appears in the
+   * estate's compose file, in the smoke tier or behind a gateway router — and the page carries no
+   * date, because a date is the one claim about the future nothing in this repository can check.
+   *
+   * ── IT IS A `service` IN THE REGISTRY, AND THIS PAGE DOES NOT MAKE IT A PRODUCT ───────────────
+   *
+   * `productCards()` filters on `kind === 'product'`, so this adds no seventh card to the index
+   * grid and `productCount()` is still six — the pool page's precedent, for the pool page's reason
+   * and one more, recorded on the registry row: a seventh product means a seventh ACCENT chosen by
+   * the documented dE procedure, and that is design work belonging to the phase where a frontend
+   * actually ships rather than to the row that announces a plan.
+   *
+   * The one visible consequence is the outbound button, which this page does NOT have.
+   * `src/pages/products.tsx` renders it only for a surface the registry says serves a UI, and the
+   * registry says this one does not. A button reading "Open Forge Exchange" would point at a
+   * hostname whose DNS record was deliberately never created.
+   */
+  {
+    key: 'exchange',
+    slug: 'exchange',
+    eyebrow: 'Planned',
+    // Title budget: `${linkLabel} — ${headline} — CloudsForge` must clear ninety characters, and
+    // `test/meta.test.ts` measures it. This pair is written to that budget rather than trimmed to
+    // it afterwards.
+    headline: 'Swap EMBER for Bitcoin against a pool on the chain itself',
+    standfirst: [
+      'Forge Exchange is a decentralised exchange written as contracts on Hearth, the chain this platform mines. It is meant to hold pools of EMBER against bridged Bitcoin, Litecoin and Dogecoin, so anyone with a wallet can swap against them without opening an account with anybody or handing a coin to a venue to hold.',
+      'Nothing is deployed. There is no service, no address that answers, no pool holding anything and no page to open — but the contracts are written, and a suite in the chain’s own repository already drives them through its virtual machine. What is missing is everything around them, and this page says so until that changes.',
+    ],
+    blurb:
+      'A decentralised exchange planned for Hearth: pools of EMBER against bridged Bitcoin, Litecoin and Dogecoin, swappable from any wallet. Nothing runs yet.',
+    stage: 'planned',
+    stageNote:
+      'Planned, and nothing runs. No repository serves it, no container in the estate declares it, and the hostname the registry reserves resolves nowhere on purpose. This page changes when that does.',
+    sections: [
+      {
+        title: 'A pool on the chain, rather than a venue in the middle',
+        body: [
+          'A swap here would not be matched against somebody else’s order. Each pair is a contract holding both coins, and the price is the ratio between what is in it — you trade against the pool, the pool rebalances, and the whole exchange is a transaction anybody can read back out of the chain afterwards.',
+          'That is the difference from Forge Trade, which is already open and is not this. Forge Trade runs a strategy for you against a price feed, on coins the platform is holding for you. Forge Exchange would hold nothing for anybody: the contract owns the pool, the code that moves it is public, and there is no account on it to open, freeze or lose.',
+          'It runs on Hearth because Hearth is already here — the platform mines it, an explorer already reads it, and a wallet already signs for it. An exchange needs a chain underneath it, and building on somebody else’s would mean paying their fees to trade our own coin.',
+        ],
+      },
+      {
+        title: 'The contracts are written; nothing is deployed',
+        body: [
+          'The pool itself is not a sketch. It is a port of the constant-product exchange most of this industry already runs, written out in full in the chain’s own repository, and a suite there drives it through Hearth’s virtual machine end to end: it deploys the contracts, creates a pair, adds the first liquidity, swaps one way and then back through the native-coin path, exercises a signed approval and takes the liquidity out again.',
+          'That suite is also the strongest thing anyone has said about the virtual machine underneath. Running somebody else’s audited, industrial contract code — compiled by people who had never heard of this interpreter — is a harder test than any specification vector, which is why the exchange was written long before there was anywhere to put it.',
+          'What does not exist is every part a person would touch: nothing deployed on either network, no pool holding anything, no page, and no bridged coin to trade against. Those are what this plan is about, and the chip above does not move until they run.',
+        ],
+      },
+      {
+        title: 'The liquidity comes out of mining, not out of a sale',
+        body: [
+          'A pool with nothing in it is a page with a form on it, which is one reason none of this is deployed yet. The first side of the first pool is meant to be EMBER the project’s own miners have already earned, put in by the project rather than raised from anybody.',
+          'After that it is meant to feed itself: each chain the platform mines pays a share of what it earns into the pool that trades that coin, so depth grows out of work the estate is already doing. Nothing about this asks a reader for money, and nothing about it issues a token to fund itself — EMBER is mined, and that has not changed.',
+        ],
+      },
+      {
+        title: 'What has to be true before any of this opens',
+        body: [
+          'The Bitcoin in a pool would not be Bitcoin. It would be a receipt this project issues on Hearth against coins it is holding, and a receipt is only ever as good as whoever wrote it — so the backing has to be something a reader can check on the chain without asking us, and every page that offers it has to say plainly whose promise it is. A reserve that is an internal spreadsheet is the thing this platform exists not to be.',
+          'The contracts have to be published and read by somebody who did not write them, and a full cycle has to run on testnet before anything touches mainnet, which is the same order of operations Forge Trade’s live path is still waiting on.',
+          'Until every one of those is true, this chip stays where it is. It is derived from the estate rather than typed here, so it cannot move because the plan feels closer — only because something actually ran.',
+        ],
+      },
+    ],
+    // Its own key, and no button. `linkTo` is required by the type and is read by `metaFor` for
+    // the page title; the outbound link that would use it is not rendered, because the registry
+    // says this surface serves no UI.
+    linkTo: 'exchange',
+    linkLabel: 'Forge Exchange',
+    // The generic card, as the pool page takes: there is no per-surface artwork for a surface with
+    // no interface, and pointing at a file that does not exist would publish a broken preview.
+    ogImage: '/og-1200x630.png',
   },
 ]
 

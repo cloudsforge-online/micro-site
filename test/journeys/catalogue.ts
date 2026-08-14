@@ -609,7 +609,9 @@ export const CATALOGUE: readonly Scenario[] = [
     // MENU — that an operator can find the operator tools, and that a player's switcher is not
     // cluttered with three entries they cannot open.
     async run(surface) {
-      const openSwitcher = async (roles: readonly string[]): Promise<string[]> => {
+      // The item's own text as well as its name, because one entry now carries a second status
+      // — see the incompleteness assertion at the end of this journey.
+      const openSwitcher = async (roles: readonly string[]): Promise<{ names: string[]; items: string[] }> => {
         const session = await renderOnlyWithStubbedNetwork(surface.origin, {
           storage: roles.length > 0 ? SIGNED_IN : {},
           stubs: AS(roles),
@@ -621,7 +623,8 @@ export const CATALOGUE: readonly Scenario[] = [
           const names = await session.page
             .locator('[role="menu"] a[role="menuitem"] .cf-menu__name')
             .allInnerTexts()
-          return names
+          const items = await session.page.locator('[role="menu"] a[role="menuitem"]').allInnerTexts()
+          return { names, items }
         } finally {
           await session.close()
         }
@@ -633,17 +636,40 @@ export const CATALOGUE: readonly Scenario[] = [
 
       const anonymous = await openSwitcher([])
       assert.deepEqual(
-        anonymous.map((n) => n.trim()),
+        anonymous.names.map((n) => n.trim()),
         players.map((s) => s.name),
         'a signed-out reader is not offered exactly the products',
       )
 
       const operator = await openSwitcher(['user', 'admin'])
       assert.deepEqual(
-        operator.map((n) => n.trim()),
+        operator.names.map((n) => n.trim()),
         SWITCHER_SURFACES.map((s) => s.name),
         'a signed-in operator is not offered all nine',
       )
+
+      /*
+       * ── AND THE ONE THAT IS OPEN AND SWITCHED OFF SAYS SO, BEFORE THE CLICK ─────────────────
+       *
+       * The registry's `incomplete` marker is the sentence a reader needs while they are still
+       * deciding where to go, so it has to survive the round trip into a real browser: the name
+       * and the tag are separate elements precisely so the assertion above keeps reading the
+       * name, and a restructure that quietly drops the tag would otherwise leave that assertion
+       * green. The reason string is checked in full because a bare "Incomplete" is the kind of
+       * label a reader learns to ignore.
+       */
+      for (const [index, entry] of SWITCHER_SURFACES.entries()) {
+        const item = operator.items[index] ?? ''
+        if (entry.incomplete) {
+          assert.match(item, /Incomplete/, `${entry.name} is marked incomplete and the switcher does not say so`)
+          assert.ok(
+            item.includes(entry.incomplete),
+            `${entry.name} is tagged incomplete without the reason: ${JSON.stringify(item)}`,
+          )
+        } else {
+          assert.doesNotMatch(item, /Incomplete/, `${entry.name} is tagged incomplete and the registry does not say so`)
+        }
+      }
     },
   },
   {
