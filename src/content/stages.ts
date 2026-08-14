@@ -97,16 +97,27 @@
  * still published as `running`. The second direction is the one that matters, because an
  * understated claim is never investigated.
  */
-export type Stage = 'tested' | 'running' | 'open'
+/**
+ * `planned` is the value the header above promised to add "in the same commit as the thing", and
+ * this is that commit: Forge Exchange (2026-08-14, docs/ecosystem/39 in micro-docs). It names an
+ * event exactly as the other three do — is there a published plan, and does NOTHING run? — and it
+ * is guarded in the same direction: `test/estate-stages.test.ts` fails if a surface published as
+ * `planned` ever appears in the deployment file, the smoke tier or the public tunnel, because at
+ * that moment the honest chip is one of the other three.
+ */
+export type Stage = 'tested' | 'running' | 'open' | 'planned'
 
 /** Most finished first. The build page sorts by this, and the legend reads in this order. */
-export const STAGE_ORDER: readonly Stage[] = ['open', 'running', 'tested']
+export const STAGE_ORDER: readonly Stage[] = ['open', 'running', 'tested', 'planned']
 
 /** The chip's words. Never a bare participle — see the header for why "Built" alone is a lie. */
 export const STAGE_LABEL: Readonly<Record<Stage, string>> = {
   tested: 'Built, not shipped',
   running: 'Running in-house',
   open: 'Open to the public',
+  // Not "not built": the honest word for a surface whose primitives may already exist and pass a
+  // suite — which is true of the first page to wear this chip — while nothing is deployed anywhere.
+  planned: 'Planned, not deployed',
 }
 
 /**
@@ -119,6 +130,8 @@ export const STAGE_GLYPH: Readonly<Record<Stage, string>> = {
   tested: '◐',
   running: '◕',
   open: '●',
+  // The empty end of the same fill ramp, which is the honest place for a plan.
+  planned: '○',
 }
 
 /**
@@ -134,6 +147,8 @@ export const STAGE_MEANING: Readonly<Record<Stage, string>> = {
   running:
     'Deployed in the estate and reached by a real browser through the real gateway, intercepting nothing. It has no address on the public internet.',
   open: 'There is an address on the public internet and a stranger can open it. That is all this says: not that it is finished, not that it has been used, and not that anything on it is worth money. It runs on one machine with no failover.',
+  planned:
+    'A design exists in public — an engineering document and an issue anyone can read — and nothing is deployed: no service in the estate, no address that answers, nothing a stranger can open. Parts of it may already be written and pass their own tests; the page says which, and none of them is running.',
 }
 
 /**
@@ -247,6 +262,21 @@ export const PUBLIC_SURFACES: readonly string[] = [
   'pool',
 ]
 
+/**
+ * The surfaces published as `planned`, and the guard that keeps the chip honest in BOTH directions.
+ *
+ * `test/estate-stages.test.ts` requires each key here to appear in NONE of the places the other
+ * three stages draw their evidence from: not a service in the deployment file, not a surface the
+ * smoke tier drives, not a hostname in the public tunnel. The risk with a plan is the opposite of
+ * the risk with the seven running surfaces — there it was understatement, here it is a card that
+ * quietly outlives its truth. The day exchange appears in any of those three files, this list
+ * refuses the build until the chip is upgraded, which is the direction a marketing claim must fail.
+ *
+ * Forge Exchange: docs/ecosystem/39 in micro-docs and the umbrella issue in micro-org are the
+ * published design this chip points at. 2026-08-14.
+ */
+export const PLANNED_SURFACES: readonly string[] = ['exchange']
+
 export const RUNS_ON: Readonly<Record<string, readonly string[]>> = {
   hub: ['hub-web', 'hub-api'],
   network: ['network-site', 'explorer-web', 'faucet', 'indexer'],
@@ -259,4 +289,9 @@ export const RUNS_ON: Readonly<Record<string, readonly string[]>> = {
   // `pool-migrate` is deliberately absent: it is a one-shot migrator that runs to completion and
   // exits, so requiring it to be a live service would be requiring the wrong thing.
   pool: ['pool-web', 'pool'],
+  // Empty BECAUSE it is planned: a page that names no containers names a plan, `stageFor` grades
+  // an empty list `planned`, and the PLANNED_SURFACES suite refuses the build the day anything
+  // with this key actually runs. The entry exists because every page must have one — a page
+  // outside this record would be unverifiable, which is worse than a page verified to need nothing.
+  exchange: [],
 }

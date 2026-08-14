@@ -15,7 +15,7 @@ import { surface } from '@cloudsforge/ui'
 import { BUILD } from '../content/pages.ts'
 import { PRODUCT_PAGES } from '../content/products.ts'
 import { STAGE_MEANING, STAGE_ORDER } from '../content/stages.ts'
-import { PageHead, Prose, Ridge, Section, StageChip, SurfaceMark, accentProps } from '../components/parts.tsx'
+import { IncompleteNote, PageHead, Prose, Ridge, Section, StageChip, SurfaceMark, accentProps } from '../components/parts.tsx'
 
 export function BuildPage() {
   // Most-finished first, from the one declaration of the order. A second copy of it here is how
@@ -59,7 +59,12 @@ export function BuildPage() {
                   <Link to={`/products/${page.slug}`}>{s.name}</Link>
                   <StageChip stage={page.stage} />
                 </dt>
-                <dd className="si-status__note">{page.stageNote}</dd>
+                <dd className="si-status__note">
+                  {page.stageNote}
+                  {/* The page whose whole subject is "how far along is everything" is the last
+                      place a second status should be missing from. */}
+                  <IncompleteNote surfaceKey={page.key} />
+                </dd>
               </div>
             )
           })}

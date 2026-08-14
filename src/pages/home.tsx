@@ -14,7 +14,7 @@ import { minePage } from '../lib/hosts.ts'
 import { HOME } from '../content/pages.ts'
 import { productCards, productCount } from '../content/products.ts'
 import { PLATFORM } from '../content/pages.ts'
-import { Ridge, Section, StageChip, SurfaceMark, accentProps } from '../components/parts.tsx'
+import { IncompleteNote, Ridge, Section, StageChip, SurfaceMark, accentProps } from '../components/parts.tsx'
 
 /*
  * ── The order, and the fact that it is the only editorial change on this page ─────────────────
@@ -218,6 +218,12 @@ function Products() {
                 </div>
               </div>
               <p className="si-card__blurb">{s.blurb}</p>
+              {/*
+                Renders nothing for the five products that have something to show. It is called
+                unconditionally so that a second incomplete product cannot ship a tile that looks
+                finished because this grid forgot to ask.
+              */}
+              <IncompleteNote surfaceKey={s.key} />
               <span className="si-card__foot">
                 <StageChip stage={page.stage} />
                 <span className="si-card__more" aria-hidden="true">

@@ -168,6 +168,27 @@ jobs:
           repository: cloudsforge-online/micro-beacon
           path: beacon
           token: ${{ secrets.ESTATE_READ_TOKEN }}
+      # And this one is the SECOND status a card can carry: open, and switched off.
+      #
+      # The registry marks Forge Trade incomplete, and that marker is a claim about a running
+      # service — so the same test opens the service and reads the flag the claim is about
+      # (`TRADE_LIVE_ENABLED`, declared with a default of false in micro-trade's own env module).
+      # The day someone turns it on, the marker fails and has to be deleted. A warning that
+      # outlives the thing it warned about is the same lie as a stale stage, told the other way.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-trade
+          path: trade
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+      # And the chain itself, for the one sentence on a page about a PLAN that is a claim about
+      # code: the Forge Exchange page says the pool contracts are already written and already
+      # driven through Hearth's own virtual machine. The first draft of that page said the
+      # opposite — "none of it is built" — while `contracts/src` held the whole AMM. `hearth`, not
+      # `micro-hearth`: the chain predates the micro- estate and kept its name. Public, so no token.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/hearth
+          path: hearth
       # The privacy notice publishes two retention periods, and each is recomputed from the
       # service that actually runs the deletion job rather than from a document describing it.
       # A retention number on a privacy notice that nothing enforces is not a stale figure, it is
@@ -413,7 +434,7 @@ jobs:
             echo "::error::the stage check may not skip; without the estate it must FAIL"
             exit 1
           fi
-          for repo in micro-deploy micro-beacon; do
+          for repo in micro-deploy micro-beacon micro-trade hearth; do
             grep -q "repository: cloudsforge-online/$repo" .github/workflows/ci.yml \
               || { echo "::error::$repo is no longer checked out; the stage check cannot read it"; exit 1; }
           done

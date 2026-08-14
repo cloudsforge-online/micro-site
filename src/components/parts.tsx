@@ -98,6 +98,12 @@ export const SCOPED_SURFACES: readonly SurfaceKey[] = [
   // `test/contrast.test.ts` checks against the stylesheet. The block now exists, shared with
   // `create`, which is the hue the registry already gives `pool`.
   'pool',
+  // Scoped by the "rest of it" strip at the foot of every product page, which draws one chip per
+  // page in that page's accent — so a page that exists gets scoped whether or not anything serves
+  // it. `exchange` joined `create`'s gold block in tokens.css on the same day this line was added,
+  // for the reason the note above records: scoping a key that is not declared falls through to the
+  // company ember in silence, and silence is the failure this list exists to make loud.
+  'exchange',
 ]
 
 /**
@@ -119,6 +125,45 @@ export function StageChip({ stage, className }: { stage: Stage; className?: stri
       </span>
       {STAGE_LABEL[stage]}
     </span>
+  )
+}
+
+/**
+ * The second status a surface can carry: you can open it, and there is nothing in it for you.
+ *
+ * ── WHY A SURFACE CAN WEAR THIS AND `● OPEN TO THE PUBLIC` AT THE SAME TIME ────────────────────
+ *
+ * They answer different questions and both answers are true. The stage above says how far into the
+ * estate something has got — deployed, walked by a real browser, answering on the public internet
+ * — and Forge Trade has done all three. This says whether the thing the product is named after is
+ * switched on, and there it has not. Collapsing them into a fifth stage was the first draft and it
+ * was wrong: `content/stages.ts` argues at length that its scale only stays honest while every
+ * rung names an event in the estate, and "there is nothing to do here" is not one of those.
+ *
+ * So the card carries both, and they read as one thought: open, and empty. The sentence is the
+ * component's whole payload — a tag alone would be a label with no fact under it, which is the
+ * "Coming soon" failure this replaces.
+ *
+ * Renders nothing at all for a surface with no marker, so every card can call it unconditionally.
+ * The alternative is six call sites each remembering to check, and the one that forgets is the one
+ * that ships a card promising something that is switched off.
+ */
+export function IncompleteNote({
+  surfaceKey,
+  className,
+}: {
+  surfaceKey: SurfaceKey
+  className?: string
+}) {
+  const note = surface(surfaceKey).incomplete
+  if (note === undefined) return null
+  return (
+    <p className={`si-incomplete${className ? ` ${className}` : ''}`}>
+      {/* Not aria-hidden. "Incomplete" is the summary; a reader skimming with a screen reader
+          should get it in the same breath as the sentence, not as a decoration they never hear. */}
+      <span className="si-incomplete__tag">Incomplete</span>
+      {note}
+    </p>
   )
 }
 

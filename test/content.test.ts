@@ -325,8 +325,14 @@ describe('the product pages and the registry', () => {
    *           for, and `productCards()` filters on `kind`, so this page adds no card to the grid
    *           and `productCount()` is still six. It has a page because the home page already
    *           linked `/products/pool` and that address answered a hard 404.
+   *   `exchange`  Forge Exchange, added 2026-08-14: a plan with a page and no code. A `service`
+   *           in the registry for the pool's reason plus one — a seventh PRODUCT would have to
+   *           choose a seventh accent by the dE procedure, which is work for the phase that
+   *           ships a frontend, not for the row that announces a plan. Its stage is `planned`,
+   *           and `test/estate-stages.test.ts` fails the build the day anything with this key
+   *           runs, which is what makes the page publishable at all.
    */
-  const NON_PRODUCT_PAGES: readonly string[] = ['hub', 'pool']
+  const NON_PRODUCT_PAGES: readonly string[] = ['hub', 'pool', 'exchange']
 
   it('covers every registry product, and invents none', () => {
     // Both directions. A product with no page vanishes from the site silently; a page with no
