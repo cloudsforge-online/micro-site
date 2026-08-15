@@ -672,13 +672,13 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     headline: 'Swap EMBER for Bitcoin against a pool on the chain itself',
     standfirst: [
       'Forge Exchange is a decentralised exchange written as contracts on Hearth, the chain this platform mines. It is meant to hold pools of EMBER against bridged Bitcoin, Litecoin and Dogecoin, so anyone with a wallet can swap against them without opening an account with anybody or handing a coin to a venue to hold.',
-      'Nothing is deployed. There is no service, no address that answers, no pool holding anything and no page to open — but the contracts are written, and a suite in the chain’s own repository already drives them through its virtual machine. What is missing is everything around them, and this page says so until that changes.',
+      'It is running on the test network and nowhere else. The contracts are deployed on EMBER testnet, one pool holds EMBER against a token, and a wallet nobody here holds the key for has already swapped both ways through it and put in liquidity of its own. There is nothing on the main network, no bridged Bitcoin to trade against, and no page to open — which is what the chip above is about, and this page says so until that changes.',
     ],
     blurb:
-      'A decentralised exchange planned for Hearth: pools of EMBER against bridged Bitcoin, Litecoin and Dogecoin, swappable from any wallet. Nothing runs yet.',
+      'A decentralised exchange for Hearth: pools of EMBER against bridged Bitcoin, Litecoin and Dogecoin. Deployed and traded on the test network, not the main one.',
     stage: 'planned',
     stageNote:
-      'Planned, and nothing runs. No repository serves it, no container in the estate declares it, and the hostname the registry reserves resolves nowhere on purpose. This page changes when that does.',
+      'Deployed on the test network and traded there, including by a wallet that is not ours. Still planned as a product: no repository serves it, no container in the estate declares it, nothing is on the main network, and the hostname the registry reserves resolves nowhere on purpose. This chip changes when a page does.',
     sections: [
       {
         title: 'A pool on the chain, rather than a venue in the middle',
@@ -689,11 +689,12 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
         ],
       },
       {
-        title: 'The contracts are written; nothing is deployed',
+        title: 'It works on the test network, and somebody else has proved it',
         body: [
           'The pool itself is not a sketch. It is a port of the constant-product exchange most of this industry already runs, written out in full in the chain’s own repository, and a suite there drives it through Hearth’s virtual machine end to end: it deploys the contracts, creates a pair, adds the first liquidity, swaps one way and then back through the native-coin path, exercises a signed approval and takes the liquidity out again.',
           'That suite is also the strongest thing anyone has said about the virtual machine underneath. Running somebody else’s audited, industrial contract code — compiled by people who had never heard of this interpreter — is a harder test than any specification vector, which is why the exchange was written long before there was anywhere to put it.',
-          'What does not exist is every part a person would touch: nothing deployed on either network, no pool holding anything, no page, and no bridged coin to trade against. Those are what this plan is about, and the chip above does not move until they run.',
+          'All of it is now deployed on the test network, behind a two-of-three wallet, with one pool holding EMBER against a token this platform’s own token maker produced. The first trade against it came from us, which proves less than it sounds like: the same people wrote the pool and the thing calling it. So the cycle was run again from the browser wallet, by a key generated inside that wallet and funded from somewhere the chain’s miner is not — a swap in, liquidity added, a swap back and the position withdrawn. Both swaps filled at exactly the quoted price, and that wallet earned a share of the trading fee while its liquidity was in.',
+          'What still does not exist is the part a person would touch: nothing on the main network, no page, and no bridged Bitcoin, Litecoin or Dogecoin to trade against. Those are what the rest of this plan is about, and the chip above does not move until they run.',
         ],
       },
       {
@@ -707,7 +708,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
         title: 'What has to be true before any of this opens',
         body: [
           'The Bitcoin in a pool would not be Bitcoin. It would be a receipt this project issues on Hearth against coins it is holding, and a receipt is only ever as good as whoever wrote it — so the backing has to be something a reader can check on the chain without asking us, and every page that offers it has to say plainly whose promise it is. A reserve that is an internal spreadsheet is the thing this platform exists not to be.',
-          'The contracts have to be published and read by somebody who did not write them, and a full cycle has to run on testnet before anything touches mainnet, which is the same order of operations Forge Trade’s live path is still waiting on.',
+          'The contracts have to be published and read by somebody who did not write them — that reading has not happened yet, and it is the next thing. A full cycle had to run on the test network before anything touched the main one, which is the same order of operations Forge Trade’s live path is still waiting on; that cycle has now run, twice, the second time from a wallet holding a key we do not.',
           'Until every one of those is true, this chip stays where it is. It is derived from the estate rather than typed here, so it cannot move because the plan feels closer — only because something actually ran.',
         ],
       },
