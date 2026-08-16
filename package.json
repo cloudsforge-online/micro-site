@@ -1,6 +1,6 @@
 {
   "name": "@cloudsforge/site",
-  "version": "2026.08.58",
+  "version": "2026.8.67",
   "packageManager": "pnpm@11.9.0",
   "private": true,
   "description": "The CloudsForge marketing site: what the platform is, what each product does, and what is actually built.",
