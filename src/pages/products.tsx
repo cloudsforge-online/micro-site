@@ -122,17 +122,31 @@ export function ProductDetailPage() {
             {/* Above the outbound link on purpose. A reader meets the caveat before the button. */}
             <IncompleteNote surfaceKey={page.key} />
             {/*
-              ── THE BUTTON IS RENDERED ONLY FOR A SURFACE THAT SERVES ONE ───────────────────────
+              ── TWO CONDITIONS, AND FORGE EXCHANGE IS WHY THERE ARE TWO ────────────────────────
 
               `servesUi` is the registry's measurement of whether anything answers on that
-              hostname, and it is false for Forge Exchange: no repository, no container, and a
-              hostname whose DNS record the estate deliberately never created (micro-deploy's
-              `EXPECTED_UNROUTED` records why a router would be the wrong fix). A button reading
-              "Open Forge Exchange" would be a dead link on a page whose entire subject is that
-              the thing does not exist yet — the exact failure this site was written against.
+              hostname at all. It used to be the only condition here, and it was sufficient for as
+              long as every surface serving a UI also had a public address.
 
-              This is a `&&` rather than a second page component because the day it ships, the
-              registry row flips one boolean and the button appears. Nothing here is edited.
+              Forge Exchange broke that pairing, in the direction that matters. Its bundle went
+              live in the estate — router, compose service, `EXPECTED_UNROUTED` deletion, and the
+              registry row flipping `servesUi` to `true` on the measurement — while the DNS record
+              for its hostname still does not exist, because creating one is an action in the
+              Cloudflare dashboard that nobody has taken. On the old single condition the button
+              appeared the moment the flag flipped, reading "Open Forge Exchange" and pointing at
+              a name that resolves nowhere: a dead button on the very page explaining why the
+              address does not exist yet.
+
+              So the second condition is the stage, which is DERIVED — `test/estate-stages.test.ts`
+              asserts that the set of pages published as `open` is exactly the set of hostnames the
+              public tunnel serves, in both directions. That makes this a check on the same fact a
+              reader is about to act on, rather than on a second opinion about it.
+
+              Both conditions stay. `servesUi` is about whether anything is behind the address and
+              `open` is about whether the address exists, and a surface can fail either one
+              independently. Neither is edited by hand when the exchange opens: the record is
+              created, the key joins `PUBLIC_SURFACES` on the measurement, the chip moves and the
+              button appears.
 
               The outbound link is otherwise resolved from the registry at runtime and rendered
               even where nothing is deployed: the address is where the surface WILL be, it is
@@ -145,7 +159,7 @@ export function ProductDetailPage() {
               draws the accent as type instead, which `--si-accent` already guarantees on both
               grounds. It is also simply less colour on a page already wearing that colour.
             */}
-            {surface(page.linkTo).servesUi && (
+            {surface(page.linkTo).servesUi && page.stage === 'open' && (
               <a className="si-btn si-btn--outline" href={url}>
                 Open {s.name}
               </a>

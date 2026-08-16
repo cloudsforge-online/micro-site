@@ -260,6 +260,29 @@ export const PUBLIC_SURFACES: readonly string[] = [
   // here means what it means everywhere else on this site — a stranger can reach the address —
   // and deliberately not that a miner can connect to the pool from outside the network.
   'pool',
+  // ── `exchange` IS DELIBERATELY NOT HERE, AND THE OMISSION IS THE MEASUREMENT ─────────────────
+  //
+  // Forge Exchange is deployed, routed and driven by the smoke tier through the real gateway, so
+  // its chip reads `running`. It is not `open`, because there is no DNS record for
+  // `exchange.<apex>` and therefore no address a stranger can type.
+  //
+  // It would PASS the static check. `deploy/cloudflared/config.mainnet.public.yml` carries the
+  // hostname — that file is generated from the surface registry, one row per surface — so the
+  // tunnel probe below would find it and `published` would contain it. What would fail is the
+  // network tier: `test/public-endpoints.test.ts` fetches every key on this list and requires 200
+  // on a certificate the public already trusts, and this name resolves nowhere.
+  //
+  // That is the pair of checks working exactly as the header describes. The tunnel config proves
+  // the address was MEANT to exist; only the fetch proves it does. Adding the key to shorten the
+  // distance between the plan and the chip would put "Open to the public" on a hostname that
+  // returns nothing, which is the failure this list is built to refuse — and it would fail the
+  // build, loudly, in the direction that is safe.
+  //
+  // The record and the tunnel ingress rule are owner-only actions in the Cloudflare dashboard
+  // (the running tunnel is `cloudflared tunnel run --token-file`, so its ingress arrives from the
+  // dashboard over the API and no file in this repository can add a rule). On the day they exist,
+  // this key is added here, `public-endpoints.test.ts` starts fetching it, and the chip moves to
+  // `open` on the measurement rather than on somebody's memory.
 ]
 
 /**
@@ -268,14 +291,28 @@ export const PUBLIC_SURFACES: readonly string[] = [
  * `test/estate-stages.test.ts` requires each key here to appear in NONE of the places the other
  * three stages draw their evidence from: not a service in the deployment file, not a surface the
  * smoke tier drives, not a hostname in the public tunnel. The risk with a plan is the opposite of
- * the risk with the seven running surfaces — there it was understatement, here it is a card that
- * quietly outlives its truth. The day exchange appears in any of those three files, this list
- * refuses the build until the chip is upgraded, which is the direction a marketing claim must fail.
+ * the risk with a running surface — there it was understatement, here it is a card that quietly
+ * outlives its truth. The day a planned key appears in any of those three files, this list refuses
+ * the build until the chip is upgraded, which is the direction a marketing claim must fail.
  *
- * Forge Exchange: docs/ecosystem/39 in micro-docs and the umbrella issue in micro-org are the
- * published design this chip points at. 2026-08-14.
+ * EMPTY, AND THE EMPTINESS IS THE RECORD OF THE GUARD DOING ITS JOB. `exchange` was the only entry
+ * this list has ever had, and it sat here for two days. It did not leave because somebody
+ * remembered to move it: micro-deploy added the router, declared the `exchange-web` service and
+ * deleted the surface from `EXPECTED_UNROUTED` in one commit, and every assertion below went red on
+ * the next run — a service in the estate, a surface the smoke tier drives, and no remaining claim
+ * that nothing is behind the name. Three independent facts, none of them typed here.
+ *
+ * WHERE IT WENT IS THE PART WORTH READING. Not to `open`: `PUBLIC_SURFACES` above explains at
+ * length why the hostname still has no DNS record and why adding the key would fail the network
+ * tier. `running` is the honest chip and it is the one the estate computes — deployed, walked by a
+ * real browser through the real gateway, and with no address on the public internet — which is
+ * precisely what `STAGE_MEANING.running` promises a reader. The chip changed stage without anyone
+ * choosing a stage.
+ *
+ * Leave the export. A plan with no entries is the normal state of this file between products, and
+ * deleting it would mean re-deriving the whole argument above the next time one is announced.
  */
-export const PLANNED_SURFACES: readonly string[] = ['exchange']
+export const PLANNED_SURFACES: readonly string[] = []
 
 export const RUNS_ON: Readonly<Record<string, readonly string[]>> = {
   hub: ['hub-web', 'hub-api'],
@@ -289,9 +326,11 @@ export const RUNS_ON: Readonly<Record<string, readonly string[]>> = {
   // `pool-migrate` is deliberately absent: it is a one-shot migrator that runs to completion and
   // exits, so requiring it to be a live service would be requiring the wrong thing.
   pool: ['pool-web', 'pool'],
-  // Empty BECAUSE it is planned: a page that names no containers names a plan, `stageFor` grades
-  // an empty list `planned`, and the PLANNED_SURFACES suite refuses the build the day anything
-  // with this key actually runs. The entry exists because every page must have one — a page
-  // outside this record would be unverifiable, which is worse than a page verified to need nothing.
-  exchange: [],
+  // ONE CONTAINER, AND THAT IS THE WHOLE PRODUCT. Every other entry in this record pairs a bundle
+  // with the service behind it; `exchange-web` has no service behind it because the exchange is
+  // contracts on Hearth, and the page talks to them over `rpc.<apex>` from the reader's browser.
+  // There is deliberately no `exchange` service to list here — the router entry check in
+  // micro-deploy carries a `# REMOVED: cf-api-exchange` line saying the same thing, so that a
+  // reader who goes looking for the API finds the reason rather than a gap.
+  exchange: ['exchange-web'],
 }
