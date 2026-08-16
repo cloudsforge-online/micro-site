@@ -260,29 +260,31 @@ export const PUBLIC_SURFACES: readonly string[] = [
   // here means what it means everywhere else on this site — a stranger can reach the address —
   // and deliberately not that a miner can connect to the pool from outside the network.
   'pool',
-  // ── `exchange` IS DELIBERATELY NOT HERE, AND THE OMISSION IS THE MEASUREMENT ─────────────────
+  // ── `exchange` WAS DELIBERATELY ABSENT UNTIL 2026-08-16, AND THE ENTRY IS THE MEASUREMENT ────
   //
-  // Forge Exchange is deployed, routed and driven by the smoke tier through the real gateway, so
-  // its chip reads `running`. It is not `open`, because there is no DNS record for
-  // `exchange.<apex>` and therefore no address a stranger can type.
+  // What stood here until today was a note explaining why the key must NOT be added: the tunnel
+  // configuration carried `exchange.<apex>` because that file is generated from the surface
+  // registry, one row per surface whether or not anything answers, so the static probe would have
+  // found it and published "Open to the public" over a name that resolved nowhere. The note ended
+  // by naming the exact event that would end it — the DNS record and the ingress rule are
+  // owner-only actions in the Cloudflare dashboard, and no file in this repository can take them.
   //
-  // It would PASS the static check. `deploy/cloudflared/config.mainnet.public.yml` carries the
-  // hostname — that file is generated from the surface registry, one row per surface — so the
-  // tunnel probe below would find it and `published` would contain it. What would fail is the
-  // network tier: `test/public-endpoints.test.ts` fetches every key on this list and requires 200
-  // on a certificate the public already trusts, and this name resolves nowhere.
+  // They were taken. `dig exchange.cloudsforge.online` returns Cloudflare addresses and
+  // `curl https://exchange.cloudsforge.online/` returns 200 on a certificate the public already
+  // trusts, with no `-k` and no `--cacert`, read on 2026-08-16. So the key joins the list on the
+  // fetch, exactly as the note said it would, and the chip moves because the estate moved.
   //
-  // That is the pair of checks working exactly as the header describes. The tunnel config proves
-  // the address was MEANT to exist; only the fetch proves it does. Adding the key to shorten the
-  // distance between the plan and the chip would put "Open to the public" on a hostname that
-  // returns nothing, which is the failure this list is built to refuse — and it would fail the
-  // build, loudly, in the direction that is safe.
+  // The order that note insisted on held: the address existed BEFORE the key was typed here. That
+  // is the whole discipline of this file, and it is worth noticing that the fixture which enforced
+  // it — `test/public-endpoints.test.ts` fetching every key on this list — is now the thing that
+  // will catch the record being deleted again.
   //
-  // The record and the tunnel ingress rule are owner-only actions in the Cloudflare dashboard
-  // (the running tunnel is `cloudflared tunnel run --token-file`, so its ingress arrives from the
-  // dashboard over the API and no file in this repository can add a rule). On the day they exist,
-  // this key is added here, `public-endpoints.test.ts` starts fetching it, and the chip moves to
-  // `open` on the measurement rather than on somebody's memory.
+  // ONE ADDRESS, BOTH NETWORKS. There is no companion entry for testnet and there must not be: the
+  // combined view retired the `-testnet` web hostnames, `exchange-testnet.<apex>` answers nothing
+  // (measured the same day, connection refused before TLS), and a reader reaches testnet by
+  // switching network in place on this one address. See the header on why no testnet name may
+  // appear in this list at all.
+  'exchange',
 ]
 
 /**
@@ -302,12 +304,16 @@ export const PUBLIC_SURFACES: readonly string[] = [
  * the next run — a service in the estate, a surface the smoke tier drives, and no remaining claim
  * that nothing is behind the name. Three independent facts, none of them typed here.
  *
- * WHERE IT WENT IS THE PART WORTH READING. Not to `open`: `PUBLIC_SURFACES` above explains at
- * length why the hostname still has no DNS record and why adding the key would fail the network
- * tier. `running` is the honest chip and it is the one the estate computes — deployed, walked by a
- * real browser through the real gateway, and with no address on the public internet — which is
- * precisely what `STAGE_MEANING.running` promises a reader. The chip changed stage without anyone
- * choosing a stage.
+ * WHERE IT WENT IS THE PART WORTH READING, AND IT WENT TWICE. First to `running` and NOT to
+ * `open`, because `PUBLIC_SURFACES` above still refused the key: the hostname had no DNS record,
+ * so the network tier would have failed on a name that resolved nowhere. Deployed, walked by a
+ * real browser through the real gateway, and with no address on the public internet is exactly
+ * what `STAGE_MEANING.running` promises a reader, so `running` was the honest chip and it was the
+ * one the estate computed.
+ *
+ * Then, on 2026-08-16, the record was created and the name answered 200 on a public certificate,
+ * and the chip moved again — to `open`, on the fetch. Twice now the stage changed without anyone
+ * choosing a stage, which is the only property of this scale worth defending.
  *
  * Leave the export. A plan with no entries is the normal state of this file between products, and
  * deleting it would mean re-deriving the whole argument above the next time one is announced.
