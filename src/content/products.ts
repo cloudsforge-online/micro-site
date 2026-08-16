@@ -654,21 +654,33 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
    * So the words below changed because the estate changed, and the page never carried a date —
    * which is the one claim about the future nothing in this repository could have checked.
    *
+   * ── AND THEN, THE SAME DAY, IT OPENED ────────────────────────────────────────────────────────
+   *
+   * The DNS record and the tunnel ingress rule are owner-only actions in the Cloudflare dashboard,
+   * which is why `PUBLIC_SURFACES` in `./stages.ts` could describe the event but not perform it.
+   * They were taken on 2026-08-16 and the name answers 200 on a public certificate, so `exchange`
+   * joined that list on the fetch and the chip recomputed to `open`. The page went plan → running
+   * → open in three days without a stage ever being chosen by hand, which is the only thing that
+   * made publishing it early defensible in the first place.
+   *
+   * The prose below was rewritten twice on those measurements, and both rewrites deleted a claim
+   * rather than adding one. That is the direction to keep: what changed here is the estate.
+   *
    * ── IT IS A `service` IN THE REGISTRY, AND THIS PAGE DOES NOT MAKE IT A PRODUCT ───────────────
    *
    * `productCards()` filters on `kind === 'product'`, so this adds no seventh card to the index
    * grid and `productCount()` is still six — the pool page's precedent, for the pool page's reason
    * and one more, recorded on the registry row: a seventh product means a seventh ACCENT chosen by
    * the documented dE procedure, and that is design work belonging to a phase that has an audience
-   * to design for. The exchange has no public address yet, so it does not have one.
+   * to design for. The exchange now has an audience, so the question is finally askable — and it is
+   * still a question rather than an edit, because a seventh accent that fails the dE separation
+   * against its neighbours is worse than a sixth card and a link.
    *
-   * The one visible consequence is the outbound button, which this page still does NOT have — and
-   * for a different reason than before. The registry's `servesUi` flipped to `true` when the bundle
-   * started answering, so that condition is now met; what withholds the button is the second one
-   * `src/pages/products.tsx` applies, that the surface be `open`. A button reading "Open Forge
-   * Exchange" would point at a hostname with no DNS record behind it, and a dead button on the page
-   * that explains why the address does not exist yet would be the exact failure this site was
-   * written against.
+   * The one visible consequence has now flipped: this page HAS its outbound button. Both conditions
+   * `src/pages/products.tsx` applies are met — `servesUi`, which went true when the bundle started
+   * answering inside the estate, and `open`, which went true when the record was created. Neither
+   * was typed to make the button appear; the button appeared because both were measured, which is
+   * the arrangement that kept a dead link off this page for the two days in between.
    */
   {
     key: 'exchange',
@@ -680,13 +692,13 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     headline: 'Swap EMBER against a pool that lives on the chain',
     standfirst: [
       'Forge Exchange is a decentralised exchange written as contracts on Hearth, the chain this platform mines. Each pair is a pool holding two coins and the price is the ratio between them, so you trade against the pool from your own wallet — no account to open, no order book, and nothing of yours held by anybody while it happens.',
-      'It is deployed on both networks, seeded, traded, and it has a page. What it does not have is an address on the public internet: it runs inside the estate, a browser reaches it through the same gateway that serves everything else here, and the chip above says exactly that. The pools hold EMBER against a token rather than against Bitcoin — the bridged coins are the next piece of work, and this page will say so when they exist.',
+      'It is deployed on both networks, seeded, traded, and open at its own address — one address for both networks, with the switch in the bar rather than a second hostname to remember. It has one page that is not about pools at all: a Forge Receipt is a claim on a coin held off this chain, which makes it the only thing here that is somebody’s promise rather than a contract holding both sides, and that page exists to help you check it.',
     ],
     blurb:
-      'A decentralised exchange for Hearth: pools you trade against from your own wallet. Deployed on both networks and running in-house, with no public address yet.',
-    stage: 'running',
+      'A decentralised exchange for Hearth: pools you trade against from your own wallet, and a receipt page that shows you how to check the backing yourself.',
+    stage: 'open',
     stageNote:
-      'Deployed in the estate and driven through the real gateway by a browser that intercepts nothing. Not open: the hostname the registry reserves has no DNS record behind it, so there is no address a stranger can type. This chip is derived from the estate rather than written here, and it moves the day that record exists.',
+      'Open at its own address, on both networks, driven through the real gateway by a browser that intercepts nothing. This chip is derived from the estate rather than written here: it read plan, then running, then open as the router, the smoke tier and finally the public record arrived, and nobody chose a stage.',
     sections: [
       {
         title: 'A pool on the chain, rather than a venue in the middle',
@@ -717,18 +729,42 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
         ],
       },
       {
+        // ── THIS SECTION IS THE ANSWER TO A PARAGRAPH THAT USED TO SIT UNDER "STILL MISSING" ──
+        //
+        // Written there before the thing existed, and quoted here because the wording is now a
+        // specification this section has to meet rather than a promise it can paraphrase: "a
+        // receipt is only ever as good as whoever wrote it — so the backing has to be something a
+        // reader can check on the chain without asking us, and every page that offers it has to
+        // say plainly whose promise it is."
+        //
+        // Both halves are why the paragraphs below lead with the promise and end with the command
+        // a reader runs on their own node, and why the symbol is quoted as `fLTC` rather than
+        // described. The `w` in the industry's usual `wLTC` has come to mean "wrapped, therefore
+        // trustless", and this is exactly not that — the letter is the smallest place that
+        // distinction can be made, and the page it appears on makes it at length.
+        title: 'A receipt is a promise, and this one is built to be checked',
+        body: [
+          'Everything else on the exchange is a contract holding both sides of what it owes. A Litecoin cannot be put inside a contract on Hearth, so a token here that stands for one is different in kind: it is a claim on coins this project holds at addresses on Litecoin, and holding it means trusting us. That is why it is called a receipt and why its symbol starts with an f rather than the w the industry uses for wrapped coins, which has come to mean trustless and would be the wrong word.',
+          'What the contract buys is that dishonesty would have to be an on-chain lie with a timestamp on it. It cannot issue more than the reserve last attested to; the attestation records the height on Litecoin it was read at; an attestation that goes stale stops issuance by itself rather than waiting for anyone to notice; a shortfall is recordable and announced; and there is no pause, no freeze and no upgrade switch, so the terms you can read are the terms.',
+          'The page for it does not ask you to take any of that on faith. It prints what has been issued beside what has been attested, the height that reading was taken at, how old it is and when it stops authorising more — and then it prints the addresses the contract itself publishes, with the command that counts them on your own Litecoin node. The addresses come from the contract rather than from the page, so what you scan is not a list we chose to show you.',
+          'On the test network there is a receipt for Litecoin and a second one marked as a drill — an instrument deployed only to walk the redemption path end to end, labelled as such wherever it appears, because a test asset that reads as a real one is the most expensive mistake this page could make. On the main network there is no receipt at all: the reserve addresses were scanned, the total came back empty, and issuing against nothing is the one thing the design forbids. That page reports the scan, the height and the command rather than an empty screen, because a deliberate absence rendered as an outage is a bug we have already had once.',
+        ],
+      },
+      {
         title: 'What is still missing, and it is not small',
         body: [
-          'There is no public address. The hostname exists in the registry and the page answers on it inside the estate, but the DNS record has never been created, so nobody outside can open it. That is the difference between the chip above and the one every other product here wears, and it is the next thing rather than a detail.',
-          'There is no bridged Bitcoin, Litecoin or Dogecoin to trade against, and when there is, it will not be Bitcoin. It will be a receipt this project issues on Hearth against coins it is holding, and a receipt is only ever as good as whoever wrote it — so the backing has to be something a reader can check on the chain without asking us, and every page that offers it has to say plainly whose promise it is. A reserve that is an internal spreadsheet is the thing this platform exists not to be.',
+          'There is no receipt on the main network yet, which means there is still nothing on it to trade against but EMBER and the tokens Forge Create makes. The receipt contract, the attestation path and the redemption path are all deployed and exercised on the test network; what has not happened is a reserve being funded and attested on the main one, and until it is, the page there says so in the words above rather than showing a coin that does not exist.',
+          'There is no receipt for Bitcoin or Dogecoin, and there is no plan to make one until the Litecoin path has been run in anger by somebody who is not us. A second receipt is cheap to deploy and expensive to be wrong about, and the interesting failures are all in the operating discipline — the attesting, the scanning, the paying out — rather than in the contract.',
           'And the two-of-three wallet is a threshold in the contract rather than in the world: two of its three keys are files on the same machine, so whoever has that machine has quorum. What that quorum can reach is bounded — it sets the protocol fee switch and cannot touch the reserves or the liquidity — but the honest version is written down here rather than left to the word "multisig", and fixing it means deciding who signs, on what devices.',
         ],
       },
     ],
-    // Its own key, and still no button. `linkTo` is required by the type and is read by `metaFor`
-    // for the page title; the outbound link that would use it is withheld by `products.tsx`,
-    // which renders one only for a surface that is BOTH serving a UI and open. This one serves a
-    // UI and is not open.
+    // Its own key, and now a button. `products.tsx` renders the outbound link only for a surface
+    // that is BOTH serving a UI and `open`; this one is both, as of 2026-08-16. The link resolves
+    // to the surface root rather than to any page under it — including the receipt page the
+    // section above is about — because the registry holds hostnames and not paths, and a path
+    // typed here would be a second place for a route to rot. The exchange's own navigation is
+    // what carries a reader the last step, and its route table is checked in that repository.
     linkTo: 'exchange',
     linkLabel: 'Forge Exchange',
     // The generic card, as the pool page takes. There is no `public/og/exchange.png`, and pointing
