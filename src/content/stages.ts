@@ -280,10 +280,16 @@ export const PUBLIC_SURFACES: readonly string[] = [
   // will catch the record being deleted again.
   //
   // ONE ADDRESS, BOTH NETWORKS. There is no companion entry for testnet and there must not be: the
-  // combined view retired the `-testnet` web hostnames, `exchange-testnet.<apex>` answers nothing
-  // (measured the same day, connection refused before TLS), and a reader reaches testnet by
-  // switching network in place on this one address. See the header on why no testnet name may
-  // appear in this list at all.
+  // combined view retired the `-testnet` web hostnames, and a reader reaches testnet by switching
+  // network in place on this one address. See the header on why no testnet name may appear in this
+  // list at all.
+  //
+  // That rule used to have a second, cruder justification — `exchange-testnet.<apex>` answered
+  // nothing, connection refused before TLS, measured the same morning. It no longer does: the
+  // record was taken later on 2026-08-16 and the name now redirects here, exactly as the four other
+  // retired testnet hostnames do. The entry stays a single key anyway, because "the address exists"
+  // was never the test. The test is whether a key on this list is a surface a reader can USE, and a
+  // hostname whose only behaviour is to redirect to the entry above it is not a second surface.
   'exchange',
 ]
 
