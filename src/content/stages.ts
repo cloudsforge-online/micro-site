@@ -390,4 +390,12 @@ export const RUNS_ON: Readonly<Record<string, readonly string[]>> = {
   // writes each route, the feed, the sitemap and the robots file at build time. So the container
   // named here is not a bundle in front of a service; it is the whole product.
   journal: ['journal-web'],
+  // BACK TO THE ORDINARY SHAPE: a bundle and the service behind it. Agora is the opposite of the
+  // two entries above — the square is a database of posts, replies, rooms and whispers, so there
+  // is a service to name and `agora-web` is only the page in front of it.
+  //
+  // `agora-migrate` is deliberately absent, for the same reason `pool-migrate` is: it runs the
+  // schema to completion and exits, and requiring a one-shot migrator to be a live service would
+  // be requiring the wrong thing — every deploy would go red the moment it succeeded.
+  agora: ['agora-web', 'agora'],
 }
