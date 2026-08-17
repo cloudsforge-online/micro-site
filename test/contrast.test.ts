@@ -188,11 +188,51 @@ const LIGHT = {
 const VIZ_GOOD = token(tokensCss, 'cf-viz-good')
 const VIZ_WARN = token(tokensCss, 'cf-viz-warn')
 
-/** Every accent this site ever paints: the company's, plus the five products'. */
-const ACCENTS: ReadonlyArray<{ name: string; rgb: Rgb }> = [
-  { name: 'ember', rgb: parseHex(CLOUDSFORGE_EMBER) },
-  ...PRODUCT_ACCENTS.map((hex, i) => ({ name: `product ${i + 1} (${hex})`, rgb: parseHex(hex) })),
-]
+/**
+ * Every accent this site ever paints — derived from what the site SCOPES, not from a list of
+ * products.
+ *
+ * ── This list was wrong once, and the way it was wrong is the reason it is now computed ───────
+ *
+ * It used to be `CLOUDSFORGE_EMBER` plus `PRODUCT_ACCENTS`, which reads as "the company colour and
+ * every product's", and is a perfectly good description of a set that is not the one this file
+ * needs. `PRODUCT_ACCENTS` is the six-entry bijection over `kind: 'product'`; `SCOPED_SURFACES` is
+ * what `accentProps()` actually puts on an element of this site. Those two drifted apart the day
+ * `pool` was scoped and again the day `exchange` was, because both are `kind: 'service'`.
+ *
+ * The cost was a red build and a live page. `exchange` entered the switcher with a validated lime,
+ * `/products/exchange` began painting type in it, and this file did not measure it because a
+ * service is not a product — so the first thing to notice was axe, in CI, on a colour that had
+ * already shipped. Every gate the palette applies had passed; the one that would have caught it is
+ * this one, and it was looking at the wrong set.
+ *
+ * So the set is now the site's own scoping list resolved through the registry, deduplicated by
+ * value because several keys deliberately share a hue (`pool` with `create`, `site` and `hub` with
+ * the company ember). Add a key to `SCOPED_SURFACES` and it is measured here on the next run,
+ * whatever its `kind`.
+ */
+const ACCENTS: ReadonlyArray<{ name: string; rgb: Rgb }> = (() => {
+  const byHex = new Map<string, string>([[CLOUDSFORGE_EMBER.toLowerCase(), 'ember']])
+  for (const key of SCOPED_SURFACES) {
+    const surface = SURFACES.find((s) => s.key === key)
+    assert.ok(surface, `${key} is scoped by this site but is not in the registry`)
+    const hex = surface.accent.toLowerCase()
+    const seen = byHex.get(hex)
+    byHex.set(hex, seen ? `${seen}/${key}` : key)
+  }
+  return [...byHex].map(([hex, name]) => ({ name: `${name} (${hex})`, rgb: parseHex(hex) }))
+})()
+
+/*
+ * And the set above must still cover the six-product bijection, so that dropping a product from
+ * SCOPED_SURFACES cannot quietly shrink what is measured here.
+ */
+for (const hex of PRODUCT_ACCENTS) {
+  assert.ok(
+    ACCENTS.some((a) => a.name.endsWith(`(${hex.toLowerCase()})`)),
+    `product accent ${hex} is painted by this site but not measured; is it missing from SCOPED_SURFACES?`,
+  )
+}
 
 /** Dark ground: the accent lifted toward the bone foreground so it can carry type. */
 const DARK_ACCENT_MIX = mixPercent('si-accent', 'var(--cf-fg)')
