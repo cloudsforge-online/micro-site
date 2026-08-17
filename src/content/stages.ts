@@ -291,6 +291,25 @@ export const PUBLIC_SURFACES: readonly string[] = [
   // was never the test. The test is whether a key on this list is a surface a reader can USE, and a
   // hostname whose only behaviour is to redirect to the entry above it is not a second surface.
   'exchange',
+  // ── `journal` FOLLOWED THE SAME ORDER, ONE RELEASE LATER ─────────────────────────────────────
+  //
+  // The archive shipped in 2026.8.71 with its key deliberately NOT on this list. The tunnel file
+  // already carried `journal.<apex>` — it is generated one row per registry surface, whether or not
+  // anything answers — so a key typed here before the deploy would have published "Open to the
+  // public" over a name nothing was serving yet. The page went out reading `running`, which is
+  // what deployed-and-walked-by-a-browser honestly means, and this comment was the note saying
+  // what would end it.
+  //
+  // The deploy ended it. `curl https://journal.cloudsforge.online/` returns 200 on a certificate
+  // the public already trusts — no `-k`, no `--cacert` — read on 2026-08-17, along with all five
+  // articles, the topic pages, `feed.xml`, `sitemap.xml` and `robots.txt`. So the key joins on the
+  // fetch and the chip recomputes to `open`, and nobody chose a stage.
+  //
+  // ONE ADDRESS, BOTH NETWORKS, and here the reason is stronger than the combined view: the
+  // archive has no network at all. It reads no chain and holds no account, so there is nothing for
+  // a `-testnet` name to serve a different copy OF. See the header on why no testnet hostname may
+  // appear in this list.
+  'journal',
 ]
 
 /**

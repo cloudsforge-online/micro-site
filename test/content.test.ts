@@ -339,13 +339,14 @@ describe('the product pages and the registry', () => {
    *           sells nothing, holds nothing and has no account on it, which is the property the
    *           whole archive is written to keep. It has a page under `/products` for the same
    *           reason `pool` does: the ecosystem links to it, and a link this site offers has to
-   *           land somewhere this site can be held to. Its chip reads `running` rather than
-   *           `open` because `PUBLIC_SURFACES` refuses a key whose address has not been fetched,
+   *           land somewhere this site can be held to. Its chip read `running` for exactly one
+   *           release, because `PUBLIC_SURFACES` refuses a key whose address has not been fetched,
    *           and that refusal is the reason this is worth writing down: the archive is the first
    *           surface whose pages are all written at BUILD time, so the one thing a stage cannot
    *           tell you here is whether the prerender's output was ever copied into the image.
    *           `beacon/src/browser/smoke.ts` is what tells you that, by pinning a sentence that
-   *           exists only in the prerendered file.
+   *           exists only in the prerendered file — and it kept telling you that after the chip
+   *           moved to `open`, because a name answering 200 says nothing about what it answered.
    */
   const NON_PRODUCT_PAGES: readonly string[] = ['hub', 'pool', 'exchange', 'journal']
 

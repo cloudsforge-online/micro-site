@@ -799,16 +799,20 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
      * counts `PRODUCT_PAGES` rather than assuming the registry's product list, which is what makes
      * a fourth possible without a number moving anywhere a reader can see.
      *
-     * ── THE STAGE IS `running`, AND THE REASON IT IS NOT `open` IS AN EVENT THAT HAS NOT HAPPENED
+     * ── THE STAGE IS `open`, AND IT WAS `running` FOR EXACTLY ONE RELEASE
      *
-     * Both halves of `running` are met: `journal-web` is a declared service in the estate's
-     * compose file, and `beacon/src/browser/smoke.ts` drives a real browser at it through the real
-     * gateway. `PUBLIC_SURFACES` in `./stages.ts` deliberately does NOT carry the key yet. The
-     * mainnet tunnel already routes the name — that file is generated from the registry, one row
-     * per surface, whether or not anything answers — so the static half of `open` would pass and
-     * mean nothing. What refuses it is `test/public-endpoints.test.ts`, which fetches every key on
-     * that list and requires 200 on a certificate the public already trusts. The key joins on the
-     * fetch, after the deploy, exactly as `exchange` did on 2026-08-16.
+     * Both halves of `running` were met the moment the page shipped: `journal-web` is a declared
+     * service in the estate's compose file, and `beacon/src/browser/smoke.ts` drives a real browser
+     * at it through the real gateway. `PUBLIC_SURFACES` in `./stages.ts` still refused the key,
+     * deliberately. The mainnet tunnel already routed the name — that file is generated from the
+     * registry, one row per surface, whether or not anything answers — so the static half of `open`
+     * would have passed and meant nothing. What refused it is `test/public-endpoints.test.ts`,
+     * which fetches every key on that list and requires 200 on a certificate the public already
+     * trusts.
+     *
+     * 2026.8.71 deployed the archive and the address answered, so the key joined on the fetch and
+     * the chip recomputed — the same order `exchange` went through the day before. Neither stage
+     * on this entry was ever chosen; both were measured, one release apart.
      *
      * ── WHAT THIS PAGE MAY SAY, AND WHAT ONLY THE ARCHIVE MAY SAY ─────────────────────────────
      *
@@ -831,9 +835,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'Plain-language writing about crypto, the chain and this ecosystem: no sign-in, no newsletter wall, no price predictions, and nothing you have to already know.',
-    stage: 'running',
+    stage: 'open',
     stageNote:
-      'Running in the estate and walked by a real browser through the real gateway, with nothing intercepted. Its own public address is configured and has not been proven to answer, so this page does not claim one — the chip is recomputed from the estate on every build, and it moves itself the day the address does.',
+      'Open at its own address, on a certificate your browser already trusts, with every article, topic page and feed reachable without an account. The chip is recomputed from the estate on every build rather than typed here, and it read one stage lower until the address was fetched and answered.',
     sections: [
       {
         title: 'Written for somebody who has never owned any',
