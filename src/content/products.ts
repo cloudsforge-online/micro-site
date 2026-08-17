@@ -906,6 +906,128 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     // and naming a file that does not exist would publish a broken preview.
     ogImage: '/og-1200x630.png',
   },
+
+  {
+    /**
+     * ── THE SQUARE, AND WHY IT IS THE PAGE THE ARCHIVE'S LAST SECTION ASKED FOR ───────────────
+     *
+     * The Journal entry above ends by refusing comments, in these words: "a comment box under an
+     * article about how people lose crypto is an invitation to whoever is best at sounding
+     * helpful, and moderating one properly is a product rather than a feature. Discussion is worth
+     * building; it is worth building as its own thing, with the people and the tools that job
+     * actually needs." This is that thing, built as its own thing, one release later.
+     *
+     * ── IT IS A `service` IN THE REGISTRY, SO THIS ADDS NO PRODUCT CARD ───────────────────────
+     *
+     * The fifth page under `/products` that is deliberately not a product, after Hub, the pool,
+     * the exchange and the archive. `productCards()` filters on `kind === 'product'` and
+     * `productCount()` reads the registry, so both are untouched; the tile lands on the second
+     * grid through `nonProductCards()`, wearing the orchid `#bf69a9` the registry row already
+     * carries. That accent was searched for and validated as a PAIR with the archive's bronze —
+     * see the row in `ui/packages/ui/src/surfaces.ts` for why one-at-a-time colour search cannot
+     * see the failure that matters — so putting a fourth tile on that grid needed no new design
+     * work and no seventh product hue.
+     *
+     * Its neighbour on the grid is the archive, and the two are adjacent in reading order rather
+     * than by accident: bronze then orchid is the only ordering of the four that keeps the two
+     * warmest hues apart, which `test/content.test.ts` checks rather than trusts.
+     *
+     * ── THE HEADING OVER THAT GRID CHANGED TO LET THIS TILE ON IT, AND THAT IS THE POINT ──────
+     *
+     * `ALSO_HERE.title` read "none of them needs an account", and its own comment predicted this
+     * commit: "a fourth page that DOES need an account breaks the suite rather than quietly making
+     * this heading false." Agora is that page, half of it — the square, a person's posts, a topic
+     * and a linked thread are all readable by a stranger, and saying something back is not. So the
+     * heading became a claim that is exactly true of all four rather than nearly true of three,
+     * and the test moved with it. Widening the heading to fit the tile would have been the
+     * failure; narrowing it to what can still be proved is the fix.
+     *
+     * ── `running`, AND THE ORDER MATTERS MORE HERE THAN THE STAGE DOES ────────────────────────
+     *
+     * Both halves of `running` are met on the day this ships: `agora`, `agora-web` and the
+     * one-shot migrator are declared in the estate's compose file, and `beacon/src/browser/smoke.ts`
+     * drives a real browser at the square through the real gateway. `PUBLIC_SURFACES` in
+     * `./stages.ts` deliberately does NOT carry the key yet. The mainnet tunnel already routes the
+     * name — that file is generated one row per registry surface, whether or not anything answers
+     * — so the static half of `open` would pass and mean nothing, exactly as it would have for the
+     * exchange and for the archive. What refuses it is `test/public-endpoints.test.ts`, which
+     * fetches every key on that list and requires 200 on a certificate the public already trusts.
+     * The chip moves on the fetch, one release later, and nobody chooses a stage.
+     *
+     * ── WHAT THIS PAGE MAY NOT SAY ───────────────────────────────────────────────────────────
+     *
+     * No count of anything — not people, not posts, not rooms. All three move without this
+     * repository being touched, which is the pool page's rule for the pool page's reason, and here
+     * there is a second: a number that is small today is a number that reads as failure for as
+     * long as it takes somebody to edit this file. The honest version is the last section, which
+     * says nobody is here yet in words rather than in a figure.
+     */
+    key: 'agora',
+    slug: 'agora',
+    eyebrow: 'Talk',
+    // Title budget: `${linkLabel} — ${headline} — CloudsForge` must clear ninety characters, which
+    // `test/meta.test.ts` measures. Written to it rather than trimmed to it.
+    headline: 'Somewhere to talk about all of it',
+    standfirst: [
+      'Forge Agora is this ecosystem’s public square. Posts and replies, rooms run by the people in them, private messages, and a timeline of everything said in the open — on the CloudsForge account you already have, with no second sign-up, no password of its own and no profile to fill in before anything works.',
+      'You can read all of it without an account: the square itself, somebody’s posts, a topic, a thread a friend sent you. Signing in is what lets you say something back, and it is the same sign-in as the rest of the platform.',
+    ],
+    blurb:
+      'The ecosystem’s public square: posts, replies, rooms and private messages, on the account you already have — and readable without one.',
+    stage: 'running',
+    stageNote:
+      'Deployed in the estate and walked end to end by a real browser through the real gateway, which is what the chip on this card means and all it means. There is no address on the public internet yet, so this page offers no button — the link appears on the day the address answers, rather than the day somebody types one.',
+    sections: [
+      {
+        title: 'A name of your own, on the account you already have',
+        body: [
+          'There is no registration here. A voice is made the first time you do something — post, reply, follow, save — out of the account you signed in with, and until then there is nothing to fill in. You pick a handle, which is what people see and what a link to you is made of, and that is the whole of setting up.',
+          'Your voice is per network. The square you read on the test network and the square you read on the main one are different places with different people in them, and the switch in the bar changes which one you are looking at without moving you off the page you were reading. That last part is not a detail: being thrown out of a conversation to look at something else is how the rest of the estate used to handle a network switch, and a half-written reply is a worse thing to lose than a scroll position.',
+          'Deleting your CloudsForge account erases your voice, your posts and your private messages here. That happens because the account service says so and this one is listening, rather than because you asked twice in two places.',
+        ],
+      },
+      {
+        title: 'Rooms with stewards rather than owners',
+        body: [
+          'A room can be open to anyone, ask to be joined, or be closed. Whoever makes one is a steward rather than an owner, stewardship can be shared and handed on, and the last steward is refused permission to walk out of a room that still has people in it — they are told to hand it over or to close it properly instead.',
+          'That is a deliberate correction of the shape everybody else ships. A room whose only privileged account has left is a room nobody can moderate, and every network that modelled this as ownership has a support queue full of them.',
+        ],
+      },
+      {
+        title: 'What happens when people disagree is the product',
+        body: [
+          'The guidelines are short, they are on the surface itself, and beside them are two lists: every reason you can report something for, and every action a moderator can take. Both are published because publishing them is what makes one sentence checkable — there is no shadow-ban here — and a test across two repositories fails the build if the service ever grows an action the page does not name.',
+          'A report is never shown to the person it is about. Something you are not allowed to see answers as though it does not exist, rather than telling you it exists and is not yours, so guessing at addresses teaches nobody anything. And the people you have blocked stay gone on the public timeline as well as on your own, which is the difference between blocking somebody and hiding them from yourself.',
+          'When the moderation service cannot be reached, a post goes up and is marked as having gone up unchecked, and the queue can be filtered on exactly that. The alternative is one upstream’s bad afternoon becoming a square nobody can speak in — and the alternative to marking it is a silence that reads as approval.',
+        ],
+      },
+      {
+        title: 'Private messages, and the things left out on purpose',
+        body: [
+          'A private message is private in the way that can be checked rather than promised: no route returns one to anybody but the two people in it, no log line carries the text, and the event the rest of the platform is told about is a count and two identifiers with nothing in it to read.',
+          'There is no infinite scroll. Every timeline is a page with an end and a cursor to the next one, which is a worse experience for a scraper and a better one for a person who wanted to stop. Nothing here is ranked by what will keep you: the square is what was said, newest first.',
+          'And the limits on how much one account can post, message or follow in an hour are enforced in the same write that stores the thing, rather than counted first and stored afterwards. That is the difference between a limit and a suggestion, and the gap between the two is precisely what a script is written to fit through.',
+        ],
+      },
+      {
+        title: 'What is missing, and the first one is the honest one',
+        body: [
+          'Nobody is here yet. The square opens empty, and it says so rather than pretending to be quiet — the first post on a new square is the hardest one to write and the one everybody else replies to. This is the part no amount of engineering fixes, and this page is not going to dress it up as an early-access opportunity.',
+          'You cannot post a picture. Everything here is text and links, because there is no route that takes a file and no moderation for what would arrive through one; adding the upload before the moderation is how a square becomes somewhere nobody wants to be. There is no application to install either — it is a web page, which works on a phone, and that is not the same thing as an app.',
+          'Moderation is one person with a queue, which is honest rather than reassuring: the tools are built, the vocabulary is published, and the rota is one operator. And nothing here is translated into any other language yet, though it is written in a plain English that would survive being.',
+        ],
+      },
+    ],
+    // Its own key. `src/pages/products.tsx` renders the outbound button only for a surface that is
+    // BOTH serving a UI and `open`, and this one is not open yet — so there is no button on this
+    // page today, and there will be one the day the address is proven rather than the day somebody
+    // types a link. The same arrangement kept a dead link off the exchange page for two days.
+    linkTo: 'agora',
+    linkLabel: 'Forge Agora',
+    // The generic card, as the pool, exchange and journal pages take. There is no
+    // `public/og/agora.png`, and naming a file that does not exist would publish a broken preview.
+    ogImage: '/og-1200x630.png',
+  },
 ]
 
 /** Page lookup by slug. An unknown slug is a 404, never a redirect to the index. */

@@ -493,22 +493,30 @@ export const PRODUCTS_INDEX = {
  * arithmetic between them. Here they never touch — one heads the product grid, the other heads
  * this one, and each is directly above the tiles it counts.
  *
- * ── THE SECOND CLAUSE IS A FACT, CHECKED AGAINST ALL THREE PAGES ──────────────────────────────
+ * ── THE SECOND CLAUSE IS A FACT, AND IT NARROWED THE DAY A FOURTH PAGE ARRIVED ────────────────
  *
- * "None of them needs an account" is the one true thing all three share, and it is the reason a
- * reader might click. Each page already states its own half: the pool has "no account to open on
- * one", the exchange has "no account to open, no order book, and nothing of yours held by anybody
- * while it happens", the archive is "reachable without an account". It is a claim about a running
- * estate, so `test/content.test.ts` pins it — a fourth page that DOES need an account breaks the
- * suite rather than quietly making this heading false.
+ * It read "none of them needs an account", pinned by `test/content.test.ts` against a prediction
+ * written here: "a fourth page that DOES need an account breaks the suite rather than quietly
+ * making this heading false." Forge Agora is that page. Reading it — the square, somebody's posts,
+ * a topic, a thread a friend sent you — needs no account. Saying something back does. So the
+ * sentence became the strongest claim that is still exactly true of all four rather than a claim
+ * that was nearly true of three of them, and the pin moved with it in the same commit.
  *
- * The lede names none of the three. A hand-written list of surfaces is a list that stops being
- * true silently, which is the whole of micro-org#489 and is not a lesson worth learning twice on
- * the same page.
+ * That is the direction this repair has to run in. Widening a heading to cover a tile that no
+ * longer fits is how a site starts lying by increments; each page still states its own, stronger
+ * half where it has one — the pool has "no account to open on one", the exchange has "no account
+ * to open, no order book, and nothing of yours held by anybody while it happens", the archive is
+ * "reachable without an account".
+ *
+ * The lede names none of them, and no longer promises that each is open at its own address
+ * either: Agora is deployed and walked by a browser inside the estate with no public address yet,
+ * so that clause was true of three surfaces and printed above four tiles. A hand-written list — or
+ * a hand-written state — is one that stops being true silently, which is the whole of
+ * micro-org#489 and is not a lesson worth learning twice on the same page.
  */
 export const ALSO_HERE = {
-  title: `${sentenceCase(nonProductCount())} more places, and none of them needs an account`,
-  lede: 'Parts of the platform rather than products you choose between. Each is open at its own address, and each has a page here saying what it does and how far along it is.',
+  title: `${sentenceCase(nonProductCount())} more places, and none of them makes you sign in to look`,
+  lede: 'Parts of the platform rather than products you choose between. Each has a page here saying what it does and how far along it is, with a way in from that page as soon as its address answers.',
 } as const
 
 /* ───────────────────────────── platform ───────────────────────────── */

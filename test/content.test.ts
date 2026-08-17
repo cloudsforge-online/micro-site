@@ -358,8 +358,16 @@ describe('the product pages and the registry', () => {
    *           `beacon/src/browser/smoke.ts` is what tells you that, by pinning a sentence that
    *           exists only in the prerendered file — and it kept telling you that after the chip
    *           moved to `open`, because a name answering 200 says nothing about what it answered.
+   *
+   *   agora — a `service` for the plainest reason on this list: the square is part of the
+   *           platform rather than something a reader chooses instead of another product. It is
+   *           also the page that made the heading over the second grid narrow, which is recorded
+   *           where the heading is. Like the archive it has a page here because the ecosystem
+   *           links to it; unlike the archive, half of it needs the account the heading no longer
+   *           claims it can do without, and that half is why the sentence changed rather than the
+   *           tile being kept off the grid.
    */
-  const NON_PRODUCT_PAGES: readonly string[] = ['hub', 'pool', 'exchange', 'journal']
+  const NON_PRODUCT_PAGES: readonly string[] = ['hub', 'pool', 'exchange', 'journal', 'agora']
 
   it('covers every registry product, and invents none', () => {
     // Both directions. A product with no page vanishes from the site silently; a page with no
@@ -447,7 +455,13 @@ describe('the product pages and the registry', () => {
 
   it('keeps the second grid true to the heading over it', () => {
     // The heading is derived, so the count cannot drift; what CAN drift is the claim beside it.
-    assert.match(ALSO_HERE.title, /none of them needs an account/i)
+    //
+    // It read `/none of them needs an account/i` for three releases and Forge Agora ended that, in
+    // the direction this pin exists to force: the square is readable by a stranger and writable
+    // only by an account, so the heading narrowed to what is still exactly true of all four and
+    // this line narrowed with it. The pin is not weaker for being narrower — it is the same
+    // arrangement, holding a smaller claim that is still checkable below.
+    assert.match(ALSO_HERE.title, /makes you sign in to look/i)
     for (const page of nonProductPages()) {
       const text = [...page.standfirst, page.stageNote].join(' ')
       assert.match(
