@@ -432,11 +432,25 @@ export const PRIVACY: LegalPage = {
        * The guard is `test/legal.test.ts` › "the cookie claims, against the package that sets
        * them". It reads `@cloudsforge/ui`'s `consent.ts` rather than this repository's source —
        * which is the seam the old check could not see and the reason this went unnoticed.
+       *
+       * ── AND THE SMALLER CORRECTION IN THE OTHER DIRECTION (micro-org#487) ─────────────────────
+       *
+       * The first sentence said "a banner at the foot of every CloudsForge page". Measured across
+       * every public origin on 2026-08-17: seventeen of twenty-one carry a `cf-analytics` meta tag
+       * and four do not — the operator console, the operator's dashboard and the synthetic-traffic
+       * runner, each declining it in writing in its own `index.html`, plus one address that serves
+       * nothing at all. `CloudsForgeFooter`'s companion `CookieBanner` reads the property ID from
+       * the page and renders NULL when there is none, so those surfaces draw no banner.
+       *
+       * That over-promise is the mirror image of micro-org#313 and nothing like as serious: the
+       * notice offered a choice on pages that set no cookie, rather than denying a cookie it set.
+       * It is corrected anyway, because this page's whole claim is that a reader can check it, and
+       * "every page" is the kind of sentence a reader checks first.
        */
       title: 'Cookies: one that records your answer, and more only if you accept',
       status: 'stated',
       body: [
-        'A banner at the foot of every CloudsForge page asks whether analytics may count your visit. Answering it — either way — writes one cookie, `cf_consent_analytics`, whose value is the answer you gave. It is set on the CloudsForge domain rather than on the exact address you are reading, so that one answer covers every CloudsForge surface instead of the same question being put to you on each of them, and it lasts six months before you are asked again. The same answer is written to your browser\'s local storage as well, which is what still remembers it if you have blocked cookies.',
+        'A banner at the foot of every CloudsForge page that measures anything asks whether analytics may count your visit. The operator consoles measure nothing: they name no analytics property at all, each saying so in writing in its own source, so no banner is drawn on them and there is nothing to answer. Answering it — either way — writes one cookie, `cf_consent_analytics`, whose value is the answer you gave. It is set on the CloudsForge domain rather than on the exact address you are reading, so that one answer covers every CloudsForge surface instead of the same question being put to you on each of them, and it lasts six months before you are asked again. The same answer is written to your browser\'s local storage as well, which is what still remembers it if you have blocked cookies.',
         'If you accept, Google Analytics is fetched from Google and sets cookies of its own — `_ga`, and one named after the property — which is how it tells a returning visit from a new one. None of that exists before you answer. The tag is injected by the Accept button and by nothing else, and on every page load, before anything can arrive, the page records a denied position for every category of storage, so there is no window in which a tag that showed up would find permission waiting for it. Refuse, or refuse later having accepted, and those cookies are deleted and the advertising and personalisation features that would turn a page count into a profile are switched off where the tag is configured.',
         'Clearing site data in your browser removes all of it, and the banner then asks again on your next visit. Withdrawing an analytics answer is that same act — clear this site\'s cookie and its local storage entry — because there is no control in the interface that will do it for you, and you are better served by that sentence than by the one a notice usually puts here.',
         'Signing in does not use a cookie. It stores two tokens in your browser\'s local storage instead, and signing out removes them and revokes the session at the server. Local storage is per-origin, which means the tokens are readable only by the exact site that stored them and are never attached automatically to a request the way a cookie is. A consequence a reader can verify: signing into one CloudsForge surface does not sign you into another on a different subdomain, because the storage does not cross origins — and it is that same property which made the consent record a cookie instead, since otherwise the one answer would have had to be given on every surface separately.',

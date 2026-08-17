@@ -35,10 +35,17 @@ import { fileURLToPath } from 'node:url'
 import { describe, it } from 'node:test'
 import { PRODUCTS, SURFACES } from '@cloudsforge/ui'
 import { CLAIMS, allowedNumbers } from '../src/content/claims.ts'
-import { PRODUCT_PAGES, hubPage, productCards } from '../src/content/products.ts'
+import {
+  PRODUCT_PAGES,
+  hubPage,
+  nonProductCards,
+  nonProductPages,
+  productCards,
+} from '../src/content/products.ts'
 import { STAGE_LABEL, STAGE_MEANING } from '../src/content/stages.ts'
 import {
   ABOUT,
+  ALSO_HERE,
   BUILD,
   HOME,
   NOT_FOUND,
@@ -109,6 +116,10 @@ function publishedCopy(): CopyString[] {
   // it is unscanned; that is the one manual step in this file and it is why the block above ends
   // with a floor on how many strings the walk must find.
   collect(PRODUCTS_INDEX, 'PRODUCTS_INDEX', out)
+  // The heading over the second grid (micro-org#488). Rendered on the home page AND on the index,
+  // which makes it the only copy object on this site that two pages share — and therefore the one
+  // most worth having in the walk, because a register failure in it fails twice.
+  collect(ALSO_HERE, 'ALSO_HERE', out)
   // The testnet notice is chrome rather than a page — it is rendered above the navigation on every
   // address — and it is copy like everything else. Left out of this walk it would be the one
   // sentence on the site holding no register, no hostname scan and no placeholder check, which is
@@ -372,6 +383,86 @@ describe('the product pages and the registry', () => {
     }
   })
 
+  /**
+   * ══════════════════════════════════════════════════════════════════════════════════════════
+   * EVERY PAGE UNDER /products HAS A TILE (micro-org#488)
+   *
+   * The test above holds every non-product page OFF the product grid, and for four releases that
+   * was the only thing anybody checked about them. It is half a rule. Forge Exchange satisfied it
+   * perfectly while being open at its own public address, in the product switcher, in the footer
+   * of eighteen surfaces, and reachable from nothing on this site — which is how the owner came to
+   * find it by being told the slug.
+   *
+   * So this is the other half, and the pair is what makes the grid provably complete: a page is on
+   * exactly one grid, or it is Hub. Not on the product grid AND not on the second one is now a
+   * failing build rather than a surface that quietly stops existing on the front door.
+   */
+  it('gives every page under /products a tile, on exactly one grid', () => {
+    const product = productCards().map(({ page }) => page.key)
+    const other = nonProductCards().map(({ page }) => page.key)
+    const tiled = [...product, ...other]
+
+    assert.equal(new Set(tiled).size, tiled.length, 'a page has a tile on both grids')
+    assert.deepEqual(
+      [...tiled, 'hub'].sort(),
+      PRODUCT_PAGES.map((p) => p.key).sort(),
+      'a page under /products is on neither grid, so nothing on this site links to it',
+    )
+  })
+
+  it('gives every tile the word that goes above its name', () => {
+    // `SurfaceCards` prints `page.eyebrow`, not `surface.verb`, precisely because `verb` is null
+    // for every surface that is not one of the six. A page with no eyebrow would render a card
+    // with a blank line where every other card has a word — the kind of hole that survives review
+    // because it looks like spacing.
+    for (const page of PRODUCT_PAGES) {
+      assert.ok(page.eyebrow.trim().length > 1, `${page.slug} has no eyebrow for its tile`)
+    }
+    // And the six products' eyebrows still equal the registry verbs they replaced on screen, so
+    // moving the two grids onto `page.eyebrow` changed no rendered word.
+    for (const { surface: s, page } of productCards()) {
+      assert.equal(page.eyebrow, s.verb, `${page.slug}'s tile stopped matching its registry verb`)
+    }
+  })
+
+  it('never puts two tiles of one accent next to each other', () => {
+    /*
+     * `pool` and `create` carry the SAME registry accent (#b28e1e, shared deliberately), and the
+     * switcher's own "gives every entry a distinct accent" guard does not watch this page. Two
+     * tiles of one hue touching is what splitting the grids prevents — and within the second grid
+     * the rose sits between the gold and the bronze, which is the only ordering of those three
+     * that separates the two nearest hues.
+     */
+    for (const grid of [productCards(), nonProductCards()]) {
+      const accents = grid.map(({ surface: s }) => s.accent)
+      for (let i = 1; i < accents.length; i++) {
+        assert.notEqual(
+          accents[i],
+          accents[i - 1],
+          `${grid[i]?.page.slug} sits next to a tile of its own accent`,
+        )
+      }
+    }
+  })
+
+  it('keeps the second grid true to the heading over it', () => {
+    // The heading is derived, so the count cannot drift; what CAN drift is the claim beside it.
+    assert.match(ALSO_HERE.title, /none of them needs an account/i)
+    for (const page of nonProductPages()) {
+      const text = [...page.standfirst, page.stageNote].join(' ')
+      assert.match(
+        text,
+        /no account|without an account/i,
+        `${page.slug} is under a heading saying it needs no account and never says so itself`,
+      )
+    }
+    // And nothing on that grid is a product, which is what the heading distinguishes it by.
+    const products = new Set(PRODUCTS.map((s) => s.key))
+    for (const page of nonProductPages()) {
+      assert.ok(!products.has(page.key), `${page.slug} is a product and is on the wrong grid`)
+    }
+  })
+
   it('has a page for Hub, which is a surface rather than a product', () => {
     assert.equal(hubPage().key, 'hub')
     // …and Hub is NOT one of the cards, because the vision is explicit that the container must
@@ -474,10 +565,37 @@ describe('stages', () => {
     // which is what actually protects a reader. Being reachable is the flattering half; each of
     // these is a limit that a crypto reader will otherwise supply the opposite of, and every one
     // is independently true today.
+    //
+    // ── AND IT MOVED A FOURTH TIME, FOR A REASON THAT IS NOT AN EXPIRY (micro-org#486) ─────────
+    //
+    // The pin was /open to the public/i on the title. Nothing about it became false — the estate
+    // is open to the public — and it is moved anyway, which is the one case the paragraphs above
+    // do not cover and so has to be argued rather than assumed.
+    //
+    // The owner asked for "open to public" and "days old" gone from every surface. Both were in
+    // this heading. "Days old" is the one that mattered: it advertises youth to a reader deciding
+    // whether to trust this estate with money, and it is the only limit in the disclosure that
+    // gets less true every day without anybody editing it. "Open to the public" states what the
+    // reader proved by loading the page.
+    //
+    // So the pin follows the claim rather than the words. What is asserted is that the heading
+    // still makes the flattering claim — it runs and a stranger can reach it — because a heading
+    // softened to "we are working on it" over this body would be the disclosure losing its top
+    // half. Two clauses, both required, so dropping either goes red.
     assert.ok(
-      /open to the public/i.test(BUILD.honesty.title),
-      'the honesty block no longer says the estate is open, which it is',
+      /\brun(s|ning)\b/i.test(BUILD.honesty.title),
+      'the honesty block no longer claims the estate runs, which it does',
     )
+    assert.ok(
+      /\breach\b/i.test(BUILD.honesty.title),
+      'the honesty block no longer says a stranger can reach it, which they can',
+    )
+    // The two phrases micro-org#486 removed, pinned OUT. A copy edit that reinstates either is the
+    // regression this issue exists to stop, and it would otherwise be invisible: every assertion
+    // above is satisfied by a heading that also carries them.
+    const rendered = [BUILD.honesty.title, ...BUILD.honesty.body].join(' ')
+    assert.doesNotMatch(rendered, /open to (the )?public/i, 'micro-org#486: "open to public" is back')
+    assert.doesNotMatch(rendered, /days old/i, 'micro-org#486: "days old" is back')
     const honesty = BUILD.honesty.body.join(' ')
     for (const [what, pattern] of [
       // Was /no market, no listing and no price/ until 2026-08-10, when the operator set an

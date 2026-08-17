@@ -115,7 +115,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Forge Hub is your CloudsForge account: balances on every supported chain, deposits, withdrawals, history and security, on one screen and under one sign-in.',
     stage: 'open',
     stageNote:
-      'Open to the public. The account, the sign-in and the portfolio work end to end through a real browser, and the surface answers on the public internet. Nobody outside the project has used it yet.',
+      'The account, the sign-in and the portfolio work end to end through a real browser, and the surface answers on the public internet. Nobody outside the project has used it yet.',
     sections: [
       {
         // The count a reader checks this against is the number of coins they can actually put in,
@@ -165,7 +165,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Mine EMBER in your browser or on any spare processor — no rig, no pool, no install. Hearth, the chain underneath it, is a full Ethereum virtual machine.',
     stage: 'open',
     stageNote:
-      'Open to the public. The main network mines, a public node answers Ethereum JSON-RPC and a public block explorer runs beside it. The chain is new, and EMBER has no market and no listing — the price shown for it is one we set ourselves, not one anybody has paid.',
+      'The main network mines, a public node answers Ethereum JSON-RPC and a public block explorer runs beside it. The chain is new, and EMBER has no market and no listing — the price shown for it is one we set ourselves, not one anybody has paid.',
     sections: [
       {
         title: 'Mining starts in a browser tab',
@@ -223,11 +223,16 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
      * ── IT IS A PAGE UNDER /products, AND IT IS STILL NOT A PRODUCT ───────────────────────────
      *
      * `key: 'pool'` is a `service` in the registry and stays one. `productCards()` filters on
-     * `kind === 'product'`, so this page puts no seventh card on the index grid, `productCount()`
+     * `kind === 'product'`, so this page puts no seventh card on the PRODUCT grid, `productCount()`
      * is still six, and none of the copy or art that was validated for six products moves. Hub is
      * the precedent and the mechanism was already built for a second one: `surfaceCount()` counts
      * PRODUCT_PAGES rather than `PRODUCTS.length + 1` precisely "so that a second non-product page
      * would be counted rather than assumed away". This is that second page.
+     *
+     * It does now have a TILE, in the second grid, which is `nonProductCards()` — see the note on
+     * that function (micro-org#488). Not being a product was always the right call and "therefore
+     * findable from nowhere" was the part nobody chose. Its card is the same card; what it is not
+     * is one of the six.
      *
      * ── WHAT THIS PAGE MAY SAY, AND WHAT ONLY THE CONSOLE MAY SAY ─────────────────────────────
      *
@@ -300,7 +305,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Mine on CloudsForge’s own pool: hash for Litecoin in a browser tab with nothing installed, or point mining hardware you own at Litecoin or Bitcoin.',
     stage: 'open',
     stageNote:
-      'Open to the public. The pool builds real Litecoin and Bitcoin templates against the estate’s own mainnet nodes and the console answers on the public internet. It records shares and settles none of them: there is no payout mechanism yet.',
+      'The pool builds real Litecoin and Bitcoin templates against the estate’s own mainnet nodes and the console answers on the public internet. It records shares and settles none of them: there is no payout mechanism yet.',
     sections: [
       {
         title: 'Two ways in, and they earn the same shares',
@@ -376,7 +381,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Deploy a real ERC-20 token from pre-compiled bytecode. Your wallet owns it from the first block; the platform pays the gas and holds no authority over it.',
     stage: 'open',
     stageNote:
-      'Open to the public. The deployment service, the brand-generation engine and the application you use are all running and reachable. Every contract deployed so far went to a test network.',
+      'The deployment service, the brand-generation engine and the application you use are all running and reachable. Every contract deployed so far went to a test network.',
     sections: [
       {
         title: 'A real contract on a real chain',
@@ -434,7 +439,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     // pages that show it. What stays here is the half a stage note is for: the CONDITION. The
     // marker says what you cannot do today; this says what has to happen before you can.
     stageNote:
-      'Open to the public. Backtesting, fills, fees and the performance accounting run behind an application anyone can reach; live trading turns on when a full cycle has completed on testnet.',
+      'Backtesting, fills, fees and the performance accounting run behind an application anyone can reach; live trading turns on when a full cycle has completed on testnet.',
     sections: [
       {
         title: 'Nothing here is an exchange account',
@@ -505,7 +510,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     blurb: `Bet on what happens next with ${claim('stakeAssetNames')} or an enabled ERC-20 token. The contract holds the money and pays the winners — not us.`,
     stage: 'open',
     stageNote:
-      'Open to the public. The service, the contract, the staking application and the console operators open questions from are all running and reachable. Every market so far has settled on an EMBER test network.',
+      'The service, the contract, the staking application and the console operators open questions from are all running and reachable. Every market so far has settled on an EMBER test network.',
     sections: [
       {
         title: 'Bet with what you already own',
@@ -555,7 +560,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Listings, offers, escrow and settlement for what people make. The database itself makes the platform fee, the creator royalty and the seller\'s proceeds add up.',
     stage: 'open',
     stageNote:
-      'Open to the public. Listings, bids, escrow, the order split and the risk indicators run behind an application anyone can reach. Nothing is listed on it yet, and an empty marketplace is what an empty marketplace looks like.',
+      'Listings, bids, escrow, the order split and the risk indicators run behind an application anyone can reach. Nothing is listed on it yet, and an empty marketplace is what an empty marketplace looks like.',
     sections: [
       {
         title: 'The split has to add up',
@@ -597,7 +602,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       'Three games on one account: sky-island strategy, monster collecting, and a browser world you build and earn EMBER in. Nothing purchasable is powerful.',
     stage: 'open',
     stageNote:
-      'Open to the public. The platform is running, including the private worlds that were once sold and never provisioned, and so are all three titles. Nobody outside the project has played a season through.',
+      'The platform is running, including the private worlds that were once sold and never provisioned, and so are all three titles. Nobody outside the project has played a season through.',
     sections: [
       {
         title: 'Three games, one account and one wallet',
@@ -668,13 +673,28 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
    *
    * ── IT IS A `service` IN THE REGISTRY, AND THIS PAGE DOES NOT MAKE IT A PRODUCT ───────────────
    *
-   * `productCards()` filters on `kind === 'product'`, so this adds no seventh card to the index
+   * `productCards()` filters on `kind === 'product'`, so this adds no seventh card to the PRODUCT
    * grid and `productCount()` is still six — the pool page's precedent, for the pool page's reason
    * and one more, recorded on the registry row: a seventh product means a seventh ACCENT chosen by
    * the documented dE procedure, and that is design work belonging to a phase that has an audience
    * to design for. The exchange now has an audience, so the question is finally askable — and it is
    * still a question rather than an edit, because a seventh accent that fails the dE separation
    * against its neighbours is worse than a sixth card and a link.
+   *
+   * ── AND THEN THERE WAS NO LINK, WHICH IS THE PART THAT WAS NEVER ARGUED (micro-org#488) ──────
+   *
+   * The sentence above ends "worse than a sixth card and a link", and the link did not exist. This
+   * surface was open at its own address, in the product switcher, in the footer of eighteen
+   * surfaces, and had this finished page — and the main site's grid, the one place a visitor goes
+   * to find out what CloudsForge has, offered no tile to it. The owner found it by being told the
+   * slug, which is the same failure the registry row above records for the switcher: "the URL works
+   * if you know it" is the definition of the problem.
+   *
+   * So there is a second grid, `nonProductCards()`, and this row is the reason it was built. The
+   * accent it wears there is the one already searched for and validated on the row above — rose
+   * `#d05870`, gated on legibility as type on BOTH grounds, which is what makes putting it on a
+   * card next to two others safe without any new design work. Still `kind: 'service'`, still not
+   * one of the six, still no seventh accent invented.
    *
    * The one visible consequence has now flipped: this page HAS its outbound button. Both conditions
    * `src/pages/products.tsx` applies are met — `servesUi`, which went true when the bundle started
@@ -793,11 +813,17 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
      *
      * ── IT IS A `surface` IN THE REGISTRY, AND THIS PAGE DOES NOT MAKE IT A PRODUCT ───────────
      *
-     * `productCards()` filters on `kind === 'product'`, so this adds no card to the index grid and
-     * `productCount()` is unchanged. Hub's precedent, then the pool's, then the exchange's, and
+     * `productCards()` filters on `kind === 'product'`, so this adds no card to the PRODUCT grid
+     * and `productCount()` is unchanged. Hub's precedent, then the pool's, then the exchange's, and
      * this is the fourth page under `/products` that is deliberately not one — `surfaceCount()`
      * counts `PRODUCT_PAGES` rather than assuming the registry's product list, which is what makes
      * a fourth possible without a number moving anywhere a reader can see.
+     *
+     * It has a tile in the second grid (`nonProductCards()`, micro-org#488), on its own bronze
+     * `#ae7b3d` rather than a shared hue. This is the surface the whole footer rebuild was about:
+     * an archive written to be found is worth precisely as much as the number of ways there are to
+     * find it, and until that issue it was reachable from the switcher and from nothing on this
+     * site at all.
      *
      * ── THE STAGE IS `open`, AND IT WAS `running` FOR EXACTLY ONE RELEASE
      *
@@ -977,6 +1003,63 @@ export function productCards(): ReadonlyArray<{ surface: ReturnType<typeof surfa
     if (!page) throw new Error(`no product page for registry surface: ${s.key}`)
     return { surface: s, page }
   })
+}
+
+/**
+ * Every page under /products that is neither Hub nor a registry product.
+ *
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ * WHY THIS EXISTS (micro-org#488)
+ *
+ * `productCards()` above is the only thing either grid on this site rendered, and it filters on
+ * `kind === 'product'`. That filter was correct about the registry and wrong about the reader.
+ * Four pages accumulated under `/products` that it excludes — Hub, the pool, the exchange and the
+ * archive — and each one was added with a note in the entry above saying, in so many words, "this
+ * adds no card to the index grid", as though the absence were the point rather than the cost.
+ *
+ * Hub's absence IS the point and stays: `01-product-vision.md` §3 forbids the account appearing in
+ * a product grid as a peer, and it gets its own feature block above the grid on both pages.
+ *
+ * The other three were never argued for. What was argued for, at length and correctly, is that
+ * they are not PRODUCTS — a seventh product means a seventh accent through the dE procedure, and
+ * `productCount()` moving would restate itself in copy across the site. None of that is an
+ * argument for a deployed, publicly addressed surface with a finished page on this very site
+ * being findable from no tile on it. Forge Exchange was the one the owner hit: open at its own
+ * address since 2026-08-16, in the product switcher, in the footer of eighteen surfaces, with a
+ * `/products/exchange` page carrying its own validated accent — and nothing on the main site's
+ * grid to click. The only route to it was the switcher, or knowing the slug.
+ *
+ * So the grid is now TWO grids of the same card, and the split is the registry's own `kind`
+ * rather than a judgement anybody has to keep making. Nothing that was validated for six products
+ * moves: `PRODUCTS` is untouched, `productCount()` is still six, no accent was invented, and the
+ * copy that spells six still spells six because it is still describing the first grid.
+ *
+ * ── THE ORDER IS NOT ARBITRARY, AND IT IS THE ONE THING TO PRESERVE ───────────────────────────
+ *
+ * `PRODUCT_PAGES` order, filtered, is pool → exchange → archive: gold, rose, bronze. Two facts
+ * make that the order rather than a default.
+ *
+ * `pool` and `create` carry the SAME registry accent (`#b28e1e`, deliberately shared — see the
+ * exchange row in `ui/packages/ui/src/surfaces.ts`). Two tiles of one hue touching is exactly what
+ * the switcher's "gives every entry a distinct accent" guard forbids, and no guard watches this
+ * grid. Splitting the two grids puts `create` in the first and `pool` in the second, so they never
+ * touch. Within the second, `journal`'s bronze `#ae7b3d` is the nearest hue to that gold, and the
+ * rose sits between them — on a three-column desktop row and on a stacked phone alike.
+ *
+ * A fourth non-product page therefore is not a free append: check what it touches first.
+ */
+export function nonProductPages(): readonly ProductPage[] {
+  return PRODUCT_PAGES.filter((p) => p.key !== 'hub' && surface(p.key).kind !== 'product')
+}
+
+/** The non-product pages, joined to their registry rows, for the second grid. Three today. */
+export function nonProductCards(): ReadonlyArray<{ surface: ReturnType<typeof surface>; page: ProductPage }> {
+  return nonProductPages().map((page) => ({ surface: surface(page.key), page }))
+}
+
+/** How many of those there are, spelled. Three today. */
+export function nonProductCount(): string {
+  return spell(nonProductPages().length)
 }
 
 /** Hub's page, which every layout needs by name because it is never one of the cards. */

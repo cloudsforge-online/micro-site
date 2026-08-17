@@ -83,6 +83,44 @@ body {
     --cf-surface: color-mix(in srgb, #fbf8f2 82%, transparent);
     --cf-surface-solid: #fbf8f2;
     --cf-surface-hover: color-mix(in srgb, #1a1613 6%, transparent);
+
+    /*
+     * ── THE COMPANY EMBER, AND THE ONE THING THIS BLOCK FORGOT (micro-org#489) ─────────────────
+     *
+     * This block overrode every ground and every ink and stopped there, which was sufficient for
+     * as long as nothing on a light page set type in the COMPANY colour. The shared bar does, and
+     * it carries `.cf-dark` — a class that re-declares the dark ember for itself, which is why the
+     * bar's `Clouds<b>Forge</b>` was always right and why nobody found this.
+     *
+     * (Written without a colon after any token name on purpose: `test/contrast.test.ts` reads this
+     * block with a regex that takes the first `--name:` it finds, so a token name spelled as a
+     * declaration inside a comment is read as the declaration. It cost one run to learn.)
+     *
+     * Adopting `CloudsForgeFooter` put a second company logo on the page, on the light sunken
+     * ground and NOT inside `.cf-dark`. `.cf-logo__word b` is `var(--cf-ember)`, which fell all the
+     * way through to the root default — `#e8622c`, the dark-ground ember — and measured **2.62:1**
+     * on `--cf-bg-sunken`. axe reported it as a serious colour-contrast violation on `/` the first
+     * time the suite ran against the shared footer, which is the whole argument for adopting the
+     * component: eighteen surfaces had been rendering this correctly on a dark page, and the one
+     * surface that had written its own footer had never had to answer the question.
+     *
+     * The values are the design system's own light ramp, which is already measured and commented
+     * there — `--cf-ember-light` at 5.49:1 on the tightest light ground, and the ink at 7.20:1 on
+     * that fill. They are written as hexes rather than as `var(--cf-ember-light)` for the same
+     * reason every other value in this block is: `test/contrast.test.ts` reads this block with a
+     * regex and resolves aliases WITHIN it, so a `var()` pointing at the design system's file
+     * would be unresolvable and unmeasured. The test asserts the pair against `tokens.css` instead,
+     * so a change to the ramp fails here rather than drifting.
+     *
+     * `--cf-ember-glow` is `rgba(145, 58, 24, 0.22)` — the same colour, which is what the glow is a
+     * translucent copy of. A glow left at the bright orange over a dark maroon logo would be a
+     * halo in a hue the mark no longer wears.
+     */
+    --cf-ember: #913a18;
+    --cf-ember-hover: #732c11;
+    --cf-ember-text: #913a18;
+    --cf-ember-ink: #fdfbf7;
+    --cf-ember-glow: rgba(145, 58, 24, 0.22);
   }
 
   body {
@@ -639,12 +677,25 @@ a:hover {
 
 /* ───────────────────────────── product cards ───────────────────────── */
 
+/*
+  `auto-fill`, NOT `auto-fit`, and the difference is visible on this page (micro-org#488).
+
+  There are now two of these grids one above the other: the six products, and the three surfaces
+  that are parts of the platform rather than products. `auto-fit` COLLAPSES the tracks no item
+  occupies and shares that width out among the rest — so the six rendered as four columns and the
+  three rendered as three, wider ones. Two grids of the same card, same page, same component, at
+  two different sizes: the second read as a different thing rather than as more of the first.
+
+  `auto-fill` keeps the empty track, so a card is one width everywhere and a short row simply ends.
+  Below the breakpoint where fewer tracks fit than there are cards the two keywords are identical,
+  so nothing about the narrow layout changes.
+*/
 .si-cards {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
   gap: var(--cf-space-xl);
 }
 
@@ -1349,64 +1400,23 @@ a:hover {
 
 /* ────────────────────────────── footer ─────────────────────────────── */
 
-.si-footer {
-  border-top: 1px solid var(--cf-line);
-  background: var(--cf-bg-sunken);
-}
-
-.si-footer__inner {
-  max-width: var(--cf-max-w);
-  margin: 0 auto;
-  padding: var(--cf-space-3xl) var(--cf-space-xl);
-}
-
-.si-footer__cols {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-  gap: var(--cf-space-3xl);
-}
-
-.si-footer__title {
-  margin: 0 0 var(--cf-space-lg);
-  font-family: var(--cf-font-mono);
-  font-size: var(--cf-text-xs);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--cf-fg-mute);
-  font-weight: 400;
-}
-
-.si-footer__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: var(--cf-space-sm);
-}
-
-.si-footer__list a {
-  color: var(--cf-fg-dim);
-  text-decoration: none;
-  font-size: var(--cf-text-lg);
-}
-
-.si-footer__list a:hover {
-  color: var(--si-accent);
-  text-decoration: underline;
-}
-
-.si-footer__note {
-  margin: var(--cf-space-3xl) 0 0;
-  padding-top: var(--cf-space-2xl);
-  border-top: 1px solid var(--cf-line);
-  max-width: 72ch;
-  color: var(--cf-fg-mute);
-  font-size: var(--cf-text-md);
-}
-
-.si-footer__note strong {
-  color: var(--cf-fg-dim);
-}
+/*
+ * THERE ARE NO FOOTER RULES HERE ANY MORE, AND THE ABSENCE IS THE FIX (micro-org#489).
+ *
+ * Ten rules stood here — `.si-footer`, `__inner`, `__cols`, `__title`, `__list`, `__note` — a
+ * second, slightly different rendering of the same four columns `@cloudsforge/ui` already draws on
+ * eighteen surfaces. They were not wrong; they were a copy, and the copy is what let this site's
+ * footer fall a whole registry column behind the estate's. See `SiteFooter` in
+ * `src/components/shell.tsx` for what that cost.
+ *
+ * The footer is now `.cf-foot`, styled in `ui/packages/ui/src/ui.css`, which this bundle already
+ * imports in `main.tsx` for the bar. The one piece of this site's own chrome that stays is
+ * `.si-ridge--footer` above — the ridge is site furniture rather than footer furniture, and it is
+ * drawn as a sibling above the landmark rather than inside it.
+ *
+ * A rule added back here would be this site disagreeing with eighteen others about what a footer
+ * looks like, one property at a time.
+ */
 
 /* ──────────────────────────── motion ───────────────────────────────── */
 

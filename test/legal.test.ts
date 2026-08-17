@@ -564,6 +564,41 @@ describe('the cookie claims, against the package that sets them', () => {
     )
   })
 
+  it('asks nothing on a surface that measures nothing, and the notice no longer says otherwise', () => {
+    /*
+     * micro-org#487, and the mirror image of the defect this whole suite exists for. The notice
+     * opened with "a banner at the foot of every CloudsForge page". Measured across every public
+     * origin on 2026-08-17: seventeen of twenty-one carry a `cf-analytics` meta tag, and four do
+     * not — the operator console, the operator's dashboard and the synthetic-traffic runner, each
+     * declining it in writing in its own index.html, plus one address that serves nothing.
+     *
+     * The banner reads the property ID from the page and renders NOTHING when there is none, so
+     * on those surfaces no question is put and no cookie is written. The notice was promising a
+     * choice on pages that never offer one. Not the direction #313 failed in, and not remotely as
+     * serious — but this page's entire claim is that a reader can check it, and "every page" is
+     * the first sentence a reader checks.
+     *
+     * The condition is read out of the design system rather than restated, so a banner that one
+     * day draws itself unconditionally fails here rather than making the notice true by accident.
+     */
+    const component = readFileSync(join(UI, 'index.tsx'), 'utf8')
+    assert.match(
+      component,
+      /setId\(analyticsAllowedHere\(\) \? analyticsId\(\) : null\)/,
+      'the consent banner no longer decides whether to draw from the page’s analytics property',
+    )
+    assert.doesNotMatch(
+      notice,
+      /banner at the foot of every CloudsForge page asks/,
+      'the notice claims a banner on every page, including the surfaces that draw none',
+    )
+    assert.match(
+      notice,
+      /measures nothing|measures anything/,
+      'the notice does not say which pages ask and which do not',
+    )
+  })
+
   it('serves its typefaces from CloudsForge, which is what "no external font" means', () => {
     // The same seam, one claim over: `loads no web font` above reads index.html and src/styles.css
     // and would not see a face declared in the design system. Six are, and the privacy-relevant

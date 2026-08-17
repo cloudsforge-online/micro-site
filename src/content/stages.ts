@@ -65,8 +65,9 @@
  * outside — see `test/public-endpoints.test.ts`, which fetches every address published here.
  *
  * So no label is a bare past participle. Each is a phrase that says where the thing IS:
- * "Built, not shipped" → "Running in-house" → "Open to the public". A stranger reading only the
- * chip gets the right idea, which is the only test a status label has to pass.
+ * "Built, not shipped" → "Running in-house" → "Reachable from outside". A stranger reading only
+ * the chip gets the right idea, which is the only test a status label has to pass. The last of
+ * those read "Open to the public" until micro-org#486; see the note on `STAGE_LABEL` below.
  *
  * "Not shipped" rather than "not deployed" because the scale has to fit two shapes of thing. A
  * service is deployed; a desktop application, a browser extension and a phone application are
@@ -110,11 +111,30 @@ export type Stage = 'tested' | 'running' | 'open' | 'planned'
 /** Most finished first. The build page sorts by this, and the legend reads in this order. */
 export const STAGE_ORDER: readonly Stage[] = ['open', 'running', 'tested', 'planned']
 
-/** The chip's words. Never a bare participle — see the header for why "Built" alone is a lie. */
+/**
+ * The chip's words. Never a bare participle — see the header for why "Built" alone is a lie.
+ *
+ * ── `open` READ "Open to the public" UNTIL micro-org#486 ──────────────────────────────────────
+ *
+ * The owner asked for that phrase off every surface, and the reason given for the site's own
+ * footer heading was that it "states something already obvious from the fact that the visitor is
+ * looking at the page". On this chip it was never obvious — the chip's whole job is to separate
+ * the surfaces a stranger can reach from the ones they cannot — so what was owed here was the
+ * same fact in words that do not carry the objection.
+ *
+ * "Reachable from outside" is that fact, and it is deliberately the mirror of the rung below it:
+ * `running` is "Running in-house", `open` is "Reachable from outside", and the two now read as the
+ * two ends of one axis rather than as two unrelated phrases. Nothing about the SCALE moved —
+ * `test/estate-stages.test.ts` derives membership from the estate's public tunnel exactly as
+ * before, in both directions, and this rename touched no derivation.
+ *
+ * "Outside" is defined a few lines down, in `STAGE_MEANING.open`, which the build page renders in
+ * full as the legend: there is an address on the public internet and a stranger can open it.
+ */
 export const STAGE_LABEL: Readonly<Record<Stage, string>> = {
   tested: 'Built, not shipped',
   running: 'Running in-house',
-  open: 'Open to the public',
+  open: 'Reachable from outside',
   // Not "not built": the honest word for a surface whose primitives may already exist and pass a
   // suite — which is true of the first page to wear this chip — while nothing is deployed anywhere.
   planned: 'Planned, not deployed',
