@@ -17,6 +17,7 @@
  * deleted on instantiation rather than left in place unused.
  */
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { Mark, hasMark, surface, type SurfaceKey } from '@cloudsforge/ui'
 import { STAGE_GLYPH, STAGE_LABEL, type Stage } from '../content/stages.ts'
 
@@ -259,6 +260,80 @@ export function SurfaceMark({ surfaceKey, size = 28 }: { surfaceKey: SurfaceKey;
     <span className="si-mark si-mark--glyph" role="img" aria-label={s.name}>
       {s.glyph}
     </span>
+  )
+}
+
+/** One tile in a `si-cards` grid: everything the card draws, and nothing about where it came from. */
+export interface SurfaceCard {
+  readonly key: SurfaceKey
+  /** The `/products/` segment this tile links to. */
+  readonly slug: string
+  /** The verb-or-role line above the name. */
+  readonly eyebrow: string
+  /** One line under the name. The two grids read it from different places; see `SurfaceCards`. */
+  readonly blurb: string
+  readonly stage: Stage
+}
+
+/**
+ * A grid of surface tiles.
+ *
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ * ONE COMPONENT, BECAUSE THERE WERE TWO COPIES AND THEN THERE WERE FOUR (micro-org#488)
+ *
+ * This markup was written twice — `src/pages/home.tsx` and `src/pages/products.tsx` — and the two
+ * copies had already diverged in a way nobody chose: the home grid printed the registry's `blurb`
+ * and the index grid printed the page's `headline`. That divergence is real and is KEPT, because
+ * the two pages are asking different questions (the home page introduces a surface to somebody who
+ * has not heard of it; the index page distinguishes it from the eight beside it). It is kept as a
+ * PARAMETER instead of as a second file, which is the difference between a decision and a drift.
+ *
+ * Adding the second grid would have made two copies four. The card is the site's densest piece of
+ * markup — accent scoping, a mark with a glyph fallback, a stage chip, an incompleteness note that
+ * must be called unconditionally — and every one of those is a thing three of four copies would
+ * eventually have.
+ *
+ * ── THE EYEBROW IS THE PAGE'S, NOT THE REGISTRY'S, AND THAT IS THE ENABLING CHANGE ────────────
+ *
+ * The two grids printed `surface.verb`, which is `null` for every surface that is not one of the
+ * six products — so a pool, exchange or archive tile drawn from the registry would have had an
+ * empty line where every other tile has a word. `ProductPage.eyebrow` is the same string for all
+ * six products ("Mine", "Make", "Trade", "Bet", "Sell", "Play" — checked, character for
+ * character) and exists for the other four as well, so reading the eyebrow from the page rather
+ * than the registry changes nothing that was on screen and is what lets one card shape serve every
+ * page under `/products`.
+ *
+ * ── `IncompleteNote` IS CALLED UNCONDITIONALLY, WHICH IS THE POINT OF IT ──────────────────────
+ *
+ * It renders nothing for a surface with no marker. Calling it here rather than at each call site
+ * is why a second grid cannot ship a tile that looks finished because this grid forgot to ask —
+ * which was the stated reason for the unconditional call in the copy this replaces.
+ */
+export function SurfaceCards({ cards }: { cards: readonly SurfaceCard[] }) {
+  return (
+    <ul className="si-cards">
+      {cards.map((card) => (
+        <li className="si-card" key={card.key} {...accentProps(card.key)}>
+          <Link className="si-card__link" to={`/products/${card.slug}`}>
+            <div className="si-card__head">
+              <SurfaceMark surfaceKey={card.key} size={30} />
+              <div>
+                <p className="si-card__verb">{card.eyebrow}</p>
+                <h3 className="si-card__name">{surface(card.key).name}</h3>
+              </div>
+            </div>
+            <p className="si-card__blurb">{card.blurb}</p>
+            <IncompleteNote surfaceKey={card.key} />
+            <span className="si-card__foot">
+              <StageChip stage={card.stage} />
+              <span className="si-card__more" aria-hidden="true">
+                →
+              </span>
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   )
 }
 

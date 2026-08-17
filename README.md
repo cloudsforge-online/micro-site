@@ -36,13 +36,21 @@ strongest pages on the site are the ones most companies would not publish:
 - **`/platform`** reproduces the eleven statements that define "one platform" — in full, including
   the ones that are not true yet, because a definition you only publish once you pass it is not a
   definition.
-- **`/build`** says how new and how fragile the thing is, at the top, and the footer of every page
-  says it again. It used to say **"nothing is deployed"**, and this line described that; both went
-  false on 2026-08-05 when the estate went public. The page is now headed "Open to the public, and
-  days old" (`src/content/pages.ts`, the `honesty` block) and denies, explicitly, the maturity a
+- **`/build`** says how fragile the thing is, at the top, and the footer of every page says it
+  again. It used to say **"nothing is deployed"**, and this line described that; that went false on
+  2026-08-05 when the estate went public. The page is now headed "It is running, and anybody can
+  reach it" (`src/content/pages.ts`, the `honesty` block) and denies, explicitly, the maturity a
   reader would otherwise supply: one machine behind a tunnel, no failover, no backup that has ever
   been restored, a chain still at its launch difficulty carrying 62 transactions across 10,987
   blocks with every one of them our own, and EMBER with no market, no listing and no price.
+
+  The heading read **"Open to the public, and days old"** until micro-org#486. The owner asked for
+  both phrases off every surface: "days old" advertises youth to somebody deciding whether to trust
+  this estate with money, and it is the only limit on the page that gets less true every day
+  without anybody editing it; "open to the public" states what the reader proved by loading the
+  page. **Nothing in the denial was removed** — the list above is the same list, and the stage chip
+  that used to read "Open to the public" now reads "Reachable from outside", which is the same
+  measurement in words that do not carry the objection.
 
 That is not modesty. It is the only position from which the rest of the site can be believed.
 

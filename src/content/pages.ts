@@ -16,7 +16,8 @@
  * capability named before the philosophy behind it.
  */
 import { claim } from './claims.ts'
-import { creditableChainCount, productCount, sentenceCase, spell } from './products.ts'
+import { creditableChainCount, nonProductCount, productCount, sentenceCase, spell } from './products.ts'
+import { STAGE_LABEL } from './stages.ts'
 import type { SurfaceKey } from '@cloudsforge/ui'
 
 /* ────────────────────────────── chrome ────────────────────────────── */
@@ -473,6 +474,43 @@ export const PRODUCTS_INDEX = {
   },
 } as const
 
+/* ───────────────────────── the second grid ────────────────────────── */
+
+/**
+ * The heading for the grid of places that are not products (micro-org#488).
+ *
+ * ONE object, rendered by both the home page and the products index, because the two grids above
+ * it already say the same thing in two files and the pair drifted the last time a count moved —
+ * "Six surfaces" against seven pages on one page, "Five products" against six on the other. A
+ * second heading typed twice would be the third instance of that.
+ *
+ * ── WHAT THE COUNT IS AND IS NOT ──────────────────────────────────────────────────────────────
+ *
+ * `nonProductCount()` reads `PRODUCT_PAGES` through the registry's `kind`, so a fourth such page
+ * changes this sentence on the same edit that adds it. It is a different number from
+ * `productCount()` and always will be: this site publishes both, a section apart, and the products
+ * index already learned once what happens when two true counts meet a line apart with no
+ * arithmetic between them. Here they never touch — one heads the product grid, the other heads
+ * this one, and each is directly above the tiles it counts.
+ *
+ * ── THE SECOND CLAUSE IS A FACT, CHECKED AGAINST ALL THREE PAGES ──────────────────────────────
+ *
+ * "None of them needs an account" is the one true thing all three share, and it is the reason a
+ * reader might click. Each page already states its own half: the pool has "no account to open on
+ * one", the exchange has "no account to open, no order book, and nothing of yours held by anybody
+ * while it happens", the archive is "reachable without an account". It is a claim about a running
+ * estate, so `test/content.test.ts` pins it — a fourth page that DOES need an account breaks the
+ * suite rather than quietly making this heading false.
+ *
+ * The lede names none of the three. A hand-written list of surfaces is a list that stops being
+ * true silently, which is the whole of micro-org#489 and is not a lesson worth learning twice on
+ * the same page.
+ */
+export const ALSO_HERE = {
+  title: `${sentenceCase(nonProductCount())} more places, and none of them needs an account`,
+  lede: 'Parts of the platform rather than products you choose between. Each is open at its own address, and each has a page here saying what it does and how far along it is.',
+} as const
+
 /* ───────────────────────────── platform ───────────────────────────── */
 
 export const PLATFORM = {
@@ -656,8 +694,19 @@ export const ABOUT = {
 export const BUILD = {
   eyebrow: 'Build status',
   headline: 'Where each part actually is',
+  // ── Two phrases went from this sentence for micro-org#486 ────────────────────────────────────
+  //
+  // "what is open to the public" and "how new all of it is" are the two the owner asked off every
+  // surface — the second is "days old" wearing a different coat, and this is the one place it
+  // survived the first sweep, because it is a link-preview description rather than anything a
+  // reader sees on the page. A description is still published: it is what a search result and a
+  // shared link show, which is where more people meet a sentence than on the page it belongs to.
+  //
+  // What replaces the first is the same fact in the words the stage chip now uses. What replaces
+  // the second is the thing the reader actually came for — the limits, which the page does list
+  // and which are the reason to read it.
   blurb:
-    'Where every part of CloudsForge stands today: what is open to the public, what runs in-house, what is still being written, and how new all of it is.',
+    'Where every part of CloudsForge stands today: what a stranger can reach, what runs in-house, what is still being written, and what it is all running on.',
   standfirst: [
     'This ecosystem is built as a set of independent services. They run together, and they now answer on the public internet — from one machine, with no failover and no scheduled backup that has ever run.',
     'Both halves of it are on this page. What is running is worth knowing before you spend an evening on it; what it is running on is worth knowing before you trust it with money.',
@@ -736,11 +785,38 @@ export const BUILD = {
    * is no price concludes the site is careless; a reader who is told the figure is one we set
    * ourselves has been given the thing that actually matters about it.
    */
+  /**
+   * ── THE HEADING NO LONGER COUNTS THE DAYS, AND THAT IS micro-org#486 ────────────────────────
+   *
+   * It read "Open to the public, and days old" from 2026-08-05 until this change, and the owner
+   * asked for both halves of that phrase gone from every surface. The reasoning is worth keeping
+   * because it is not a softening:
+   *
+   *   **"Days old" advertises youth to somebody deciding whether to trust this estate with
+   *   money.** It reads as candour and lands as a warning, and it is the one limit in this
+   *   disclosure that gets less true every day without anybody editing it — a number that moves on
+   *   its own, in the direction of being wrong, in the heading of the page that exists to be right.
+   *
+   *   **"Open to the public" states what the reader has already proved** by being on the page. It
+   *   spent the most prominent line on this site saying something no visitor could doubt.
+   *
+   * What replaces it is the claim that actually carries weight and that a reader cannot check from
+   * the address bar: it runs, and it is reachable by anybody rather than by us. `body[2]` then says
+   * what that is worth — "being reachable is the weakest thing a platform can claim about itself" —
+   * so the heading now sets up its own denial instead of competing with it.
+   *
+   * **NOTHING IN THE DENIAL WAS REMOVED.** Every limit `test/content.test.ts` pins is still here
+   * word for word: no market, no listing, the price is one we set, nobody outside has used it, one
+   * machine, no failover, no backup that has ever run. The single clause that went is "days old"
+   * in `body[1]`, and the sentence it was in still says the network is nearly empty and that every
+   * transaction and every block on it is ours — which is the fact "days old" was a proxy for, said
+   * directly.
+   */
   honesty: {
-    title: 'Open to the public, and days old',
+    title: 'It is running, and anybody can reach it',
     body: [
       'Everything described on this site is built, runs together against real databases and a real EMBER network, and now answers on the public internet under a proper certificate. An automated suite drives a real browser through the real gateway the way a person would, faking nothing.',
-      'What that does not mean: the main network is days old and nearly empty — the handful of transactions on it are all our own, and so is every block ever mined on it. EMBER has no market and no listing, and the price you see for it is one we set ourselves rather than one anybody has paid. Nobody outside the project has used any of this yet. There are no user numbers on this page for the same reason there is no uptime figure — both would be either zero or invented.',
+      'What that does not mean: the main network is nearly empty — the handful of transactions on it are all our own, and so is every block ever mined on it. EMBER has no market and no listing, and the price you see for it is one we set ourselves rather than one anybody has paid. Nobody outside the project has used any of this yet. There are no user numbers on this page for the same reason there is no uptime figure — both would be either zero or invented.',
       'It all runs on one machine behind a tunnel. There is no redundancy, no failover, and no scheduled backup that has ever run. Being reachable is the weakest thing a platform can claim about itself, and today it is the only thing this one has earned.',
     ],
   },
@@ -766,7 +842,10 @@ export const BUILD = {
     body: [
       'None of the states below is typed in by hand. Each is recalculated by a test that opens the deployment file the estate actually runs from and requires every container a surface needs to be declared in it, then opens the browser suite\'s list and requires that a real browser is driven at that surface through the real gateway with nothing faked. A surface failing either check cannot be shown as running, whatever this site would prefer to say.',
       'Both halves are needed and neither is enough on its own. A container in a deployment file proves something was meant to run. Only a browser proves a person could have opened it — this project has shipped surfaces that were deployed, green on their own health check, and completely unstyled on screen.',
-      'The one state no test here can establish is the last one on the scale. "Open to the public" is now true, and what proves it is an address anyone can type in rather than anything this repository can measure about itself.',
+      // The label is READ from the scale rather than quoted, so a rename cannot leave this
+      // sentence quoting a chip that no longer exists — which is what it did between the rename in
+      // micro-org#486 and this line. It is the only place on the site that names a stage in prose.
+      `The one state no test here can establish is the last one on the scale. "${STAGE_LABEL.open}" is now true, and what proves it is an address anyone can type in rather than anything this repository can measure about itself.`,
     ],
   },
   /**

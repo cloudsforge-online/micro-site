@@ -8,9 +8,9 @@
 import { Link, useParams } from 'react-router-dom'
 import { surface } from '@cloudsforge/ui'
 import { hosts } from '../lib/hosts.ts'
-import { PRODUCT_PAGES, hubPage, productCards, productPage } from '../content/products.ts'
-import { PRODUCTS_INDEX } from '../content/pages.ts'
-import { IncompleteNote, PageHead, Prose, Ridge, Section, StageChip, SurfaceMark, accentProps } from '../components/parts.tsx'
+import { PRODUCT_PAGES, hubPage, nonProductCards, productCards, productPage } from '../content/products.ts'
+import { ALSO_HERE, PRODUCTS_INDEX } from '../content/pages.ts'
+import { IncompleteNote, PageHead, Prose, Ridge, Section, StageChip, SurfaceCards, SurfaceMark, accentProps } from '../components/parts.tsx'
 import { NotFoundPage } from './not-found.tsx'
 
 /* ─────────────────────────── the index ────────────────────────────── */
@@ -56,34 +56,52 @@ export function ProductsIndexPage() {
         </article>
       </Section>
 
+      {/*
+        The blurb slot on THIS page is the page's `headline`, not the registry's one-liner. A reader
+        here is choosing between nine tiles on one screen, and the registry blurb is written to
+        introduce a surface to somebody who has not heard of it — useful on the home page, and nine
+        of them in a row is nine paragraphs where nine distinctions were wanted. See `SurfaceCards`.
+      */}
       <Section
         title={PRODUCTS_INDEX.productsTitle}
         lede={PRODUCTS_INDEX.productsLede}
         id="the-products"
       >
-        <ul className="si-cards">
-          {cards.map(({ surface: s, page }) => (
-            <li className="si-card" key={s.key} {...accentProps(s.key)}>
-              <Link className="si-card__link" to={`/products/${page.slug}`}>
-                <div className="si-card__head">
-                  <SurfaceMark surfaceKey={s.key} size={30} />
-                  <div>
-                    <p className="si-card__verb">{s.verb}</p>
-                    <h3 className="si-card__name">{s.name}</h3>
-                  </div>
-                </div>
-                <p className="si-card__blurb">{page.headline}</p>
-                <IncompleteNote surfaceKey={s.key} />
-                <span className="si-card__foot">
-                  <StageChip stage={page.stage} />
-                  <span className="si-card__more" aria-hidden="true">
-                    →
-                  </span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <SurfaceCards
+          cards={cards.map(({ page }) => ({
+            key: page.key,
+            slug: page.slug,
+            eyebrow: page.eyebrow,
+            blurb: page.headline,
+            stage: page.stage,
+          }))}
+        />
+      </Section>
+
+      {/*
+        The places that are not products (micro-org#488).
+
+        A second `Section` rather than nine tiles under one heading. The registry's `kind` is a real
+        distinction and this page's whole job is to be accurate about what CloudsForge is: the six
+        above are products you choose between, and these are parts of the platform that happen to
+        have their own front doors. Same card, same grid, same accents — what differs is the
+        sentence over them, which is the honest amount of difference.
+
+        It sits ABOVE "one thing that is not on this list", which is about the developer platform
+        and answers a different question. That section used to follow the grid directly and its
+        force came from being the exception; it still is one, and it is now the exception to nine
+        tiles instead of six.
+      */}
+      <Section title={ALSO_HERE.title} lede={ALSO_HERE.lede} id="also-here">
+        <SurfaceCards
+          cards={nonProductCards().map(({ page }) => ({
+            key: page.key,
+            slug: page.slug,
+            eyebrow: page.eyebrow,
+            blurb: page.headline,
+            stage: page.stage,
+          }))}
+        />
       </Section>
 
       <Section title={PRODUCTS_INDEX.notHere.title} id="not-here">

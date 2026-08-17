@@ -17,7 +17,7 @@
  * `presentation` or `navigation` over content this repository owns, plus one `client-request`.
  */
 import assert from 'node:assert/strict'
-import { HUB_MINE_PATH, NOT_PAID_CLAUSE, PRODUCTS, SWITCHER_SURFACES } from '@cloudsforge/ui'
+import { HUB_MINE_PATH, NOT_PAID_CLAUSE, PRODUCTS, SURFACES, SWITCHER_SURFACES } from '@cloudsforge/ui'
 import { assertMounted, renderOnlyWithStubbedNetwork, type Stubs } from './browser.ts'
 import { assertAxeClean, assertKnownStillBroken, textOrder, type KnownViolation } from './axe.ts'
 import type { Scenario } from './scenario.ts'
@@ -221,13 +221,29 @@ export const CATALOGUE: readonly Scenario[] = [
         // this go red.
         //
         // The heading literal moved once more when "one day old" stopped being literally true.
-        // What is anchored is the SHAPE — it still says open, and it still says how new — and the
-        // four limits below are what actually carry the disclosure.
+        // What is anchored is the SHAPE — it still makes the flattering claim — and the four
+        // limits below are what actually carry the disclosure.
+        //
+        // It moved a THIRD time for micro-org#486, which removed "open to public" and "days old"
+        // from every rendered surface. A literal is no longer anchored at all: this assertion was
+        // a copy of a string in another file, so it went red on a copy edit that broke nothing and
+        // stayed green on a rewrite that gutted the paragraph. The heading is read from
+        // `BUILD.honesty.title` — the same declaration the page renders — so what is proved here
+        // is what only a browser can prove, that the callout IS on the page and carries it. The
+        // words themselves are pinned in `test/content.test.ts`, which is where copy belongs.
         const callout = await session.page.locator('.si-callout').first().innerText()
         assert.ok(
-          callout.includes('Open to the public, and days old'),
+          callout.includes(BUILD.honesty.title),
           `the honesty block no longer carries its heading. It says: ${callout.slice(0, 200)}`,
         )
+        // The two phrases micro-org#486 removed, absent from the RENDERED page rather than from a
+        // module — which is the only place the issue's acceptance criterion can actually be met.
+        for (const gone of ['open to public', 'open to the public', 'days old']) {
+          assert.ok(
+            !callout.toLowerCase().includes(gone),
+            `micro-org#486: the callout still renders "${gone}"`,
+          )
+        }
         // The limits, in the rendered body rather than the heading — a heading that survives while
         // the paragraph under it turns into reassurance is the shape this whole page is arranged
         // against. Each is checked separately so that losing one cannot be hidden by the others.
@@ -279,18 +295,41 @@ export const CATALOGUE: readonly Scenario[] = [
       const index = await renderOnlyWithStubbedNetwork(surface.origin, { path: '/products', stubs: ANONYMOUS })
       try {
         await assertMounted(index)
-        // The count is the assertion: a hand-maintained card is the failure. It is compared to
-        // PRODUCTS from the registry — the single declaration — not to a number written here.
+        /*
+         * The count is the assertion: a hand-maintained card is the failure. It is compared to the
+         * declarations — `PRODUCTS` from the registry and `PRODUCT_PAGES` from this site — and
+         * never to a number written here.
+         *
+         * It read `PRODUCTS.length` until micro-org#488, and passed while Forge Exchange was open
+         * at its own public address with a finished page on this site and no tile anywhere on it.
+         * That is the shape of the defect: the count was right about the grid it was counting and
+         * nothing was counting the pages the grid left out. Both grids are now measured, and the
+         * expected total is every page under /products except Hub, which has its own feature block
+         * above them and must never appear as a peer.
+         */
         const cards = await index.page.locator('.si-card').count()
-        assert.equal(
-          cards,
-          PRODUCTS.length,
-          `${cards} product cards for ${PRODUCTS.length} registered products`,
+        const expected = PRODUCT_PAGES.filter((p) => p.key !== 'hub').length
+        assert.equal(cards, expected, `${cards} tiles for ${expected} pages under /products`)
+        assert.ok(
+          expected > PRODUCTS.length,
+          'the second grid is empty, so this assertion has stopped measuring anything',
         )
         const text = await index.page.evaluate(() => document.body.innerText)
         for (const product of PRODUCTS) {
           assert.ok(text.includes(product.name), `${product.name} has no card`)
         }
+        // …and the same for the pages that are not products, which is the half nobody was
+        // checking. Read from `SURFACES` so the name is the registry's rather than this file's.
+        for (const page of PRODUCT_PAGES) {
+          if (page.key === 'hub') continue
+          const name = SURFACES.find((s) => s.key === page.key)?.name
+          assert.ok(name !== undefined, `${page.slug} is not a registry surface`)
+          assert.ok(text.includes(name), `${name} has a page under /products and no tile`)
+        }
+        // Hub is on the page and is NOT one of the tiles: `01-product-vision.md` §3 forbids the
+        // account appearing in a product grid as a peer, and the second grid is a new place for
+        // that to go wrong.
+        assert.equal(await index.page.locator('.si-card', { hasText: 'Forge Hub' }).count(), 0)
       } finally {
         await index.close()
       }
@@ -742,7 +781,11 @@ export const CATALOGUE: readonly Scenario[] = [
         const session = await renderOnlyWithStubbedNetwork(surface.origin, { path, stubs: ANONYMOUS })
         try {
           await assertMounted(session)
-          const note = await session.page.locator('.si-footer__note').first().innerText()
+          // `.cf-foot__note` since micro-org#489: this site stopped rendering a footer of its own
+          // and now composes `CloudsForgeFooter`, whose `note` slot exists for exactly this
+          // sentence. The scoping argument above is unchanged and is now stronger — the callout on
+          // `/build` is `.si-callout`, so the two places these words appear are still separable.
+          const note = await session.page.locator('.cf-foot__note').first().innerText()
           // The literal changed on 2026-08-10 and the reason is the whole point of this journey.
           // EMBER now HAS a price — $0.0001, set by the operator through the administered-price
           // route and shown wherever this estate shows a value — so a footer still saying "no

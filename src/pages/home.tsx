@@ -6,15 +6,17 @@
  * it is in. The last of those is on the home page rather than buried, because a reader who finds
  * out on page four that none of this is running has been misled by pages one to three.
  *
- * Every product on this page comes from the registry through `productCards()`. There is no list of
- * products in this file.
+ * Every surface on this page comes from the registry — the six products through `productCards()`,
+ * the places that are not products through `nonProductCards()`. There is no list of either in this
+ * file, which is the property that let a publicly addressed surface be added to the estate and
+ * appear here on the same edit rather than three releases later (micro-org#488).
  */
 import { Link } from 'react-router-dom'
 import { minePage } from '../lib/hosts.ts'
-import { HOME } from '../content/pages.ts'
-import { productCards, productCount } from '../content/products.ts'
+import { ALSO_HERE, HOME } from '../content/pages.ts'
+import { nonProductCards, productCards, productCount } from '../content/products.ts'
 import { PLATFORM } from '../content/pages.ts'
-import { IncompleteNote, Ridge, Section, StageChip, SurfaceMark, accentProps } from '../components/parts.tsx'
+import { Ridge, Section, SurfaceCards, accentProps } from '../components/parts.tsx'
 
 /*
  * ── The order, and the fact that it is the only editorial change on this page ─────────────────
@@ -42,6 +44,7 @@ export function HomePage() {
       <Ridge />
       <Ember />
       <Products />
+      <AlsoHere />
       <Capabilities />
       <Spans />
       <Ridge />
@@ -206,34 +209,22 @@ function Products() {
   const cards = productCards()
   return (
     <Section title={HOME.products.title} lede={HOME.products.lede} id="products">
-      <ul className="si-cards">
-        {cards.map(({ surface: s, page }) => (
-          <li className="si-card" key={s.key} {...accentProps(s.key)}>
-            <Link className="si-card__link" to={`/products/${page.slug}`}>
-              <div className="si-card__head">
-                <SurfaceMark surfaceKey={s.key} size={30} />
-                <div>
-                  <p className="si-card__verb">{s.verb}</p>
-                  <h3 className="si-card__name">{s.name}</h3>
-                </div>
-              </div>
-              <p className="si-card__blurb">{s.blurb}</p>
-              {/*
-                Renders nothing for the five products that have something to show. It is called
-                unconditionally so that a second incomplete product cannot ship a tile that looks
-                finished because this grid forgot to ask.
-              */}
-              <IncompleteNote surfaceKey={s.key} />
-              <span className="si-card__foot">
-                <StageChip stage={page.stage} />
-                <span className="si-card__more" aria-hidden="true">
-                  →
-                </span>
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {/*
+        The blurb slot on THIS page is the registry's own one-liner, which is written to introduce a
+        surface to somebody who has never heard of it. The products index prints the page headline
+        instead, for a reader who is comparing rather than meeting. `SurfaceCards` takes it as a
+        parameter so the difference stays a decision; before micro-org#488 it was two copies of the
+        same markup that had quietly stopped agreeing.
+      */}
+      <SurfaceCards
+        cards={cards.map(({ surface: s, page }) => ({
+          key: page.key,
+          slug: page.slug,
+          eyebrow: page.eyebrow,
+          blurb: s.blurb,
+          stage: page.stage,
+        }))}
+      />
 
       {/*
         This read "Underneath all of them is Forge Hub — the account, the wallet, the portfolio and
@@ -246,6 +237,46 @@ function Products() {
       <p className="si-aside">
         All of them meet at <Link to="/products/hub">Forge Hub</Link>. {HOME.products.hubAside}
       </p>
+    </Section>
+  )
+}
+
+/**
+ * The second grid: the places that are not products (micro-org#488).
+ *
+ * ── WHY IT IS ON THE FRONT PAGE AND NOT ONLY ON /products ─────────────────────────────────────
+ *
+ * The defect reported was "Forge Exchange has no tile inside the main site", and a tile on the
+ * ecosystem index alone would have answered it for the reader who already knows to go looking.
+ * That reader is not the one who was lost. The estate's front door is where somebody finds out
+ * what CloudsForge has; the exchange had been open at its own public address, in the product
+ * switcher and in the footer of eighteen surfaces, and this page — the one the owner opened —
+ * offered no way in. So it goes here as well, and the two grids render from one component so they
+ * cannot come to disagree about what exists.
+ *
+ * ── AND WHY IT IS A SEPARATE SECTION RATHER THAN THREE MORE TILES ABOVE ───────────────────────
+ *
+ * "Where to spend it" is the honest heading for the six, and the pool is not somewhere you spend
+ * EMBER — it is where you get some. Folding these three into that grid would have made the heading
+ * false in order to make the grid bigger, which is the trade this site exists to refuse. A second
+ * heading over the same card costs one line and keeps both sentences true.
+ *
+ * It sits between the products and the capabilities argument, so the running order is still the
+ * one the header of this file describes: what it is, the loop, what you can do inside it, then the
+ * argument, then the state it is in. These are part of "what you can do inside it".
+ */
+function AlsoHere() {
+  return (
+    <Section title={ALSO_HERE.title} lede={ALSO_HERE.lede} id="also-here">
+      <SurfaceCards
+        cards={nonProductCards().map(({ surface: s, page }) => ({
+          key: page.key,
+          slug: page.slug,
+          eyebrow: page.eyebrow,
+          blurb: s.blurb,
+          stage: page.stage,
+        }))}
+      />
     </Section>
   )
 }

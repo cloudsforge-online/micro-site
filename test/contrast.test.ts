@@ -385,6 +385,51 @@ describe('the light ground', () => {
     }
   })
 
+  /**
+   * ══════════════════════════════════════════════════════════════════════════════════════════
+   * THE COMPANY LOGO IN THE FOOTER (micro-org#489)
+   *
+   * `.cf-logo__word b` — the "Forge" of "CloudsForge" — is `var(--cf-ember)`, and until this site
+   * mounted the shared footer there was no company logo on a light ground anywhere on it. The bar
+   * has one and carries `.cf-dark`, which re-asserts the dark ember for itself; the footer does
+   * not, so the token fell through to the root default and painted `#e8622c` on the light sunken
+   * ground at 2.62:1. axe caught it as a serious violation on `/` the first time the suite ran
+   * against the shared component.
+   *
+   * Three assertions, because the fix has three ways to come undone: the value can be deleted from
+   * the light block, the ramp it copies can move in the design system, and the pairing with the
+   * ink can be broken by changing either half.
+   */
+  it('sets the company ember as type at AA, which is the footer logo', () => {
+    check('ember on the page', lightToken('cf-ember'), LIGHT.page, TEXT_AA)
+    check('ember on a panel', lightToken('cf-ember'), LIGHT.raised, TEXT_AA)
+    check('ember in the footer', lightToken('cf-ember'), LIGHT.sunken, TEXT_AA)
+    check('ember-hover in the footer', lightToken('cf-ember-hover'), LIGHT.sunken, TEXT_AA)
+  })
+
+  it('copies the design system light ramp rather than inventing a second one', () => {
+    // The light block is written as hexes because this file parses it with a regex and cannot
+    // follow a `var()` into another package. That is a real cost and this is what pays it: the
+    // hexes have to BE the ramp, so retuning the ramp in `tokens.css` fails here rather than
+    // leaving one surface a shade off the other eighteen.
+    for (const [here, there] of [
+      ['cf-ember', 'cf-ember-light'],
+      ['cf-ember-hover', 'cf-ember-hover-light'],
+      ['cf-ember-text', 'cf-ember-light'],
+      ['cf-ember-ink', 'cf-ember-ink-light'],
+    ] as const) {
+      assert.deepEqual(
+        lightToken(here),
+        token(tokensCss, there),
+        `--${here} in the site's light block is no longer --${there} from the design system`,
+      )
+    }
+  })
+
+  it('keeps the label on the company fill legible on the light ground too', () => {
+    check('ember-ink on ember', lightToken('cf-ember-ink'), lightToken('cf-ember'), TEXT_AA)
+  })
+
   it('proves the RAW accents would fail here, which is why the mix exists', () => {
     // This assertion is inverted on purpose. It records the finding that produced `--si-accent`,
     // so that deleting the mix and going back to `var(--cf-accent)` fails a test that explains

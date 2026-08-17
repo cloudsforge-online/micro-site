@@ -11,13 +11,8 @@
  * Everything this app adds goes below the bar.
  */
 import { useEffect, useState } from 'react'
-import {
-  CloudsForgeBar,
-  CookieBanner,
-  PRODUCTS as REGISTRY_PRODUCTS,
-  miningOnHub,
-  surface,
-} from '@cloudsforge/ui'
+import { CloudsForgeBar, CloudsForgeFooter, CookieBanner, miningOnHub } from '@cloudsforge/ui'
+import type { AccountState } from '@cloudsforge/ui'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { hosts, isTestnet, liveUrl, PRODUCT } from '../lib/hosts.ts'
 import { NAV, ROUTES } from '../lib/routes.ts'
@@ -88,7 +83,13 @@ export function AppShell() {
         <Outlet key={viewed} />
       </main>
 
-      <SiteFooter />
+      {/*
+        `account` is passed so the shared footer can decide whether to show the operator consoles.
+        Omitting it is the SAFE default — it hides every `adminOnly` surface — but it is also
+        wrong for an operator reading the marketing site, who would find Admin and Lantern in the
+        footer of every other surface and not this one.
+      */}
+      <SiteFooter account={account} />
 
       {/*
         The consent banner is LAST in the document, which is last in the tab order, and it is not
@@ -209,169 +210,113 @@ function DocumentMeta() {
 }
 
 /**
- * The footer.
+ * The footer: `CloudsForgeFooter` from `@cloudsforge/ui`, plus this site's own pages.
  *
- * Three columns and a closing line. The product column is generated from the registry, so a sixth
- * product appears here without anybody editing this file — which is the whole reason the registry
- * exists, and the marketing site was one of the eight places that used to keep its own copy.
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ * WHAT WAS HERE BEFORE, AND WHY REPLACING IT WAS THE FIX RATHER THAN A TIDY-UP (micro-org#489)
  *
- * The outbound links resolve through `cloudsforgeHosts()` at runtime, so this footer points at
- * localhost ports under `pnpm dev` and at the real subdomains in production, from one bundle.
+ * A hand-written four-column footer — Products, This site, Elsewhere, and a closing line. Every
+ * link in it resolved correctly and nothing in it was broken, which is exactly why it survived so
+ * long: this file was one of only two bundles in the estate that did not mount the shared
+ * component (`micro-network-site` is the other, and renders no footer at all).
+ *
+ * The defect that follows from that is not cosmetic. `CloudsForgeFooter` builds its columns by
+ * partitioning the surface registry on `kind`, so a **Platform** column exists on all eighteen
+ * surfaces that mount it and lists every `kind: 'surface'` row — including Forge Journal. This
+ * footer had no such column. It had an "Elsewhere" list, typed by hand, of six surfaces somebody
+ * chose in 2026-08; the Journal shipped afterwards, registered itself, appeared in the Platform
+ * column of eighteen surfaces, and was reachable from **no link at all** on the estate's own front
+ * door. A publication nobody can navigate to is a publication that does not exist, and it is the
+ * SEO surface, so the whole point of building it was being wasted.
+ *
+ * The lesson is the one the registry exists for and this file was the last place still ignoring:
+ * **a hand-written list of surfaces is a list that stops being true silently.** Not with a broken
+ * link — with a missing one, which nothing goes red for and nobody reports because there is
+ * nothing on the page to report.
+ *
+ * So the fix is not "add a Journal link here". It is to stop having a second footer.
+ *
+ * ── WHAT THE SHARED COMPONENT DOES NOT KNOW, AND HOW THAT IS KEPT ─────────────────────────────
+ *
+ * Three of the old columns were restatements of things the registry already holds, and they are
+ * simply gone: "Products" is the registry's Products column, "Elsewhere" is Platform and More, and
+ * the legal links are the shared Legal column. One column was NOT a restatement. `/platform`,
+ * `/build` and `/about` are pages of THIS application; they exist on no other surface, and the
+ * only other place they are offered is `SiteNav` above — which is sticky under the bar and
+ * therefore scrolled past by a reader who has arrived at a footer.
+ *
+ * `CloudsForgeFooter`'s `columns` prop is for exactly that, and it can only ADD: there is no prop
+ * that removes a registry column, so this cannot drift back into a bespoke footer. See the note on
+ * `CloudsForgeFooterProps.columns`.
+ *
+ * ── THE ADDRESSES ARE ABSOLUTE, INCLUDING THIS SITE'S OWN ─────────────────────────────────────
+ *
+ * `<a href>` against `hosts().site`, not `<Link to>`. The shared footer is a plain-anchor
+ * component by construction — that is what lets one component be laid out by nineteen different
+ * shells, only one of which has a router — and its own link-reachability probe resolves every
+ * `href` as a URL. The cost is that a footer link inside this site is a document load rather than
+ * a client-side transition, which on a marketing site's navigation of last resort is not a cost
+ * worth an API for.
+ *
+ * ── THE CLOSING SENTENCE SURVIVES, IN THE SLOT BUILT FOR IT ───────────────────────────────────
+ *
+ * `note` exists because three surfaces had a footer containing nothing but such a sentence and
+ * centralising the chrome must not delete them. This site's is the honesty disclosure, and the
+ * pairing below is unchanged: the title, then `body[1]`, which is the DENIAL and not the
+ * reassurance.
+ *
+ * `BUILD.honesty` is a two-part disclosure and the halves are not interchangeable. `body[0]`
+ * elaborates the flattering claim — everything is built, it runs against real databases and a real
+ * EMBER network, an automated suite drives a real browser and fakes nothing. `body[1]` is what
+ * that does NOT mean: the main network is nearly empty with every transaction and every block on
+ * it our own, EMBER has no market and no listing and the price shown for it is one we set
+ * ourselves, nobody outside the project has used any of this, and there are no user numbers here
+ * for the same reason there is no uptime figure.
+ *
+ * The footer carried the title and then `body[0]` — the good news, twice, under a heading about
+ * honesty — while the denial appeared on `/build` alone. That is the shape this whole site is
+ * arranged against, and it was worst exactly where it mattered most: the home page invites a
+ * reader to mine EMBER and never said what the coin is worth. The estate's rule
+ * (docs/ecosystem/18-build-status.md:38, restated for both networks at :118-122, and rule 4 of
+ * docs/ecosystem/32-roadmap-ui-and-content.md §1) is that the page inviting someone to mine EMBER
+ * must also say what EMBER is not. `body[0]` is not lost: it is the first paragraph of the callout
+ * on `/build`, one click away.
+ *
+ * The paraphrase above is maintained by hand and has drifted twice, which is the argument against
+ * comments like it making itself. It is kept because the halves of this disclosure are easy to
+ * swap by accident; it is NOT the rendered text, which is read from `BUILD.honesty`.
  */
-function SiteFooter() {
+function SiteFooter({ account }: { account: AccountState | undefined }) {
   const h = hosts()
-  const pages = ROUTES.filter((r) => r.label !== null && r.path !== '')
-  const legal = ROUTES.filter((r) => r.label === null)
+
+  /*
+   * This site's own pages, derived from the route table rather than listed. A route added to
+   * `lib/routes.ts` with a nav label appears here on the same edit, which is the property the
+   * hand-written column above did not have and the reason the Journal went missing.
+   *
+   * The legal routes (`label: null`) are deliberately NOT included: the shared footer's Legal
+   * column already carries all three, resolved against `cloudsforgeHosts().site`, which on this
+   * surface is this origin. Listing them twice would put six links to three pages in one footer.
+   */
+  const own = ROUTES.filter((r) => r.label !== null && r.path !== '').map((r) => ({
+    href: `${h.site}/${r.path}`,
+    label: r.label as string,
+  }))
 
   return (
-    <footer className="si-footer">
+    <>
       <Ridge className="si-ridge--footer" />
-      <div className="si-footer__inner">
-        <div className="si-footer__cols">
-          <nav className="si-footer__col" aria-label="Products">
-            <h2 className="si-footer__title">Products</h2>
-            <ul className="si-footer__list">
-              {REGISTRY_PRODUCTS.map((s) => (
-                <li key={s.key}>
-                  <Link to={`/products/${s.key}`}>{s.name}</Link>
-                </li>
-              ))}
-              {/* Hub last and separately: it is the container rather than one of the products. */}
-              <li>
-                <Link to="/products/hub">{surface('hub').name}</Link>
-              </li>
-              {/*
-                The mining pool, also separately, and for the mirror-image reason: it is chain
-                infrastructure rather than something a person chooses between, so it is a `service`
-                in the registry and REGISTRY_PRODUCTS above does not carry it.
-
-                It is in this column anyway because the page exists and nothing led to it. Until
-                2026-08-10 the only thing on this site that mentioned the pool was a home-page
-                capability whose "See the pool" link resolved to /products/pool — an address
-                nginx.conf enumerated no location for, which answered a hard 404. This site and
-                micro-network-site are also the only two bundles in the estate that do not mount
-                `CloudsForgeFooter`, whose "More" column is where every other surface links the
-                pool from, so there was no second route to fall back on either.
-              */}
-              <li>
-                <Link to="/products/pool">{surface('pool').name}</Link>
-              </li>
-            </ul>
-          </nav>
-
-          <nav className="si-footer__col" aria-label="This site">
-            <h2 className="si-footer__title">This site</h2>
-            <ul className="si-footer__list">
-              {pages.map((r) => (
-                <li key={r.path}>
-                  <Link to={`/${r.path}`}>{r.label}</Link>
-                </li>
-              ))}
-              {/*
-                A legal route has no nav label — that is what keeps it out of the header — so the
-                link text is the clause of its summary before the dash. "Terms of service", not the
-                whole sentence: a footer link is a name, and the rest of the summary is the
-                description the metadata already uses.
-              */}
-              {legal.map((r) => (
-                <li key={r.path}>
-                  <Link to={`/${r.path}`}>{r.summary.split(' — ')[0]}</Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          <nav className="si-footer__col" aria-label="Elsewhere">
-            <h2 className="si-footer__title">Elsewhere</h2>
-            <ul className="si-footer__list">
-              {/* Every href here is a registry lookup, never a typed URL. */}
-              <li>
-                <a href={h.hub}>{surface('hub').name}</a>
-              </li>
-              {/*
-                `signin`, NOT `account`. The `account` row is a RESERVED hostname that nothing
-                serves and that has no DNS record — `account.cloudsforge.online` does not resolve,
-                measured 2026-08-05 — so this footer entry was a dead link on the estate's public
-                front page. Its own registry row says so: "do not resolve this one for a redirect
-                until something answers it" (`ui/packages/ui/src/surfaces.ts`, the `account` row).
-                The address a person is actually sent to is the `signin` row, which rides on Hub as
-                `hub.<apex>/account` and therefore resolves and is served.
-
-                Found while fixing the same defect class in `worlds-web`, whose API_SURFACE pointed
-                at the equally unresolvable `worlds-api.<apex>`.
-              */}
-              <li>
-                <a href={h.signin}>{surface('signin').name}</a>
-              </li>
-              <li>
-                <a href={h.developers}>{surface('developers').name}</a>
-              </li>
-              <li>
-                <a href={h.status}>{surface('status').name}</a>
-              </li>
-              <li>
-                <a href={h.explorer}>{surface('explorer').name}</a>
-              </li>
-              {/*
-                The pool CONSOLE, which is a different destination from the /products/pool page in
-                the first column and belongs beside the explorer for the same reason: both are
-                chain infrastructure a reader opens to see live numbers rather than to read about.
-                The page states what the pool is; only the console can say which chains it is
-                serving right now, how fresh the work is and what it has found, because it reads
-                all of that from `GET /v1/pool` on every load.
-              */}
-              <li>
-                <a href={h.pool}>{surface('pool').name}</a>
-              </li>
-            </ul>
-          </nav>
-        </div>
-
-        {/*
-          The closing line is the build page's own honesty section rather than a second copy of it.
-          When that sentence stops being true it stops being true here at the same instant.
-
-          ── IT IS `body[1]`, THE DENIAL, AND IT USED TO BE `body[0]`, THE REASSURANCE ───────────
-
-          `BUILD.honesty` is a two-part disclosure and the halves are not interchangeable. The
-          title is the flattering claim — "Open to the public, and days old". `body[0]` elaborates
-          it: everything is built, it runs against real databases and a real EMBER network, an
-          automated suite drives a real browser and fakes nothing. `body[1]` is what that does NOT
-          mean: the main network is days old and nearly empty with every transaction and every block
-          on it our own, EMBER has no market and no listing and the price shown for it is one we set
-          ourselves, nobody outside the project has used any of this, and there are no user numbers
-          here for the same reason there is no uptime figure.
-
-          That paraphrase is maintained by hand and it has now drifted TWICE, which is the argument
-          against comments like this one making itself. First it said "a few hundred blocks old"
-          after `body[1]` had been corrected, because measured 2026-08-10 the chain was at 10,987
-          blocks. Then it said "still at its launch difficulty" for about six hours: browser mining
-          shipped in 2.5.16, one reader's tab took the difficulty from the floor to 8,146 and back
-          out again, and EMBER acquired an administered price of $0.0001 the same evening
-          (micro-org#363). A comment restating copy it does not own is a second copy of that copy,
-          and the second copy is the one that rots. It is kept because the halves of this
-          disclosure are easy to swap by accident and the reason has to be readable here; it is
-          NOT the rendered text, which is read from `BUILD.honesty` below.
-
-          The footer carried the title and then `body[0]` — the good news, twice, under a heading
-          about honesty — while the denial appeared on `/build` alone. That is the shape this whole
-          site is arranged against, and it was worst exactly where it mattered most: the home page
-          invites a reader to mine EMBER and never said what the coin is worth. The estate's rule
-          (docs/ecosystem/18-build-status.md:38, restated for both networks at :118-122, and rule 4
-          of docs/ecosystem/32-roadmap-ui-and-content.md §1) is that the page inviting someone to
-          mine EMBER must also say what EMBER is not.
-
-          So the pair rendered here is the claim and its denial — the title, then `body[1]` — and
-          that pair is now in chrome, which means it is on every address this site serves rather
-          than on the one page a convinced reader has no reason to open. `body[0]` is not lost: it
-          is the first paragraph of the callout on `/build`, one click away, above the
-          surface-by-surface table.
-        */}
-        <p className="si-footer__note">
-          <strong>{BUILD.honesty.title}.</strong> {BUILD.honesty.body[1]}{' '}
-          <Link to="/build">Where each part stands</Link>
-        </p>
-      </div>
-    </footer>
+      <CloudsForgeFooter
+        current={PRODUCT}
+        account={account}
+        columns={[{ title: 'This site', links: own }]}
+        note={
+          <>
+            <strong>{BUILD.honesty.title}.</strong> {BUILD.honesty.body[1]}{' '}
+            <Link to="/build">Where each part stands</Link>
+          </>
+        }
+      />
+    </>
   )
 }
