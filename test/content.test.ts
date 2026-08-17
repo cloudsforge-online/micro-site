@@ -314,10 +314,10 @@ describe('the product pages and the registry', () => {
   })
 
   /**
-   * The two keys excluded here are the two pages that are deliberately NOT products, and the
-   * exclusion is a list rather than a predicate on purpose: `kind !== 'product'` would let any
-   * future non-product page in without anybody deciding to admit it, which is the whole thing
-   * this assertion is for. Each name below had to be typed by somebody.
+   * The keys excluded here are the pages that are deliberately NOT products, and the exclusion is
+   * a list rather than a predicate on purpose: `kind !== 'product'` would let any future
+   * non-product page in without anybody deciding to admit it, which is the whole thing this
+   * assertion is for. Each name below had to be typed by somebody.
    *
    *   `hub`   the account the products run on. A container is not a peer of the things inside it.
    *   `pool`  the mining pool console, added 2026-08-10. It is a `service` in the registry and
@@ -334,8 +334,20 @@ describe('the product pages and the registry', () => {
    *           the estate's compose file, the smoke tier and the public tunnel, and it failed the
    *           build the day the first two changed. That derivation is what made publishing the
    *           page while it was still a plan defensible at all.
+   *   `journal`  Forge Journal, added 2026-08-17: the writing archive. A `surface` in the
+   *           registry and the only entry on this list that could never become a product — it
+   *           sells nothing, holds nothing and has no account on it, which is the property the
+   *           whole archive is written to keep. It has a page under `/products` for the same
+   *           reason `pool` does: the ecosystem links to it, and a link this site offers has to
+   *           land somewhere this site can be held to. Its chip reads `running` rather than
+   *           `open` because `PUBLIC_SURFACES` refuses a key whose address has not been fetched,
+   *           and that refusal is the reason this is worth writing down: the archive is the first
+   *           surface whose pages are all written at BUILD time, so the one thing a stage cannot
+   *           tell you here is whether the prerender's output was ever copied into the image.
+   *           `beacon/src/browser/smoke.ts` is what tells you that, by pinning a sentence that
+   *           exists only in the prerendered file.
    */
-  const NON_PRODUCT_PAGES: readonly string[] = ['hub', 'pool', 'exchange']
+  const NON_PRODUCT_PAGES: readonly string[] = ['hub', 'pool', 'exchange', 'journal']
 
   it('covers every registry product, and invents none', () => {
     // Both directions. A product with no page vanishes from the site silently; a page with no

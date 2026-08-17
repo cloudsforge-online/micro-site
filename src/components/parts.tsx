@@ -104,6 +104,12 @@ export const SCOPED_SURFACES: readonly SurfaceKey[] = [
   // for the reason the note above records: scoping a key that is not declared falls through to the
   // company ember in silence, and silence is the failure this list exists to make loud.
   'exchange',
+  // Scoped by the same "rest of it" strip, and by this page's own chrome. `journal` carries its
+  // own accent in the registry rather than sharing one — `[data-cf-product='journal']` is a block
+  // of its own in tokens.css — so the check below is doing real work here: a key added to this
+  // list before the stylesheet had a block for it would fall through to the company ember in
+  // silence, which is exactly what `admin` did for an unknown length of time.
+  'journal',
 ]
 
 /**

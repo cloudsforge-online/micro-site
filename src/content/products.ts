@@ -772,6 +772,110 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     // work for the phase that gives this page an audience to share it with.
     ogImage: '/og-1200x630.png',
   },
+
+  {
+    /**
+     * ── THE ARCHIVE, AND WHY IT IS A SURFACE INSTEAD OF A `/blog` ROUTE ON THIS SITE ──────────
+     *
+     * The cheap shape for this was a route here. This repository already has the shell, the
+     * chrome, the meta tier and a prerender, so `/blog` would have cost an afternoon and no new
+     * container. It is a separate surface instead, and the reason is that the two have opposite
+     * rules and both sets are right for what they cover.
+     *
+     * `test/content.test.ts` holds every sentence on this site to a register that forbids an
+     * unregistered digit, any rate at all, any currency and any hostname. That is correct for
+     * marketing copy — it is the rule that caught three drifted figures — and it makes an article
+     * about the ways people lose crypto literally unwritable: the piece needs to count the ways,
+     * name the wallets and quote what a mistake costs. So the writing lives in `journal-web`,
+     * under its own suite with its own rules, one of which is stricter than anything here: a
+     * number in a sentence that names THIS estate has to be a registered claim, and another
+     * refuses any sentence that tells a reader what to do with their money.
+     *
+     * ── IT IS A `surface` IN THE REGISTRY, AND THIS PAGE DOES NOT MAKE IT A PRODUCT ───────────
+     *
+     * `productCards()` filters on `kind === 'product'`, so this adds no card to the index grid and
+     * `productCount()` is unchanged. Hub's precedent, then the pool's, then the exchange's, and
+     * this is the fourth page under `/products` that is deliberately not one — `surfaceCount()`
+     * counts `PRODUCT_PAGES` rather than assuming the registry's product list, which is what makes
+     * a fourth possible without a number moving anywhere a reader can see.
+     *
+     * ── THE STAGE IS `running`, AND THE REASON IT IS NOT `open` IS AN EVENT THAT HAS NOT HAPPENED
+     *
+     * Both halves of `running` are met: `journal-web` is a declared service in the estate's
+     * compose file, and `beacon/src/browser/smoke.ts` drives a real browser at it through the real
+     * gateway. `PUBLIC_SURFACES` in `./stages.ts` deliberately does NOT carry the key yet. The
+     * mainnet tunnel already routes the name — that file is generated from the registry, one row
+     * per surface, whether or not anything answers — so the static half of `open` would pass and
+     * mean nothing. What refuses it is `test/public-endpoints.test.ts`, which fetches every key on
+     * that list and requires 200 on a certificate the public already trusts. The key joins on the
+     * fetch, after the deploy, exactly as `exchange` did on 2026-08-16.
+     *
+     * ── WHAT THIS PAGE MAY SAY, AND WHAT ONLY THE ARCHIVE MAY SAY ─────────────────────────────
+     *
+     * No count of articles, and no title quoted as a headline. The archive grows by somebody
+     * writing, without this repository being touched, so a count typed here rots at whatever rate
+     * the writing happens — the pool page's rule, for the pool page's reason. This page carries
+     * the proposition: who it is for, what it refuses to do, and how it is published. The index
+     * carries the pieces, and it is one link away.
+     */
+    key: 'journal',
+    slug: 'journal',
+    eyebrow: 'Read',
+    // `${linkLabel} — ${headline} — CloudsForge`, inside the ninety characters `test/meta.test.ts`
+    // allows. The headline is the archive's own opening line, shortened to its first clause: the
+    // page and the thing it points at should introduce themselves with the same words.
+    headline: 'Crypto, written down plainly',
+    standfirst: [
+      'Forge Journal is where this project writes things down for people who are not engineers: what crypto actually is once the jargon is taken out of it, the ways people lose it and the habits that prevent each one, what owning something that moves all night does to your attention, why we run a chain of our own, and a plain tour of the platform for anybody who arrived without a map.',
+      'It is published writing rather than a feed. Nothing is behind a sign-in, nothing asks for your email address, no piece stops halfway to sell you something, and no sentence in it tells you what to do with your money — an article a reader needs an account to finish is not published writing, and a guide that ends in a recommendation was an advertisement all along.',
+    ],
+    blurb:
+      'Plain-language writing about crypto, the chain and this ecosystem: no sign-in, no newsletter wall, no price predictions, and nothing you have to already know.',
+    stage: 'running',
+    stageNote:
+      'Running in the estate and walked by a real browser through the real gateway, with nothing intercepted. Its own public address is configured and has not been proven to answer, so this page does not claim one — the chip is recomputed from the estate on every build, and it moves itself the day the address does.',
+    sections: [
+      {
+        title: 'Written for somebody who has never owned any',
+        body: [
+          'The opening piece explains what crypto is without using the words the industry explains it with. No whitepaper vocabulary, no assumption the reader already holds some, and no promise that any of it will make anybody rich. That register is the whole archive, not one introductory concession before the real writing starts.',
+          'The rest are the pieces people actually need. How money is lost here, one way at a time, each with the habit that prevents it. What a number that moves all night does to your sleep and your attention, and the unglamorous routines that take it back. Why a project this size built its own chain, including the argument against having done it. And a tour of what is on this platform, written for somebody who has not been here before.',
+          'Nothing in it quotes a price, predicts one, or suggests what you should buy. That is not a house style anybody has to remember: the archive’s own suite refuses a sentence that tells a reader what to do with their money, and refuses any number about this estate that is not a registered, sourced claim.',
+        ],
+      },
+      {
+        title: 'Every page is a file, written before anybody asks for it',
+        body: [
+          'There is no content system behind the archive and no database under it. Every page — each article, each topic, the index and the search page — is written out as finished HTML when the site is built, and the file on disk is what both a reader and a search engine receive. Nothing is assembled in your browser after the fact, so the words are there in the first response rather than one round trip later.',
+          'That is the difference between a page a crawler can read and a page it has to be trusted to run. Each one carries its own canonical address, its own link-preview card and machine-readable structured data saying what it is, who published it and when. The whole archive is also a feed, so it can be read in a reader with nothing installed and no account anywhere.',
+          'Every picture is drawn for its piece and carries a written description for anybody who cannot see it, which is checked rather than encouraged. The build fails if an article names an image that is not on disk — the failure this estate has already shipped once, on a surface that rendered as a page of headlines over grey rectangles while every other check stayed green.',
+        ],
+      },
+      {
+        title: 'Topics rather than a firehose, and a way to find things',
+        body: [
+          'Pieces are filed under a small number of topics — starting out, staying safe, living with it, the chain, and the ecosystem — and each topic is a real page with its own address, so a link to the safety writing is a link somebody can send. There is a search across the archive as well, and it runs over the same text that was written into the pages rather than over a separate index that can disagree with them.',
+          'There is no posting schedule and this page will not invent one. Writing appears when there is something worth saying, each piece carries the date it was published and the date it was last changed, and a piece that is edited says so rather than quietly becoming a different article.',
+        ],
+      },
+      {
+        title: 'What it does not do, and one of those is on purpose',
+        body: [
+          'You cannot reply to anything. That is deliberate rather than unfinished: a comment box under an article about how people lose crypto is an invitation to whoever is best at sounding helpful, and moderating one properly is a product rather than a feature. Discussion is worth building; it is worth building as its own thing, with the people and the tools that job actually needs.',
+          'There is one writer and the pieces are signed by the project rather than by a person, which is honest about how they are made and is not a permanent arrangement. There is no translation into any other language yet, and the archive is written in a plain English that would survive one — which is the cheap half of that work, done early.',
+        ],
+      },
+    ],
+    // Its own key. `src/pages/products.tsx` renders the outbound button only for a surface that is
+    // BOTH serving a UI and `open`, and this one is not open yet — so there is no button on this
+    // page today, and there will be one the day the address is proven rather than the day somebody
+    // types a link. That is the same arrangement that kept a dead link off the exchange page.
+    linkTo: 'journal',
+    linkLabel: 'Forge Journal',
+    // The generic card, as the pool and exchange pages take. There is no `public/og/journal.png`,
+    // and naming a file that does not exist would publish a broken preview.
+    ogImage: '/og-1200x630.png',
+  },
 ]
 
 /** Page lookup by slug. An unknown slug is a 404, never a redirect to the index. */

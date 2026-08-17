@@ -345,4 +345,10 @@ export const RUNS_ON: Readonly<Record<string, readonly string[]>> = {
   // micro-deploy carries a `# REMOVED: cf-api-exchange` line saying the same thing, so that a
   // reader who goes looking for the API finds the reason rather than a gap.
   exchange: ['exchange-web'],
+  // ONE CONTAINER, FOR THE OPPOSITE REASON TO THE EXCHANGE'S. There is no `journal` service
+  // because there is nothing for one to do: the archive has no API, no CMS and no database, and
+  // `journal-web`'s image already contains every page it will ever serve — `scripts/prerender.ts`
+  // writes each route, the feed, the sitemap and the robots file at build time. So the container
+  // named here is not a bundle in front of a service; it is the whole product.
+  journal: ['journal-web'],
 }
