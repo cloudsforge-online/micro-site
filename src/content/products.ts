@@ -729,6 +729,26 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
         ],
       },
       {
+        // ── WRITTEN WHEN THE WRITE HALF SHIPPED, AND SCOPED TO WHAT THE SURFACE ACTUALLY DOES ──
+        //
+        // Until this release the surface could only swap: the pools were real, the deposit was a
+        // transaction somebody had to build themselves, and this page said "you trade against the
+        // pool" because that was the whole of it. Deposit, withdraw and create-a-market are now
+        // pages, so the sentence that used to describe the exchange describes a quarter of it.
+        //
+        // The second paragraph is the one that matters and it is deliberately not sales copy.
+        // Impermanent loss and the empty-pool ratio are the two ways a depositor loses money
+        // without anybody doing anything wrong, and a product page that omits them is leaving the
+        // explanation to the transaction. The surface itself carries the same two warnings at the
+        // moment of signing; this is the version a reader meets before they have a wallet open.
+        title: 'The pools are open, and depositing into one is a different decision from trading',
+        body: [
+          'Anybody holding a key can do all of it from the surface now, with no account and nobody to ask: swap against a pool, deposit into one and take the position back out again, or create a market for two tokens that do not have one yet. The factory on Hearth checks no caller and charges nothing for it, so the page does not pretend to be a gate it is not — what it does instead is show you the address the new pair will have before you sign, derived in your own browser.',
+          'Depositing is where that openness costs something, and the honest version belongs here rather than in a tooltip. A share of a pool is a claim on whatever the pool holds when you withdraw, not on the two amounts you put in: trading changes the mix, so a pool whose price has moved hands back more of the side that fell. Into an empty pool it is sharper still, because the ratio you deposit becomes the price — and if that is not what the two coins are worth elsewhere, the first person to trade takes the difference out of your deposit.',
+          'And a market existing here says nothing about what is in it. Anyone can create one for any token, including one that borrows a name, so the surface shows the contract address a pair was derived from and leaves the judgement with the person signing. That is the same bargain as the rest of this product: nothing of yours is held by anybody, and nothing of yours is vetted by anybody either.',
+        ],
+      },
+      {
         title: 'It is running, and the numbers are the chain’s rather than ours',
         body: [
           'The pool is a port of the constant-product exchange most of this industry already runs, written out in full in the chain’s own repository, and a suite there drives it through Hearth’s virtual machine end to end: deploy, create a pair, add the first liquidity, swap one way and back through the native-coin path, exercise a signed approval, withdraw. Running somebody else’s audited, industrial contract code — compiled by people who had never heard of this interpreter — is a harder test of the virtual machine than any specification vector, which is why the exchange was written long before there was anywhere to put it.',
