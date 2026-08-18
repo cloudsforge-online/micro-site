@@ -876,7 +876,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     // page and the thing it points at should introduce themselves with the same words.
     headline: 'Crypto, written down plainly',
     standfirst: [
-      'Forge Journal is where this project writes things down for people who are not engineers: what crypto actually is once the jargon is taken out of it, the ways people lose it and the habits that prevent each one, what owning something that moves all night does to your attention, why we run a chain of our own, and a plain tour of the platform for anybody who arrived without a map.',
+      'Forge Journal is where this project writes things down for people who are not engineers: what crypto actually is once the jargon is taken out of it, the ways people lose it and the habits that prevent each one, what owning something that moves all night does to your attention, why we run a chain of our own, a plain tour of the platform for anybody who arrived without a map, and what to make of the things that happen out on the older chains and in the market around them.',
       'It is published writing rather than a feed. Nothing is behind a sign-in, nothing asks for your email address, no piece stops halfway to sell you something, and no sentence in it tells you what to do with your money — an article a reader needs an account to finish is not published writing, and a guide that ends in a recommendation was an advertisement all along.',
     ],
     blurb:
@@ -890,6 +890,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
         body: [
           'The opening piece explains what crypto is without using the words the industry explains it with. No whitepaper vocabulary, no assumption the reader already holds some, and no promise that any of it will make anybody rich. That register is the whole archive, not one introductory concession before the real writing starts.',
           'The rest are the pieces people actually need. How money is lost here, one way at a time, each with the habit that prevents it. What a number that moves all night does to your sleep and your attention, and the unglamorous routines that take it back. Why a project this size built its own chain, including the argument against having done it. And a tour of what is on this platform, written for somebody who has not been here before.',
+          'There is writing about the wider world as well: what actually happened when a chain wobbled or a market turned, worked out from the chains’ own records rather than from the reporting about them, with the part nobody can know said plainly instead of filled in. It is the same register as the rest — an explanation of something that already happened, never a suggestion about what happens next.',
           'Nothing in it quotes a price, predicts one, or suggests what you should buy. That is not a house style anybody has to remember: the archive’s own suite refuses a sentence that tells a reader what to do with their money, and refuses any number about this estate that is not a registered, sourced claim.',
         ],
       },
@@ -904,7 +905,7 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       {
         title: 'Topics rather than a firehose, and a way to find things',
         body: [
-          'Pieces are filed under a small number of topics — starting out, staying safe, living with it, the chain, and the ecosystem — and each topic is a real page with its own address, so a link to the safety writing is a link somebody can send. There is a search across the archive as well, and it runs over the same text that was written into the pages rather than over a separate index that can disagree with them.',
+          'Pieces are filed under a small number of topics — starting out, staying safe, living with it, the chain, the ecosystem, and the wider world — and each topic is a real page with its own address, so a link to the safety writing is a link somebody can send. There is a search across the archive as well, and it runs over the same text that was written into the pages rather than over a separate index that can disagree with them.',
           'There is no posting schedule and this page will not invent one. Writing appears when there is something worth saying, each piece carries the date it was published and the date it was last changed, and a piece that is edited says so rather than quietly becoming a different article.',
         ],
       },
