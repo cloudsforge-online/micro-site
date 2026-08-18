@@ -944,15 +944,24 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
      *
      * ── `running`, AND THE ORDER MATTERS MORE HERE THAN THE STAGE DOES ────────────────────────
      *
-     * Both halves of `running` are met on the day this ships: `agora`, `agora-web` and the
+     * Both halves of `running` were met on the day this shipped: `agora`, `agora-web` and the
      * one-shot migrator are declared in the estate's compose file, and `beacon/src/browser/smoke.ts`
      * drives a real browser at the square through the real gateway. `PUBLIC_SURFACES` in
-     * `./stages.ts` deliberately does NOT carry the key yet. The mainnet tunnel already routes the
+     * `./stages.ts` deliberately did NOT carry the key. The mainnet tunnel already routed the
      * name — that file is generated one row per registry surface, whether or not anything answers
-     * — so the static half of `open` would pass and mean nothing, exactly as it would have for the
-     * exchange and for the archive. What refuses it is `test/public-endpoints.test.ts`, which
-     * fetches every key on that list and requires 200 on a certificate the public already trusts.
-     * The chip moves on the fetch, one release later, and nobody chooses a stage.
+     * — so the static half of `open` would have passed and meant nothing, exactly as it would have
+     * for the exchange and for the archive. What refused it is `test/public-endpoints.test.ts`,
+     * which fetches every key on that list and requires 200 on a certificate the public already
+     * trusts.
+     *
+     * ── AND THEN IT MOVED, WHICH TOOK ONE DAY RATHER THAN THE RELEASE EXPECTED ────────────────
+     *
+     * `agora.cloudsforge.online` answers 200 on a public certificate and `/v1/timeline/latest`
+     * returns an empty timeline rather than an error, read on 2026-08-18 — so the key is on
+     * `PUBLIC_SURFACES`, the fetch passes, and the chip recomputes to `open`. The chip moved
+     * because the estate moved; nobody chose a stage. The paragraph above is left standing rather
+     * than rewritten, because the interesting thing about this page is the ORDER — address first,
+     * key second — and a comment that describes only the end state cannot teach it.
      *
      * ── WHAT THIS PAGE MAY NOT SAY ───────────────────────────────────────────────────────────
      *
@@ -974,9 +983,9 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
     ],
     blurb:
       'The ecosystem’s public square: posts, replies, rooms and private messages, on the account you already have — and readable without one.',
-    stage: 'running',
+    stage: 'open',
     stageNote:
-      'Deployed in the estate and walked end to end by a real browser through the real gateway, which is what the chip on this card means and all it means. There is no address on the public internet yet, so this page offers no button — the link appears on the day the address answers, rather than the day somebody types one.',
+      'Deployed in the estate, walked end to end by a real browser through the real gateway, and answering on the public internet on a certificate every browser already trusts. What it is not is busy: the square opens with nothing in it, and the last section on this page says so rather than dressing it up.',
     sections: [
       {
         title: 'A name of your own, on the account you already have',
@@ -1019,9 +1028,10 @@ export const PRODUCT_PAGES: readonly ProductPage[] = [
       },
     ],
     // Its own key. `src/pages/products.tsx` renders the outbound button only for a surface that is
-    // BOTH serving a UI and `open`, and this one is not open yet — so there is no button on this
-    // page today, and there will be one the day the address is proven rather than the day somebody
-    // types a link. The same arrangement kept a dead link off the exchange page for two days.
+    // BOTH serving a UI and `open`, so this page carried no button on the day it shipped and grew
+    // one when the address answered — the link appeared because the estate changed, not because
+    // somebody typed a URL. The same arrangement kept a dead link off the exchange page for two
+    // days, and off the archive page for one.
     linkTo: 'agora',
     linkLabel: 'Forge Agora',
     // The generic card, as the pool, exchange and journal pages take. There is no

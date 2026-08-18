@@ -330,6 +330,27 @@ export const PUBLIC_SURFACES: readonly string[] = [
   // a `-testnet` name to serve a different copy OF. See the header on why no testnet hostname may
   // appear in this list.
   'journal',
+  // ── `agora` MADE THE SAME TRIP, AND IT TOOK ONE DAY ──────────────────────────────────────────
+  //
+  // The square shipped in 2026.8.74 with its key deliberately off this list, and its page said so
+  // in as many words: "there is no address on the public internet yet, so this page offers no
+  // button". The tunnel file already named `agora.<apex>` — generated one row per registry surface
+  // whether or not anything answers — so typing the key here first would have published "Open to
+  // the public" over a name nothing served. That is the failure this list exists to refuse.
+  //
+  // The deploy ended it inside the hour. `curl https://agora.cloudsforge.online/` returns 200 on a
+  // certificate the public already trusts — no `-k`, no `--cacert` — and `/v1/timeline/latest`
+  // returns an empty timeline rather than an error, read on 2026-08-18. An empty timeline is the
+  // right answer on the first day and it is a REACHED service answering, which is the only thing
+  // this list is a claim about.
+  //
+  // ONE ADDRESS, BOTH NETWORKS, and this one is unusually easy to get wrong. `agora-testnet.<apex>`
+  // is in the testnet tunnel file and answers 302 to the name above — but that is only the WEB half
+  // being retired. The API half of that hostname is live and load-bearing: `cf-api-agora` matches
+  // `/v1` at a higher priority than the redirect, which is how the mainnet bundle reads a testnet
+  // timeline. So the testnet name serves something real and still may not appear here, because
+  // what it serves is not a surface a reader visits. See the header.
+  'agora',
 ]
 
 /**
