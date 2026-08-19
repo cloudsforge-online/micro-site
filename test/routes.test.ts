@@ -445,7 +445,13 @@ describe('the sitemap', () => {
      */
     const block = /location = \/robots\.txt \{[\s\S]*?\n    \}/.exec(directives)?.[0] ?? ''
     const mounted = SURFACES.filter((s) => s.subdomain === '' && s.basePath && servesOwnBundle(s))
-    assert.ok(mounted.length >= 3, 'the registry lists no consolidated surface, so this asserts nothing')
+    // The vacuity guard, and it is `> 0` rather than a count ON PURPOSE. It read `>= 3` for one
+    // CI run and failed there for the wrong reason: micro-site's CI checks out micro-ui at
+    // whatever `main` is when the job starts, so the number of consolidated surfaces is a moving
+    // target this repository does not control. Pinning it would also be the literal-that-rots this
+    // whole test was written to remove, one number instead of one line. What must not happen is
+    // the loop finding NOTHING and reporting success, and that is what this says.
+    assert.ok(mounted.length > 0, 'the registry lists no consolidated surface, so this asserts nothing')
     for (const s of mounted) {
       assert.ok(
         block.includes(`Sitemap: https://$host${s.basePath}/sitemap.xml`),
