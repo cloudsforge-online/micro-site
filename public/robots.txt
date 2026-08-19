@@ -24,5 +24,29 @@ Allow: /
 # site's — per article and per topic, each with a real `lastmod` from the article's front matter.
 Disallow: /journal/search
 
+# Forge Agora is served at /agora on this origin, and these six are ITS rules, not this site's —
+# moved here in wave 3c of the consolidation when the square stopped having a robots.txt of its own.
+#
+# Five are the reader's own pages. Each needs a token and answers 401 without one, so a crawler
+# gains nothing by fetching them; but `/agora/whispers` in a search index is a URL that READS like a
+# public page of private messages, and that impression is worth six lines to avoid. `/agora/search`
+# is public and disallowed for the ordinary reason: an infinite query space is a full-text scan of
+# the whole square, once per crawler.
+#
+# `/agora/moderation` is private and deliberately absent. Nothing links to it, its own robots meta
+# says noindex, and a Disallow is a PUBLIC statement that an address exists — naming the operator
+# queue in the first file a curious stranger opens is worse than the risk it would mitigate.
+#
+# These six are DERIVED, in the served copy: they come from `noIndexPaths` on agora's row in
+# micro-ui's surface registry, prefixed with its basePath, and test/routes.test.ts fails if any
+# declared path is missing from nginx.conf. This development copy is compared against that one, so
+# it cannot drift either.
+Disallow: /agora/home
+Disallow: /agora/notifications
+Disallow: /agora/whispers
+Disallow: /agora/bookmarks
+Disallow: /agora/settings
+Disallow: /agora/search
+
 # An unknown address on this site answers a real 404 rather than the 200 a single-page application
 # usually returns, so a crawler that follows a stale link is told the truth and can drop it.
