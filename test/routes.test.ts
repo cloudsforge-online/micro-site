@@ -461,4 +461,47 @@ describe('the sitemap', () => {
       )
     }
   })
+
+  it('carries every Disallow a consolidated surface declared, prefixed with its mount', () => {
+    /*
+     * ── THE OTHER HALF OF "A FOLDER HAS NO robots.txt" ─────────────────────────────────────────
+     *
+     * The test above covers what a moved surface wants ANNOUNCED. This covers what it wants
+     * FORBIDDEN, and until wave 3c no moved surface had wanted anything forbidden — the journal's
+     * one `Disallow:` was written here by hand in wave 1 and the exchange, market, create and
+     * trade brought none.
+     *
+     * Forge Agora brought six. Copying them out of `agora-web/nginx.conf` into this file would
+     * have been the obvious move and it would have been a copy: two repositories stating the same
+     * six addresses, with nothing comparing them, in a file whose whole purpose is that the rule
+     * exists in exactly one place.
+     *
+     * So the surface declares them on its REGISTRY ROW — `noIndexPaths`, router paths — and this
+     * derives `Disallow: <basePath><path>` for each. A surface that arrives with rules is covered
+     * by declaring them once; nobody has to remember this repository exists.
+     *
+     * ONE-DIRECTIONAL, DELIBERATELY. A `Disallow:` here that no surface declares is not asserted
+     * against, because `/journal/search` is exactly that: written by hand in wave 1, correct, and
+     * the journal has no rows to move. Demanding the reverse would fail on a true line.
+     */
+    const block = /location = \/robots\.txt \{[\s\S]*?\n    \}/.exec(directives)?.[0] ?? ''
+    const declared = SURFACES.filter((s) => s.subdomain === '' && s.basePath && s.noIndexPaths?.length)
+    // No vacuity guard demanding `> 0` here, and that is the difference from the test above. A
+    // sitemap is required of every consolidated surface, so finding none means the filter broke;
+    // rules are OPTIONAL, so an empty set is a real state — it was the true state for four waves.
+    // What is guarded instead is that the block was found at all, which is the failure that would
+    // otherwise make every assertion below pass against an empty string.
+    assert.ok(block.includes('User-agent:'), 'the robots.txt location was not found in nginx.conf')
+    for (const s of declared) {
+      for (const path of s.noIndexPaths ?? []) {
+        assert.ok(
+          block.includes(`\nDisallow: ${s.basePath}${path}\n`),
+          `${s.key} declares ${path} as not-for-indexing and this origin's robots.txt does not ` +
+            `say so. It is a folder now, so its own robots.txt is a file no crawler fetches — ` +
+            `the rule is enforced here or it is enforced nowhere. Expected: ` +
+            `Disallow: ${s.basePath}${path}`,
+        )
+      }
+    }
+  })
 })
