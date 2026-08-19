@@ -300,7 +300,7 @@ describe('the sitemap', () => {
   /** Every `<loc>` in the nginx sitemap block, with the host variable stripped. */
   const locs = (): string[] => {
     const block = /location = \/sitemap\.xml \{[\s\S]*?\n    \}/.exec(directives)?.[0] ?? ''
-    return [...block.matchAll(/<loc>\$scheme:\/\/\$host(\/[^<]*)<\/loc>/g)].map((m) => m[1] ?? '')
+    return [...block.matchAll(/<loc>https:\/\/\$host(\/[^<]*)<\/loc>/g)].map((m) => m[1] ?? '')
   }
 
   it('names no hostname, and derives one from the request instead', () => {
@@ -309,7 +309,28 @@ describe('the sitemap', () => {
     const block = /location = \/sitemap\.xml \{[\s\S]*?\n    \}/.exec(directives)?.[0] ?? ''
     assert.ok(block.length > 0, 'nginx.conf no longer serves a sitemap')
     assert.ok(!block.includes('cloudsforge.online'), 'the sitemap names a hostname')
-    assert.ok(block.includes('$scheme://$host'), 'the sitemap does not derive its host from the request')
+    assert.ok(block.includes('https://$host'), 'the sitemap does not derive its host from the request')
+  })
+
+  it('writes the scheme as a literal, because $scheme is http at this origin', () => {
+    // ── THIS SHIPPED WRONG AND WAS MEASURED WRONG, WHICH IS WHY IT HAS A TEST OF ITS OWN ────────
+    //
+    // The block was authored `$scheme://$host`, which reads as the careful choice and is the
+    // opposite of one. TLS ends at Cloudflare: cloudflared speaks plain HTTP to the gateway and the
+    // gateway speaks plain HTTP to this container, so `$scheme` is `http` for every reader who
+    // arrived over `https`. Measured at the apex on 2026-08-19, before the fix:
+    //
+    //     Sitemap: http://cloudsforge.online/sitemap.xml
+    //
+    // Every `<loc>` was the same. A sitemap whose scheme disagrees with the canonical scheme of the
+    // page it describes is how a site tells a crawler that each of its addresses is a different,
+    // redirecting one. The HOST must still come from the request and the assertion above keeps it
+    // that way — this one is about the scheme alone, and it asserts the ABSENCE of `$scheme`
+    // because the failure mode is a well-meaning revert, not a typo.
+    const block = /location = \/sitemap\.xml \{[\s\S]*?\n    \}/.exec(directives)?.[0] ?? ''
+    assert.ok(!block.includes('$scheme'), 'the sitemap is back on $scheme, which is http at this origin')
+    const robots = /location = \/robots\.txt \{[\s\S]*?\n    \}/.exec(directives)?.[0] ?? ''
+    assert.ok(!robots.includes('$scheme'), 'robots.txt is back on $scheme, which is http at this origin')
   })
 
   it('lists every page this site serves', () => {
@@ -357,7 +378,7 @@ describe('the sitemap', () => {
     // copies is exactly the shape this repository distrusts, so they are compared rather than
     // trusted: the rules must match, and only the Sitemap line may differ.
     const block = /location = \/robots\.txt \{[\s\S]*?\n    \}/.exec(directives)?.[0] ?? ''
-    assert.ok(block.includes('Sitemap: $scheme://$host/sitemap.xml'), 'robots.txt does not point at the sitemap')
+    assert.ok(block.includes('Sitemap: https://$host/sitemap.xml'), 'robots.txt does not point at the sitemap')
     // The nginx copy is inside a `return 200 '…'`, so the first rule shares a line with the
     // directive that emits it. Stripping the directive is what makes the two comparable at all —
     // EVERY occurrence, because the block also carries the one-line environment refusal above it,
@@ -370,5 +391,30 @@ describe('the sitemap', () => {
         .filter((line) => /^(User-agent|Allow|Disallow):/i.test(line))
     const statik = readFileSync(new URL('../public/robots.txt', import.meta.url), 'utf8')
     assert.deepEqual(rules(block), rules(statik), 'public/robots.txt and the served robots.txt disagree')
+  })
+
+  it('carries the rules of the other bundles mounted on this apex, because it is the only place they fit', () => {
+    // ── robots.txt IS AN ORIGIN-ROOT FILE, AND THIS ORIGIN IS NO LONGER ONE BUNDLE ──────────────
+    //
+    // A crawler fetches /robots.txt and nothing else — there is no such thing as a robots.txt for a
+    // subdirectory. Forge Journal was a hostname with a robots.txt of its own until the apex
+    // consolidation; it is now `/journal` here, and `micro-journal-web` DELETED its copy in the
+    // same wave rather than mounting it at `/journal/robots.txt`, which is a file nothing fetches.
+    //
+    // So its rules live in this block or they live nowhere, and the test is here rather than there
+    // for the same reason. Two lines: the search page is not a document, and the journal publishes
+    // its own sitemap because this server cannot know a per-article `lastmod`.
+    //
+    // A second `Sitemap:` line is the ordinary way to announce a second sitemap; they are not
+    // exclusive and a crawler reads both.
+    const block = /location = \/robots\.txt \{[\s\S]*?\n    \}/.exec(directives)?.[0] ?? ''
+    assert.ok(
+      block.includes('Disallow: /journal/search'),
+      'the journal deleted its own robots.txt and this one does not carry its search rule',
+    )
+    assert.ok(
+      block.includes('Sitemap: https://$host/journal/sitemap.xml'),
+      "the journal's sitemap is announced from nowhere, so its articles are found only by crawling",
+    )
   })
 })

@@ -1,19 +1,28 @@
-# CloudsForge — the marketing site.
+# CloudsForge — the marketing site, and everything else on the apex.
 #
-# Everything here is public and intended to be indexed. There is nothing behind a session on this
-# surface, so there is nothing to disallow.
+# Nothing on the marketing site itself sits behind a session, so it has nothing of its own to
+# disallow. The one rule below belongs to a DIFFERENT bundle: Forge Journal is served at /journal on
+# this origin, and a crawler reads robots.txt at the origin root and nowhere else, so the rules for
+# every surface mounted on the apex have to be stated here or they do not exist anywhere.
 #
 # THIS FILE IS THE DEVELOPMENT COPY. In production nginx serves /robots.txt itself, from a block in
-# nginx.conf, because the `Sitemap:` line has to carry an ABSOLUTE URL and no artefact built in
+# nginx.conf, because the `Sitemap:` lines have to carry ABSOLUTE URLs and no artefact built in
 # this repository is allowed to name a hostname — the same image is served from localhost, from the
-# testnet host and from the apex. nginx derives it from the request with `$scheme://$host`, which
-# it can and this file cannot.
+# testnet host and from the apex. nginx derives the host from the request with `$host`, which it can
+# and this file cannot. (The SCHEME is a literal `https` there rather than `$scheme`, because TLS
+# ends at Cloudflare and `$scheme` is `http` at the origin for a reader who arrived over https.)
 #
 # The two copies are compared rather than trusted: test/routes.test.ts reads the rules out of both
-# and fails if they disagree, so only the Sitemap line may ever differ.
+# and fails if they disagree, so only the Sitemap lines may ever differ.
 
 User-agent: *
 Allow: /
+
+# Forge Journal's search is a client-side pass over the whole corpus: every `?q=` is a separate
+# address rendering the same shell, so it is crawl budget spent on something that is not a document.
+# The articles themselves are in the journal's own sitemap, which nginx announces alongside this
+# site's — per article and per topic, each with a real `lastmod` from the article's front matter.
+Disallow: /journal/search
 
 # An unknown address on this site answers a real 404 rather than the 200 a single-page application
 # usually returns, so a crawler that follows a stale link is told the truth and can drop it.
