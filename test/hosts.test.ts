@@ -13,17 +13,30 @@ afterEach(removeWindow)
 
 describe('hosts()', () => {
   it('resolves to the local dev ports when served from localhost', () => {
+    // ── `status` RATHER THAN `trade`, AND THAT IS A CHOICE ──────────────────────────────────────
+    //
+    // What this asserts is that the DEV PORT is read from the registry, on a surface whose address
+    // is just origin + port. `trade` became `<apex>/trade` in wave 3b, so its entry is
+    // `http://localhost:4006/trade` and the assertion would be about the mount rather than the
+    // port. `status` stays on its own hostname permanently — the plan keeps seven groups there —
+    // so this will not move again. The MOUNTED spelling is asserted two lines down.
     installWindow('http://localhost:5180/')
     const resolved = hosts()
-    assert.equal(resolved.trade, 'http://localhost:4006')
+    assert.equal(resolved.status, 'http://localhost:3013')
+    assert.equal(resolved.trade, 'http://localhost:4006/trade')
     assert.equal(resolved.nimbus, 'http://localhost:4001')
     assert.equal(resolved.lantern, 'http://localhost:4010')
   })
 
   it('derives the apex from a product subdomain', () => {
-    installWindow('https://trade.cloudsforge.online/settings')
+    // The subdomain being STRIPPED has to be one the registry still knows, or nothing is derived
+    // and the whole name becomes the apex — which is what `trade.<apex>` does since wave 3b, and
+    // correctly: nothing is served there any more. `status` is the durable choice.
+    installWindow('https://status.cloudsforge.online/settings')
     const resolved = hosts()
-    assert.equal(resolved.trade, 'https://trade.cloudsforge.online')
+    assert.equal(resolved.status, 'https://status.cloudsforge.online')
+    // And the consolidated surface resolves to the apex plus its mount, from the same page.
+    assert.equal(resolved.trade, 'https://cloudsforge.online/trade')
     assert.equal(resolved.nimbus, 'https://nimbus.cloudsforge.online')
     assert.equal(resolved.account, 'https://account.cloudsforge.online')
     // The marketing site is the apex itself, with no subdomain.
@@ -122,7 +135,7 @@ describe('liveUrl()', () => {
     // Including localhost: there is one dev estate, and the live twin of it is itself.
     installWindow('http://localhost:5180/')
     assert.equal(liveUrl('site'), hosts().site)
-    assert.equal(liveUrl('trade'), 'http://localhost:4006')
+    assert.equal(liveUrl('trade'), 'http://localhost:4006/trade')
   })
 })
 
