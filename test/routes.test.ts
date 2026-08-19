@@ -22,6 +22,9 @@ import { readFileSync } from 'node:fs'
 import { describe, it } from 'node:test'
 import { LEGAL_PATHS, NAV, NON_INDEX_PATHS, ROUTES } from '../src/lib/routes.ts'
 import { PRODUCT_PAGES } from '../src/content/products.ts'
+// `/surfaces` and not the package root: `servesOwnBundle` is the registry's own discriminator and
+// is exported from the module that owns it. The root re-exports the DATA and not this predicate.
+import { SURFACES, servesOwnBundle } from '@cloudsforge/ui/surfaces'
 
 const read = (file: string): string => readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')
 
@@ -416,5 +419,40 @@ describe('the sitemap', () => {
       block.includes('Sitemap: https://$host/journal/sitemap.xml'),
       "the journal's sitemap is announced from nowhere, so its articles are found only by crawling",
     )
+  })
+
+  it('announces a sitemap for every surface consolidated onto this origin', () => {
+    /*
+     * ── DERIVED FROM THE REGISTRY, BECAUSE THE NAMED VERSION ALREADY MISSED ONE ────────────────
+     *
+     * The assertion above names `journal` and was written in wave 1. Wave 2 added
+     * `Sitemap: https://$host/exchange/sitemap.xml` to nginx.conf and nothing asserted it, so the
+     * exchange's sitemap was announced on the strength of somebody remembering. Wave 3a is the
+     * third, eleven more follow, and a list of literals here would need editing eleven more times
+     * — each time in a repository that is not the one being moved.
+     *
+     * So the set comes from `SURFACES`: a row with an EMPTY subdomain and a `basePath` is the
+     * registry's one-line statement that the surface is a folder on this origin, and this file is
+     * the only robots.txt that folder will ever have. `site` itself has no `basePath` and is
+     * excluded by construction; its own `/sitemap.xml` is asserted separately above.
+     *
+     * WHY EVERY ONE OF THEM, RATHER THAN THE ONES THAT HAPPEN TO PUBLISH A SITEMAP. Discoverability
+     * is the entire argument for the consolidation — `docs/apex-consolidation.md` opens with
+     * authority thrown away on a subdomain — and a surface that arrives here without a sitemap has
+     * traded a hostname a crawler already knew for a folder it has no reason to look in. If a
+     * future surface genuinely should not have one, the honest form of that is a row in this test
+     * saying which and why, not silence.
+     */
+    const block = /location = \/robots\.txt \{[\s\S]*?\n    \}/.exec(directives)?.[0] ?? ''
+    const mounted = SURFACES.filter((s) => s.subdomain === '' && s.basePath && servesOwnBundle(s))
+    assert.ok(mounted.length >= 3, 'the registry lists no consolidated surface, so this asserts nothing')
+    for (const s of mounted) {
+      assert.ok(
+        block.includes(`Sitemap: https://$host${s.basePath}/sitemap.xml`),
+        `${s.key} is served at ${s.basePath} on this origin and its sitemap is announced from ` +
+          `nowhere — it deleted its own robots.txt when it moved, so this file is the only place ` +
+          `a crawler can be told the sitemap exists`,
+      )
+    }
   })
 })
