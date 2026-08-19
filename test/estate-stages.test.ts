@@ -466,7 +466,24 @@ describe('the readers themselves', () => {
     // The new shape: a suffix on the first label, including the bare label the apex surface takes.
     assert.equal(namesAnEnvironment('hub-testnet.cloudsforge.online'), true)
     assert.equal(namesAnEnvironment('testnet.cloudsforge.online'), true)
-    assert.equal(namesAnEnvironment('market-staging.cloudsforge.online'), true)
+    // ── AND THE NON-TESTNET LABEL IS SPELT ON A SUBDOMAIN THAT IS NOT MOVING ──────────────────
+    //
+    // This read `market-staging.…` and went red the day Forge Market became `<apex>/market`,
+    // for precisely the reason the paragraph below records for `worlds-api-testnet`: the check
+    // splits the environment off the first label and then asks whether the HEAD is a known
+    // registry subdomain. `market` is not one any more — its row carries `subdomain: ''` and
+    // `basePath: '/market'` — so the name is left alone as its own apex, correctly, and
+    // asserting `true` here asserted that a hostname the estate no longer serves still names an
+    // environment.
+    //
+    // `admin` replaces it rather than `create` or `pool`, and the choice is the point.
+    // `docs/apex-consolidation.md` moves fourteen surfaces onto the apex and keeps seven groups
+    // on subdomains for reasons it calls non-negotiable; `admin` is in the second set. Any
+    // product surface picked here would fail this test again on the wave that moves it, one
+    // repository away from the change that caused it, which is how a green suite teaches nobody
+    // anything. The rule under test is `<known-subdomain>-<env>`, so the fixture should name a
+    // subdomain that stays one.
+    assert.equal(namesAnEnvironment('admin-staging.cloudsforge.online'), true)
     // ── THE HYPHENATED CASE IS INVERTED, AND micro-ui INVERTED ITS OWN FOR THE SAME REASON ────
     //
     // This line used to assert `namesAnEnvironment('worlds-api-testnet.…') === true` — the one
