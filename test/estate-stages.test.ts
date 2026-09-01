@@ -694,11 +694,40 @@ describe('the self-custody wallets, whose stage is recorded rather than derived'
     }
   })
 
-  it('does not confuse them with the custodial wallet service, which IS deployed', () => {
-    // `wallet` is the custodial service and it is a container in the estate. The two make opposite
-    // promises about who holds the keys, so this is the naming collision it would be most
-    // expensive to get wrong on a marketing page.
-    assert.ok(services.has('wallet'), 'the custodial wallet service is no longer deployed')
+  it('does not confuse them with the custodial wallet service, which IS still served', () => {
+    /*
+     * ── WHAT THIS ASKS, AND WHY THE QUESTION HAD TO CHANGE ─────────────────────────────────────
+     *
+     * `wallet` is the CUSTODIAL service — CloudsForge holds the keys — and the self-custody
+     * clients above are the opposite promise about who holds them. On a marketing page that is
+     * the most expensive naming collision there is, so this case exists to prove the custodial
+     * one is real and live before the page is allowed to talk about either.
+     *
+     * It used to ask `services.has('wallet')`: is there a `wallet:` block in the estate's compose
+     * file? That was the same question until 2026-08-31, when wave M5d absorbed micro-wallet into
+     * `agora` as a module. The service did not go away — `pay.<apex>` still answers, the database
+     * is still `wallet`, the routes are unchanged and NOTHING about custody moved — but its own
+     * compose block did, and this case went red for a merge that changed none of what it cares
+     * about.
+     *
+     * So it asks the durable question instead: does the estate still RUN the custodial wallet,
+     * wherever it lives? Its `WALLET_DATABASE_URL` is the evidence. A module's DSN is in the
+     * compose file whether the module has a container of its own or is one of twenty-three inside
+     * another, and it disappears on the day the service is genuinely retired — which is exactly
+     * the day this page must stop making the promise.
+     */
+    const compose = readFileSync(COMPOSE, 'utf8')
+    assert.match(
+      compose,
+      /^\s*WALLET_DATABASE_URL:/m,
+      'the custodial wallet service is no longer in the estate at all — not as a container and ' +
+        'not as a module. Every claim on this page about who holds the keys needs re-reading.',
+    )
+    // And the collision is still worth guarding: whatever carries it must not be one of the
+    // self-custody repos, which is the confusion this whole block exists for.
+    for (const repo of SELF_CUSTODY_REPOS) {
+      assert.ok(!compose.includes(`${repo}:`), `${repo} now appears in the estate's compose file`)
+    }
     assert.ok(!SELF_CUSTODY_REPOS.includes('wallet'))
   })
 
